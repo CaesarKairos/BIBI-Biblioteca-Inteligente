@@ -1,0 +1,58 @@
+; BIBI - Biblioteca Inteligente
+; Exemplo de script para Inno Setup.
+; Copie este arquivo para setup.iss e ajuste conforme necessário.
+
+#define MyAppName "BIBI - Biblioteca Inteligente"
+#define MyAppPublisher "BIBI Project"
+#define MyAppURL "https://github.com/CaesarKairos/BIBI-Biblioteca-Inteligente"
+#define MyAppExeName "BIBI.exe"
+#define MyAppAssocName MyAppName + " File"
+#define MyAppAssocExt ".bibi"
+#define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
+
+[Setup]
+AppId={{BIBI-Biblioteca-Inteligente}
+AppName={#MyAppName}
+AppVersion=1.0
+AppPublisher={#MyAppPublisher}
+AppPublisherURL={#MyAppURL}
+AppSupportURL={#MyAppURL}
+DefaultDirName={autopf}\BIBI
+DefaultGroupName={#MyAppName}
+DisableProgramGroupPage=yes
+OutputDir=.\dist
+OutputBaseFilename=BIBI-Setup
+Compression=lzma
+SolidCompression=yes
+WizardStyle=modern
+SetupIconFile=static\images\icon.ico
+UninstallDisplayIcon={app}\{#MyAppExeName}
+UninstallDisplayName={#MyAppName}
+
+[Files]
+Source: "dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "static\images\hero\*"; DestDir: "{app}\static\images\hero"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "static\images\*.png"; DestDir: "{app}\static\images"; Flags: ignoreversion
+Source: "static\images\*.ico"; DestDir: "{app}\static\images"; Flags: ignoreversion
+Source: "static\images\*.webm"; DestDir: "{app}\static\images"; Flags: ignoreversion
+
+[Icons]
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
+Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autostart}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: autostart
+
+[Tasks]
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
+Name: "autostart"; Description: "Iniciar BIBI automaticamente com o Windows"; GroupDescription: "Inicializa\xe7\xe3o"
+
+[Run]
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+// Initialize the application directories on first run
+function InitializeSetup(): Boolean;
+var
+  ResultCode: Integer;
+begin
+  Result := true;
+end;
