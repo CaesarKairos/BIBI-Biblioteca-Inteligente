@@ -1,11 +1,6 @@
 # BIBI — Biblioteca Inteligente
 
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)  
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://python.org)  
-[![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)  
-[![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)  
-[![Flask](https://img.shields.io/badge/Flask-2.x-black?logo=flask)](https://flask.palletsprojects.com/)  
-[![Releases](https://img.shields.io/badge/Releases-Download-blue?logo=github)](https://github.com/CaesarKairos/BIBI-Biblioteca-Inteligente/releases)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://python.org) [![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML) [![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS) [![Flask](https://img.shields.io/badge/Flask-2.x-black?logo=flask)](https://flask.palletsprojects.com/) [![Releases](https://img.shields.io/badge/Releases-Download-blue?logo=github)](https://github.com/CaesarKairos/BIBI-Biblioteca-Inteligente/releases)
 
 BIBI é um sistema de gerenciamento de biblioteca desktop, projetado para escolas. Ele roda localmente pelo navegador e oferece controle inteligente de empréstimos, cadastro de leitores, notificações por e-mail e agendamento de salas de aula.
 
