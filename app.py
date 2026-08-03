@@ -5058,7 +5058,7 @@ LANDING_PAGE = """
             <footer class="social-footer">
                 <a href="https://www.instagram.com/philo_code" target="_blank" class="social-link">Instagram</a>
                 <a href="https://www.linkedin.com/in/philocode/" target="_blank" class="social-link">LinkedIn</a>
-                <a href="https://github.com/C3ss2k/BIBI-Biblioteca-Inteligente" target="_blank" class="social-link">GitHub</a>
+                <a href="https://github.com/CaesarKairos/BIBI-Biblioteca-Inteligente" target="_blank" class="social-link">GitHub</a>
             </footer>
         </main>
     </div>
