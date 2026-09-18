@@ -1,5 +1,5 @@
 async function verificarExigirSenhaEmprestimo() {
-    const res = await fetch('/api/config/exigir_senha_emprestimo/status');
+    const res = await apiFetch('/api/config/exigir_senha_emprestimo/status');
     const data = await res.json();
     if (!data.ativo) return null;
 
@@ -13,7 +13,7 @@ async function verificarExigirSenhaEmprestimo() {
         const originalOnclick = btnOk.onclick;
         btnOk.onclick = async () => {
             const senha = document.getElementById('senha-input').value;
-            const resCheck = await fetch('/api/config/senha/verificar', {
+            const resCheck = await apiFetch('/api/config/senha/verificar', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({senha})
@@ -64,61 +64,63 @@ function emprestarSelecionado() {
 
 
 async function confirmarEmprestimoRapido() {
-    if (!isAdminGlobal) return;
-    const tipo = document.getElementById('rapido-tipo').value;
-    const livroId = parseInt(document.getElementById('emprestimo-rapido-livro-id').value);
-    let payload = {tipo, livros: [{id: livroId, quantidade: 1}]};
+    return runAction('confirmarEmprestimoRapido', 'btn-confirmar-emprestimo', async () => {
+        if (!isAdminGlobal) return;
+        const tipo = document.getElementById('rapido-tipo').value;
+        const livroId = parseInt(document.getElementById('emprestimo-rapido-livro-id').value);
+        let payload = {tipo, livros: [{id: livroId, quantidade: 1}]};
 
-    if (tipo === 'estudante') {
-        payload.nome = document.getElementById('rapido-nome').value;
-        payload.sala = document.getElementById('rapido-sala').value;
-        payload.periodo = document.getElementById('rapido-periodo').value;
-        payload.email = document.getElementById('rapido-email').value;
-        payload.prazo = document.getElementById('rapido-prazo').value;
-        const telefone = document.getElementById('rapido-telefone').value;
-        if (telefone) payload.telefone = telefone;
-        if (!payload.nome || !payload.sala || !payload.periodo || !payload.email) {
-            return showToast("Preencha todos os campos do estudante.", "warning");
+        if (tipo === 'estudante') {
+            payload.nome = document.getElementById('rapido-nome').value;
+            payload.sala = document.getElementById('rapido-sala').value;
+            payload.periodo = document.getElementById('rapido-periodo').value;
+            payload.email = document.getElementById('rapido-email').value;
+            payload.prazo = document.getElementById('rapido-prazo').value;
+            const telefone = document.getElementById('rapido-telefone').value;
+            if (telefone) payload.telefone = telefone;
+            if (!payload.nome || !payload.sala || !payload.periodo || !payload.email) {
+                return showToast("Preencha todos os campos do estudante.", "warning");
+            }
+            const config = carregarConfig();
+            if (config.campoNumeroUsuario && !payload.telefone) {
+                return showToast("Telefone do aluno é obrigatório conforme configuração.", "warning");
+            }
+        } else {
+            payload.nome = document.getElementById('rapido-nome-prof').value;
+            payload.materia = document.getElementById('rapido-materia').value;
+            if (!payload.nome || !payload.materia) {
+                return showToast("Preencha nome e matéria do professor.", "warning");
+            }
+            payload.prazo = 0;
         }
-        const config = carregarConfig();
-        if (config.campoNumeroUsuario && !payload.telefone) {
-            return showToast("Telefone do aluno é obrigatório conforme configuração.", "warning");
-        }
-    } else {
-        payload.nome = document.getElementById('rapido-nome-prof').value;
-        payload.materia = document.getElementById('rapido-materia').value;
-        if (!payload.nome || !payload.materia) {
-            return showToast("Preencha nome e matéria do professor.", "warning");
-        }
-        payload.prazo = 0;
-    }
 
-    if (window.senhaEmprestimoGlobal) {
-        payload.senha = window.senhaEmprestimoGlobal;
-        window.senhaEmprestimoGlobal = null;
-    }
+        if (window.senhaEmprestimoGlobal) {
+            payload.senha = window.senhaEmprestimoGlobal;
+            window.senhaEmprestimoGlobal = null;
+        }
 
-    const res = await fetch('/api/emprestimos', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
+        const res = await apiFetch('/api/emprestimos', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            const data = await res.json();
+            showToast("Empréstimo realizado!", "success");
+            if (data.email_enviado) {
+                showToast("E-mail de confirmação enviado com sucesso.", "success");
+            }
+            closeModal('modalEmprestimoRapido');
+            carregarAcervo();
+            if (isAdminGlobal) carregarDashboard();
+            if (document.getElementById('emp').classList.contains('active')) {
+                filtrarEmprestimos(filtroEmprestimosAtual);
+            }
+        } else {
+            const err = await res.json();
+            showToast("Erro: " + err.erro, "error");
+        }
     });
-    if (res.ok) {
-        const data = await res.json();
-        showToast("Empréstimo realizado!", "success");
-        if (data.email_enviado) {
-            showToast("E-mail de confirmação enviado com sucesso.", "success");
-        }
-        closeModal('modalEmprestimoRapido');
-        carregarAcervo();
-        if (isAdminGlobal) carregarDashboard();
-        if (document.getElementById('emp').classList.contains('active')) {
-            filtrarEmprestimos(filtroEmprestimosAtual);
-        }
-    } else {
-        const err = await res.json();
-        showToast("Erro: " + err.erro, "error");
-    }
 }
 
 
@@ -140,7 +142,7 @@ async function filtrarEmprestimos(filtro) {
     else if (filtro === 'devolvidos') url = '/api/emprestimos/devolvidos';
     else url = '/api/emprestimos/todos';
 
-    const res = await fetch(url);
+    const res = await apiFetch(url);
     const dados = await res.json();
     const div = document.getElementById('lista-ativos');
 
@@ -149,41 +151,41 @@ async function filtrarEmprestimos(filtro) {
         return;
     }
 
-    let html = '<table class="tabela-emprestimos"><thead>';
-    html += '<th>Capa</th><th>Livro</th><th>Leitor</th><th>Telefone</th><th>Série</th><th>Data Empréstimo</th><th>Data Devolução</th><th>Ações</th>';
-    html += '</thead><tbody>';
-
+    const table = textElement('table', '', 'tabela-emprestimos');
+    const head = document.createElement('thead');
+    const header = document.createElement('tr');
+    ['Capa', 'Livro', 'Leitor', 'Telefone', 'Série', 'Data Empréstimo', 'Data Devolução', 'Ações'].forEach(label => header.appendChild(textElement('th', label)));
+    head.appendChild(header);
+    const body = document.createElement('tbody');
     dados.forEach(e => {
-        html += '<tr>';
-        html += `<td><div class="capa-mini" style="background-image: url('${e.capa || '/static/images/placeholder.png'}');"></div></td>`;
-        html += `<td>${e.livro}</td>`;
-        html += `<td>${e.leitor}</td>`;
-        html += `<td>${e.telefone || '-'}</td>`;
-        html += `<td>${e.serie || '-'}</td>`;
-        html += `<td>${e.data_emprestimo || '-'}</td>`;
-        html += `<td>${e.data_vencimento || e.vencimento || '-'}</td>`;
-        html += `<td class="acoes-botoes">`;
-        if (filtro !== 'devolvidos') {
-            if (isAdminGlobal) {
-                html += `<button class="btn-primary btn-small" onclick="devolverEmprestimo(${e.id})">Devolver</button>`;
-                html += `<button class="btn-primary btn-small" onclick="renovarEmprestimo(${e.id})">Renovar</button>`;
-            } else {
-                html += `<span>Sem permissão</span>`;
-            }
-        } else {
-            html += `<span>Devolvido em ${e.data_devolucao}</span>`;
-        }
-        html += `<\/td></tr>`;
+        const row = document.createElement('tr');
+        const coverCell = document.createElement('td');
+        const cover = textElement('div', '', 'capa-mini');
+        coverBackground(cover, e.capa);
+        coverCell.appendChild(cover);
+        row.appendChild(coverCell);
+        [e.livro, e.leitor, e.telefone || '-', e.serie || '-', e.data_emprestimo || '-', e.data_vencimento || e.vencimento || '-'].forEach(value => row.appendChild(textElement('td', value)));
+        const actions = textElement('td', '', 'acoes-botoes');
+        if (filtro === 'devolvidos') actions.appendChild(textElement('span', `Devolvido em ${e.data_devolucao}`));
+        else if (isAdminGlobal) {
+            const devolver = textElement('button', 'Devolver', 'btn-primary btn-small');
+            devolver.onclick = () => devolverEmprestimo(e.id);
+            const renovar = textElement('button', 'Renovar', 'btn-primary btn-small');
+            renovar.onclick = () => renovarEmprestimo(e.id);
+            actions.append(devolver, renovar);
+        } else actions.appendChild(textElement('span', 'Sem permissão'));
+        row.appendChild(actions);
+        body.appendChild(row);
     });
-    html += '</tbody></table>';
-    div.innerHTML = html;
+    table.append(head, body);
+    div.replaceChildren(table);
 }
 
 
 async function devolverEmprestimo(id) {
     if (!isAdminGlobal) return;
     confirmAction("Devolução", "Confirmar devolução do livro?", async () => {
-        const res = await fetch(`/api/emprestimos/${id}/devolver`, {method: 'POST'});
+        const res = await apiFetch(`/api/emprestimos/${id}/devolver`, {method: 'POST'});
         if(res.ok) {
             showToast("Livro devolvido com sucesso!", "success");
             filtrarEmprestimos(filtroEmprestimosAtual);
@@ -199,7 +201,7 @@ async function devolverEmprestimo(id) {
 async function renovarEmprestimo(id) {
     if (!isAdminGlobal) return;
     confirmAction("Renovar Empréstimo", "Deseja renovar este empréstimo por mais um período?", async () => {
-        const res = await fetch(`/api/emprestimos/${id}/renovar`, {method: 'POST'});
+        const res = await apiFetch(`/api/emprestimos/${id}/renovar`, {method: 'POST'});
         if(res.ok) {
             showToast("Empréstimo renovado!", "success");
             filtrarEmprestimos(filtroEmprestimosAtual);

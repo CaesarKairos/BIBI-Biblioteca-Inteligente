@@ -25,7 +25,7 @@ function setupDragAndDrop(previewId, urlId) {
 async function uploadImageFile(file, previewId, urlId) {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch('/api/upload', {method: 'POST', body: formData});
+    const res = await apiFetch('/api/upload', {method: 'POST', body: formData});
     if (res.ok) {
         const data = await res.json();
         document.getElementById(urlId).value = data.url;
@@ -101,7 +101,7 @@ function previewCapaEdit(event) {
 async function uploadCapa(file, targetInputId) {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch('/api/upload', {method: 'POST', body: formData});
+    const res = await apiFetch('/api/upload', {method: 'POST', body: formData});
     if (res.ok) {
         const data = await res.json();
         document.getElementById(targetInputId).value = data.url;
@@ -124,7 +124,7 @@ function openModalManual() {
 
 
 async function carregarAcervo() {
-    const res = await fetch('/api/livros');
+    const res = await apiFetch('/api/livros');
     todosLivros = await res.json();
     aplicarFiltroAcervo();
 }
@@ -159,7 +159,7 @@ function exibirPrateleiras(livros) {
             livrosCat.forEach(l => {
                 const div = document.createElement('div');
                 div.className = 'book';
-                div.style.backgroundImage = `url(${l.capa})`;
+                coverBackground(div, l.capa);
                 div.onclick = () => verDetalhes(l);
                 grid.appendChild(div);
             });
@@ -178,11 +178,11 @@ function verDetalhes(l) {
     livroSelecionado = l;
     document.getElementById('info-vazio').style.display = 'none';
     document.getElementById('info-livro').style.display = 'block';
-    document.getElementById('det-capa').style.backgroundImage = `url(${l.capa})`;
+    coverBackground(document.getElementById('det-capa'), l.capa);
     document.getElementById('det-titulo').innerText = l.titulo;
     document.getElementById('det-autor').innerText = l.autor || 'Autor desconhecido';
     document.getElementById('det-ano').innerText = l.ano ? `Ano: ${l.ano}` : '';
-    document.getElementById('det-temas').innerHTML = `<strong>Temas:</strong> ${l.temas || 'Não informado'}`;
+    document.getElementById('det-temas').replaceChildren(textElement('strong', 'Temas:'), document.createTextNode(' ' + (l.temas || 'Não informado')));
     document.getElementById('det-desc').innerText = (l.descricao || 'Sem descrição.').substring(0, 250) + (l.descricao && l.descricao.length > 250 ? '...' : '');
     document.getElementById('det-estoque').innerText = l.disponivel;
 
@@ -206,95 +206,99 @@ function verDetalhes(l) {
 
 
 async function salvarLivro() {
-    if (!isAdminGlobal) return;
-    const isbn = document.getElementById('add-isbn').value;
-    const qtd = document.getElementById('add-qtd').value;
-    if(!isbn || !qtd) return showToast("Preencha todos os campos", "warning");
-    const btn = document.getElementById('btn-buscar-salvar');
-    const originalHTML = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="pulsing-dots"><span></span><span></span><span></span></span>';
-    try {
-        const res = await fetch('/api/livros', {
+    return runAction('salvarLivro', 'btn-buscar-salvar', async () => {
+        if (!isAdminGlobal) return;
+        const isbn = document.getElementById('add-isbn').value;
+        const qtd = document.getElementById('add-qtd').value;
+        if(!isbn || !qtd) return showToast("Preencha todos os campos", "warning");
+        const btn = document.getElementById('btn-buscar-salvar');
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="pulsing-dots"><span></span><span></span><span></span></span>';
+        try {
+            const res = await apiFetch('/api/livros', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({isbn, quantidade: qtd})
+            });
+            if(res.ok) {
+                showToast("Livro adicionado!", "success");
+                document.getElementById('add-isbn').value = '';
+                document.getElementById('add-qtd').value = '';
+                closeModal('modalAddLivro');
+                carregarAcervo();
+                if (isAdminGlobal) carregarDashboard();
+            } else {
+                const err = await res.json();
+                showToast("Erro: " + err.erro, "error");
+                document.getElementById('add-isbn').value = '';
+                document.getElementById('add-qtd').value = '';
+                closeModal('modalAddLivro');
+            }
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+        }
+    });
+}
+
+
+async function salvarLivroManual() {
+    return runAction('salvarLivroManual', 'btn-salvar-manual', async () => {
+        if (!isAdminGlobal) return;
+        const titulo = document.getElementById('manual-titulo').value;
+        const autor = document.getElementById('manual-autor').value;
+        const qtd = document.getElementById('manual-qtd').value;
+        if(!titulo || !autor || !qtd) return showToast("Preencha título, autor e quantidade.", "warning");
+
+        let capaUrl = document.getElementById('manual-capa-url').value;
+        if (!capaUrl) capaUrl = '/static/images/placeholder.png';
+
+        const localizacao = document.getElementById('manual-localizacao') ? document.getElementById('manual-localizacao').value : '';
+        const payload = {
+            manual: true,
+            isbn: document.getElementById('manual-isbn').value || null,
+            titulo: titulo,
+            autor: autor,
+            ano: document.getElementById('manual-ano').value || null,
+            descricao: document.getElementById('manual-descricao').value,
+            temas: document.getElementById('manual-temas').value,
+            categoria: document.getElementById('manual-categoria').value,
+            quantidade: parseInt(qtd),
+            capa: capaUrl,
+            localizacao: localizacao
+        };
+
+        const res = await apiFetch('/api/livros', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({isbn, quantidade: qtd})
+            body: JSON.stringify(payload)
         });
         if(res.ok) {
-            showToast("Livro adicionado!", "success");
-            document.getElementById('add-isbn').value = '';
-            document.getElementById('add-qtd').value = '';
-            closeModal('modalAddLivro');
+            showToast("Livro adicionado manualmente!", "success");
+            document.getElementById('manual-isbn').value = '';
+            document.getElementById('manual-titulo').value = '';
+            document.getElementById('manual-autor').value = '';
+            document.getElementById('manual-ano').value = '';
+            document.getElementById('manual-descricao').value = '';
+            document.getElementById('manual-temas').value = '';
+            document.getElementById('manual-qtd').value = '1';
+            document.getElementById('manual-capa-url').value = '';
+            const previewDiv = document.getElementById('manual-capa-preview');
+            previewDiv.style.backgroundImage = '';
+            previewDiv.classList.remove('has-image');
+            const textSpan = previewDiv.querySelector('.preview-text');
+            if (textSpan) textSpan.style.display = 'flex';
+            document.getElementById('manual-capa-file').value = '';
+            categoriaManualSelect.setValue('Ficção');
+            closeModal('modalManualLivro');
             carregarAcervo();
             if (isAdminGlobal) carregarDashboard();
         } else {
             const err = await res.json();
             showToast("Erro: " + err.erro, "error");
-            document.getElementById('add-isbn').value = '';
-            document.getElementById('add-qtd').value = '';
-            closeModal('modalAddLivro');
         }
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalHTML;
-    }
-}
-
-
-async function salvarLivroManual() {
-    if (!isAdminGlobal) return;
-    const titulo = document.getElementById('manual-titulo').value;
-    const autor = document.getElementById('manual-autor').value;
-    const qtd = document.getElementById('manual-qtd').value;
-    if(!titulo || !autor || !qtd) return showToast("Preencha título, autor e quantidade.", "warning");
-
-    let capaUrl = document.getElementById('manual-capa-url').value;
-    if (!capaUrl) capaUrl = '/static/images/placeholder.png';
-
-    const localizacao = document.getElementById('manual-localizacao') ? document.getElementById('manual-localizacao').value : '';
-    const payload = {
-        manual: true,
-        isbn: document.getElementById('manual-isbn').value || null,
-        titulo: titulo,
-        autor: autor,
-        ano: document.getElementById('manual-ano').value || null,
-        descricao: document.getElementById('manual-descricao').value,
-        temas: document.getElementById('manual-temas').value,
-        categoria: document.getElementById('manual-categoria').value,
-        quantidade: parseInt(qtd),
-        capa: capaUrl,
-        localizacao: localizacao
-    };
-
-    const res = await fetch('/api/livros', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
     });
-    if(res.ok) {
-        showToast("Livro adicionado manualmente!", "success");
-        document.getElementById('manual-isbn').value = '';
-        document.getElementById('manual-titulo').value = '';
-        document.getElementById('manual-autor').value = '';
-        document.getElementById('manual-ano').value = '';
-        document.getElementById('manual-descricao').value = '';
-        document.getElementById('manual-temas').value = '';
-        document.getElementById('manual-qtd').value = '1';
-        document.getElementById('manual-capa-url').value = '';
-        const previewDiv = document.getElementById('manual-capa-preview');
-        previewDiv.style.backgroundImage = '';
-        previewDiv.classList.remove('has-image');
-        const textSpan = previewDiv.querySelector('.preview-text');
-        if (textSpan) textSpan.style.display = 'flex';
-        document.getElementById('manual-capa-file').value = '';
-        categoriaManualSelect.setValue('Ficção');
-        closeModal('modalManualLivro');
-        carregarAcervo();
-        if (isAdminGlobal) carregarDashboard();
-    } else {
-        const err = await res.json();
-        showToast("Erro: " + err.erro, "error");
-    }
 }
 
 
@@ -333,17 +337,19 @@ function editarLivroSelecionado() {
 
 
 function aplicarVisibilidadeCamposLivro(isManual) {
+    const modal = document.getElementById(isManual ? 'modalManualLivro' : 'modalEditarLivro');
+    if (!modal) return;
     const config = carregarConfig();
-    const prefixo = isManual ? 'manual' : 'edit';
-    document.querySelector(`#modal${isManual ? 'ManualLivro' : 'EditarLivro'} .campo-ano`).style.display = config.campoAnoVisivel ? '' : 'none';
-    document.querySelector(`#modal${isManual ? 'ManualLivro' : 'EditarLivro'} .campo-descricao`).style.display = config.campoDescricaoVisivel ? '' : 'none';
-    document.querySelector(`#modal${isManual ? 'ManualLivro' : 'EditarLivro'} .campo-temas`).style.display = config.campoTemasVisivel ? '' : 'none';
-    document.querySelector(`#modal${isManual ? 'ManualLivro' : 'EditarLivro'} .campo-categoria`).style.display = config.campoCategoriaVisivel ? '' : 'none';
+    for (const [classe, key] of [['campo-ano', 'campoAnoVisivel'], ['campo-descricao', 'campoDescricaoVisivel'], ['campo-temas', 'campoTemasVisivel'], ['campo-categoria', 'campoCategoriaVisivel']]) {
+        const field = modal.querySelector('.' + classe);
+        if (field) field.style.display = config[key] ? '' : 'none';
+    }
 }
 
 
 async function verificarObrigarLocalizacao() {
-    const res = await fetch('/api/config/obrigar_localizacao_livro/status');
+    if (!isAdminGlobal) return;
+    const res = await apiFetch('/api/config/obrigar_localizacao_livro/status');
     const data = await res.json();
     const obrigar = data.ativo;
     const manualField = document.getElementById('campo-localizacao-manual');
@@ -360,38 +366,40 @@ async function verificarObrigarLocalizacao() {
 
 
 async function salvarEdicaoLivro() {
-    if (!isAdminGlobal) return;
-    const id = document.getElementById('edit-id').value;
-    const payload = {
-        titulo: document.getElementById('edit-titulo').value,
-        autor: document.getElementById('edit-autor').value,
-        ano: document.getElementById('edit-ano').value,
-        descricao: document.getElementById('edit-descricao').value,
-        temas: document.getElementById('edit-temas').value,
-        categoria: document.getElementById('edit-categoria').value,
-        estoque: parseInt(document.getElementById('edit-estoque').value),
-        disponivel: parseInt(document.getElementById('edit-disponivel').value),
-        localizacao: document.getElementById('edit-localizacao') ? document.getElementById('edit-localizacao').value : ''
-    };
-    const novaCapa = document.getElementById('edit-capa-url').value;
-    if (novaCapa) payload.capa = novaCapa;
+    return runAction('salvarEdicaoLivro', 'btn-salvar-edicao', async () => {
+        if (!isAdminGlobal) return;
+        const id = document.getElementById('edit-id').value;
+        const payload = {
+            titulo: document.getElementById('edit-titulo').value,
+            autor: document.getElementById('edit-autor').value,
+            ano: document.getElementById('edit-ano').value,
+            descricao: document.getElementById('edit-descricao').value,
+            temas: document.getElementById('edit-temas').value,
+            categoria: document.getElementById('edit-categoria').value,
+            estoque: parseInt(document.getElementById('edit-estoque').value),
+            disponivel: parseInt(document.getElementById('edit-disponivel').value),
+            localizacao: document.getElementById('edit-localizacao') ? document.getElementById('edit-localizacao').value : ''
+        };
+        const novaCapa = document.getElementById('edit-capa-url').value;
+        if (novaCapa) payload.capa = novaCapa;
 
-    const res = await fetch(`/api/livros/${id}`, {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
-    });
-    if(res.ok) {
-        showToast("Livro atualizado!", "success");
-        closeModal('modalEditarLivro');
-        carregarAcervo();
-        if(livroSelecionado && livroSelecionado.id == id) {
-            livroSelecionado = {...livroSelecionado, ...payload};
-            verDetalhes(livroSelecionado);
+        const res = await apiFetch(`/api/livros/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        if(res.ok) {
+            showToast("Livro atualizado!", "success");
+            closeModal('modalEditarLivro');
+            carregarAcervo();
+            if(livroSelecionado && livroSelecionado.id == id) {
+                livroSelecionado = {...livroSelecionado, ...payload};
+                verDetalhes(livroSelecionado);
+            }
+        } else {
+            showToast("Erro ao atualizar", "error");
         }
-    } else {
-        showToast("Erro ao atualizar", "error");
-    }
+    });
 }
 
 
@@ -399,7 +407,7 @@ function confirmarExclusaoLivro() {
     if (!isAdminGlobal) return;
     if(!livroSelecionado) return;
     confirmAction("Excluir Livro", `Deseja realmente excluir "${livroSelecionado.titulo}"?`, async () => {
-        await fetch(`/api/livros/${livroSelecionado.id}`, {method: 'DELETE'});
+        await apiFetch(`/api/livros/${livroSelecionado.id}`, {method: 'DELETE'});
         showToast("Livro excluído.", "success");
         livroSelecionado = null;
         document.getElementById('info-livro').style.display = 'none';

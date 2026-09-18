@@ -1,5 +1,5 @@
 async function carregarGraficoGeneros() {
-    const res = await fetch('/api/emprestimos/ativos-por-genero');
+    const res = await apiFetch('/api/emprestimos/ativos-por-genero');
     const dados = await res.json();
     const ctx = document.getElementById('grafico-generos').getContext('2d');
     if (graficoGenerosInstance) graficoGenerosInstance.destroy();
@@ -17,7 +17,7 @@ async function carregarGraficoGeneros() {
 
 
 async function carregarGraficoHistorico() {
-    const res = await fetch('/api/emprestimos/historico-por-genero');
+    const res = await apiFetch('/api/emprestimos/historico-por-genero');
     const dados = await res.json();
     const ctx = document.getElementById('grafico-historico').getContext('2d');
     if (graficoHistoricoInstance) graficoHistoricoInstance.destroy();
@@ -36,7 +36,7 @@ async function carregarGraficoHistorico() {
 
 async function carregarRankingLeitores() {
     if (!isAdminGlobal) return;
-    const res = await fetch('/api/emprestimos/ranking-leitores');
+    const res = await apiFetch('/api/emprestimos/ranking-leitores');
     const ranking = await res.json();
     const container = document.getElementById('ranking-leitores');
     container.innerHTML = '';
@@ -47,14 +47,16 @@ async function carregarRankingLeitores() {
     ranking.forEach((r, index) => {
         const extra = r.tipo === 'estudante' ? ` - ${r.sala}` : ` (Prof.)`;
         const li = document.createElement('li');
-        li.innerHTML = `<strong>${r.nome}</strong>${extra} — <span style="color:var(--green-earth);">${r.total} empréstimos</span>`;
+        const total = textElement('span', `${r.total} empréstimos`);
+        total.style.color = 'var(--green-earth)';
+        li.append(textElement('strong', r.nome), document.createTextNode(extra + ' — '), total);
         container.appendChild(li);
     });
 }
 
 
 async function carregarTopLivros() {
-    const res = await fetch('/api/emprestimos/mais-emprestados');
+    const res = await apiFetch('/api/emprestimos/mais-emprestados');
     const destaques = await res.json();
     const container = document.getElementById('top-livros');
     container.innerHTML = '';
@@ -70,14 +72,18 @@ async function carregarTopLivros() {
             const livroCompleto = todosLivros.find(tl => tl.id === l.id);
             if (livroCompleto) { verDetalhes(livroCompleto); tab('acervo'); }
         };
-        item.innerHTML = `<div class="top-livro-capa" style="background-image: url(${l.capa});"></div><div class="top-livro-info"><h4>${l.titulo}</h4><p>${l.autor || 'Autor desconhecido'}</p></div><div class="top-livro-badge">${l.total_emprestimos}x</div>`;
+        const cover = textElement('div', '', 'top-livro-capa');
+        coverBackground(cover, l.capa);
+        const info = textElement('div', '', 'top-livro-info');
+        info.append(textElement('h4', l.titulo), textElement('p', l.autor || 'Autor desconhecido'));
+        item.append(cover, info, textElement('div', `${l.total_emprestimos}x`, 'top-livro-badge'));
         container.appendChild(item);
     });
 }
 
 
 async function carregarLivrosAdormecidos() {
-    const res = await fetch('/api/livros/adormecidos');
+    const res = await apiFetch('/api/livros/adormecidos');
     const adormecidos = await res.json();
     const container = document.getElementById('lista-adormecidos');
     container.innerHTML = '';
@@ -101,26 +107,26 @@ async function carregarLivrosAdormecidos() {
 
 async function carregarDashboard() {
     if (!isAdminGlobal) return;
-    const resLivros = await fetch('/api/livros');
+    const resLivros = await apiFetch('/api/livros');
     const livros = await resLivros.json();
     todosLivros = livros;
     document.getElementById('stat-total').innerText = livros.length;
     const totalExemplares = livros.reduce((acc, l) => acc + (l.estoque || 0), 0);
     document.getElementById('stat-exemplares').innerText = totalExemplares;
-    const resAtivos = await fetch('/api/emprestimos/ativos/count');
+    const resAtivos = await apiFetch('/api/emprestimos/ativos/count');
     const ativosData = await resAtivos.json();
     document.getElementById('stat-emp').innerText = ativosData.count;
-    const resAtrasos = await fetch('/api/emprestimos/atrasos');
+    const resAtrasos = await apiFetch('/api/emprestimos/atrasos');
     const atrasos = await resAtrasos.json();
     document.getElementById('stat-atraso').innerText = atrasos.length;
-    const resHoje = await fetch('/api/emprestimos/devolucoes-hoje');
+    const resHoje = await apiFetch('/api/emprestimos/devolucoes-hoje');
     const hojeList = await resHoje.json();
     document.getElementById('stat-hoje').innerText = hojeList.length;
-    const resLeitores = await fetch('/api/leitores');
+    const resLeitores = await apiFetch('/api/leitores');
     const leitores = await resLeitores.json();
     document.getElementById('stat-leitores').innerText = leitores.length;
     const hojeStr = new Date().toISOString().split('T')[0];
-    const resAgenda = await fetch('/api/agendamentos?periodo=' + periodoAtual);
+    const resAgenda = await apiFetch('/api/agendamentos?periodo=' + periodoAtual);
     const agenda = await resAgenda.json();
     const agendaFutura = agenda.filter(a => a.data >= hojeStr);
     document.getElementById('stat-agenda').innerText = agendaFutura.length;

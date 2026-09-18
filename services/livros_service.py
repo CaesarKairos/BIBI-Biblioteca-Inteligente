@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 from database.database import db_manager
 from services.configuracoes_service import is_obrigar_localizacao_livro
 from utils.datetime import get_brasilia_today
@@ -49,7 +53,7 @@ def buscar_open_library(isbn):
                     "capa": capa
                 }
     except Exception as e:
-        print(f"Erro Open Library: {e}")
+        logger.exception("Falha na integração externa")
     return None
 
 
@@ -71,7 +75,7 @@ def buscar_brasil_api(isbn):
             if data.get('year'):
                 try:
                     ano = int(data['year'])
-                except:
+                except (TypeError, ValueError):
                     pass
             descricao = data.get('synopsis', '') or ''
             temas = data.get('subjects', '') or ''
@@ -95,7 +99,7 @@ def buscar_brasil_api(isbn):
                 "capa": capa
             }
     except Exception as e:
-        print(f"Erro BrasilAPI: {e}")
+        logger.exception("Falha na integração externa")
     return None
 
 
@@ -110,7 +114,7 @@ def buscar_google_books_por_isbn(isbn):
                 book = data['items'][0]['volumeInfo']
                 return _extrair_dados_google(book, isbn)
     except Exception as e:
-        print(f"Erro Google Books (ISBN): {e}")
+        logger.exception("Falha na integração externa")
     return None
 
 
@@ -125,7 +129,7 @@ def buscar_google_books_por_titulo(titulo):
                 book = data['items'][0]['volumeInfo']
                 return _extrair_dados_google(book, None)
     except Exception as e:
-        print(f"Erro Google Books (Título): {e}")
+        logger.exception("Falha na integração externa")
     return None
 
 
@@ -137,7 +141,7 @@ def _extrair_dados_google(book, isbn):
     if 'publishedDate' in book:
         try:
             ano = int(book['publishedDate'][:4])
-        except:
+        except (TypeError, ValueError):
             pass
     descricao = book.get('description', '') or ''
     # Limpar tags HTML da descrição
@@ -190,32 +194,32 @@ def buscar_livro_cascata(isbn):
         return modificado
 
     # 1. Open Library
-    print(f"Buscando ISBN {isbn} na Open Library...")
+    logger.debug(f"Buscando ISBN {isbn} na Open Library...")
     ol = buscar_open_library(isbn)
     if ol:
         preencher_faltantes(ol)
-        if all(v is not None and v != '' for v in dados.values() if v is not None):
+        if all(v is not None and v != '' for v in dados.values()):
             return dados
 
     # 2. BrasilAPI
-    print(f"Buscando ISBN {isbn} na BrasilAPI...")
+    logger.debug(f"Buscando ISBN {isbn} na BrasilAPI...")
     br = buscar_brasil_api(isbn)
     if br:
         preencher_faltantes(br)
-        if all(v is not None and v != '' for v in dados.values() if v is not None):
+        if all(v is not None and v != '' for v in dados.values()):
             return dados
 
     # 3. Google Books (primeiro por ISBN)
-    print(f"Buscando ISBN {isbn} no Google Books...")
+    logger.debug(f"Buscando ISBN {isbn} no Google Books...")
     gb = buscar_google_books_por_isbn(isbn)
     if gb:
         preencher_faltantes(gb)
-        if all(v is not None and v != '' for v in dados.values() if v is not None):
+        if all(v is not None and v != '' for v in dados.values()):
             return dados
 
     # 4. Google Books (fallback por título, se tiver título)
     if dados.get("titulo"):
-        print(f"Buscando '{dados['titulo']}' no Google Books (fallback por título)...")
+        logger.debug(f"Buscando '{dados['titulo']}' no Google Books (fallback por título)...")
         gb_titulo = buscar_google_books_por_titulo(dados["titulo"])
         if gb_titulo:
             preencher_faltantes(gb_titulo)
@@ -227,101 +231,95 @@ def buscar_livro_cascata(isbn):
 
 
 def api_livros(admin, data, method):
-    conn = db_manager.get_connection()
-    cursor = conn.cursor()
+    with db_manager.connection() as conn:
+        cursor = conn.cursor()
 
-    if method == 'POST':
-        if not admin:
-            conn.close()
-            return {"erro": "Acesso negado. Operação permitida apenas para administradores."}, 403
-        hoje = get_brasilia_today().isoformat()
+        if method == 'POST':
+            if not admin:
+                return {"erro": "Acesso negado. Operação permitida apenas para administradores."}, 403
+            hoje = get_brasilia_today().isoformat()
         
-        localizacao = data.get('localizacao', '').strip()
-        if is_obrigar_localizacao_livro() and not localizacao:
-            conn.close()
-            return {"erro": "O campo Localização (prateleira) é obrigatório conforme configuração do sistema."}, 400
+            localizacao = data.get('localizacao', '').strip()
+            if is_obrigar_localizacao_livro() and not localizacao:
+                return {"erro": "O campo Localização (prateleira) é obrigatório conforme configuração do sistema."}, 400
 
-        if data.get('manual'):
-            isbn = data.get('isbn', 'MANUAL_' + str(uuid.uuid4())[:8])
-            titulo = data['titulo']
-            autor = data['autor']
-            ano = data.get('ano')
-            descricao = data.get('descricao', '')
-            temas = data.get('temas', '')
-            categoria = data.get('categoria', 'Ficção')
-            quantidade = int(data['quantidade'])
-            capa = data.get('capa', '')
-            if not capa:
-                capa = '/static/images/placeholder.png'
+            if data.get('manual'):
+                isbn = data.get('isbn', 'MANUAL_' + str(uuid.uuid4())[:8])
+                titulo = data['titulo']
+                autor = data['autor']
+                ano = data.get('ano')
+                descricao = data.get('descricao', '')
+                temas = data.get('temas', '')
+                categoria = data.get('categoria', 'Ficção')
+                quantidade = int(data['quantidade'])
+                capa = data.get('capa', '')
+                if not capa:
+                    capa = '/static/images/placeholder.png'
+            else:
+                isbn = data['isbn']
+                quantidade = int(data['quantidade'])
+                info = buscar_livro_cascata(isbn)
+                if not info:
+                    return {"erro": "ISBN não encontrado ou serviço indisponível"}, 404
+                titulo = info['titulo']
+                autor = info['autor']
+                ano = info['ano_publicacao']
+                descricao = info['descricao']
+                temas = info['temas']
+                categoria = info['categoria']
+                capa = info['capa']
+
+            cursor.execute('''
+                INSERT INTO Livros (isbn, nome, autor, ano_publicacao, capa_url, descricao, temas, categoria, estoque, quantidade_disponivel, data_cadastro, localizacao)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (isbn, titulo, autor, ano, capa, descricao, temas, categoria, quantidade, quantidade, hoje, localizacao))
+            conn.commit()
+            livro_id = cursor.lastrowid
+            return {
+                "id": livro_id, "isbn": isbn, "titulo": titulo, "autor": autor,
+                "ano": ano, "capa": capa, "descricao": descricao, "temas": temas,
+                "categoria": categoria, "estoque": quantidade, "disponivel": quantidade,
+                "data_cadastro": hoje, "localizacao": localizacao
+            }, 201
+
         else:
-            isbn = data['isbn']
-            quantidade = int(data['quantidade'])
-            info = buscar_livro_cascata(isbn)
-            if not info:
-                return {"erro": "ISBN não encontrado ou serviço indisponível"}, 404
-            titulo = info['titulo']
-            autor = info['autor']
-            ano = info['ano_publicacao']
-            descricao = info['descricao']
-            temas = info['temas']
-            categoria = info['categoria']
-            capa = info['capa']
-
-        cursor.execute('''
-            INSERT INTO Livros (isbn, nome, autor, ano_publicacao, capa_url, descricao, temas, categoria, estoque, quantidade_disponivel, data_cadastro, localizacao)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (isbn, titulo, autor, ano, capa, descricao, temas, categoria, quantidade, quantidade, hoje, localizacao))
-        conn.commit()
-        livro_id = cursor.lastrowid
-        conn.close()
-        return {
-            "id": livro_id, "isbn": isbn, "titulo": titulo, "autor": autor,
-            "ano": ano, "capa": capa, "descricao": descricao, "temas": temas,
-            "categoria": categoria, "estoque": quantidade, "disponivel": quantidade,
-            "data_cadastro": hoje, "localizacao": localizacao
-        }, 201
-
-    else:
-        cursor.execute('''
-            SELECT id, isbn, nome, autor, ano_publicacao, capa_url, descricao, temas, categoria, estoque, quantidade_disponivel, data_cadastro, localizacao
-            FROM Livros
-        ''')
-        livros = []
-        for row in cursor.fetchall():
-            livros.append({
-                "id": row[0], "isbn": row[1], "titulo": row[2], "autor": row[3],
-                "ano": row[4], "capa": row[5], "descricao": row[6], "temas": row[7],
-                "categoria": row[8], "estoque": row[9], "disponivel": row[10],
-                "data_cadastro": row[11], "localizacao": row[12] if len(row) > 12 else ''
-            })
-        conn.close()
-        return livros
+            cursor.execute('''
+                SELECT id, isbn, nome, autor, ano_publicacao, capa_url, descricao, temas, categoria, estoque, quantidade_disponivel, data_cadastro, localizacao
+                FROM Livros
+            ''')
+            livros = []
+            for row in cursor.fetchall():
+                livros.append({
+                    "id": row[0], "isbn": row[1], "titulo": row[2], "autor": row[3],
+                    "ano": row[4], "capa": row[5], "descricao": row[6], "temas": row[7],
+                    "categoria": row[8], "estoque": row[9], "disponivel": row[10],
+                    "data_cadastro": row[11], "localizacao": row[12] if len(row) > 12 else ''
+                })
+            return livros
 
 
 def editar_livro(id, data):
-    conn = db_manager.get_connection()
-    cursor = conn.cursor()
-    capa_url = data.get('capa')
-    if capa_url:
-        cursor.execute('UPDATE Livros SET capa_url = ? WHERE id = ?', (capa_url, id))
-    cursor.execute('''
-        UPDATE Livros
-        SET nome = ?, autor = ?, ano_publicacao = ?, descricao = ?, temas = ?, estoque = ?, quantidade_disponivel = ?, categoria = ?, localizacao = ?
-        WHERE id = ?
-    ''', (
-        data.get('titulo'), data.get('autor'), data.get('ano'),
-        data.get('descricao'), data.get('temas'), data.get('estoque'), data.get('disponivel'),
-        data.get('categoria'), data.get('localizacao', ''), id
-    ))
-    conn.commit()
-    conn.close()
-    return {"status": "ok"}
+    with db_manager.connection() as conn:
+        cursor = conn.cursor()
+        capa_url = data.get('capa')
+        if capa_url:
+            cursor.execute('UPDATE Livros SET capa_url = ? WHERE id = ?', (capa_url, id))
+        cursor.execute('''
+            UPDATE Livros
+            SET nome = ?, autor = ?, ano_publicacao = ?, descricao = ?, temas = ?, estoque = ?, quantidade_disponivel = ?, categoria = ?, localizacao = ?
+            WHERE id = ?
+        ''', (
+            data.get('titulo'), data.get('autor'), data.get('ano'),
+            data.get('descricao'), data.get('temas'), data.get('estoque'), data.get('disponivel'),
+            data.get('categoria'), data.get('localizacao', ''), id
+        ))
+        conn.commit()
+        return {"status": "ok"}
 
 
 def excluir_livro(id):
-    conn = db_manager.get_connection()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM Livros WHERE id = ?', (id,))
-    conn.commit()
-    conn.close()
-    return {"status": "ok"}
+    with db_manager.connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM Livros WHERE id = ?', (id,))
+        conn.commit()
+        return {"status": "ok"}

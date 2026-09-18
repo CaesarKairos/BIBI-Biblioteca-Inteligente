@@ -37,7 +37,7 @@ async function buscarLeitoresAutocomplete() {
         suggestionsDiv.style.display = 'none';
         return;
     }
-    const res = await fetch(`/api/leitores/buscar?q=${encodeURIComponent(termo)}`);
+    const res = await apiFetch(`/api/leitores/buscar?q=${encodeURIComponent(termo)}`);
     const leitores = await res.json();
     if (leitores.length === 0) {
         suggestionsDiv.style.display = 'none';
@@ -93,7 +93,7 @@ function formatarSala() {
 
 async function carregarLeitores() {
     if (!isAdminGlobal) return;
-    const res = await fetch('/api/leitores');
+    const res = await apiFetch('/api/leitores');
     todosLeitores = await res.json();
     aplicarFiltroLeitores();
 }
@@ -109,21 +109,29 @@ function aplicarFiltroLeitores() {
 function filtrarLeitores() { aplicarFiltroLeitores(); }
 
 function exibirListaLeitores(leitores) {
-    const div = document.getElementById('lista-leitores');
-    div.innerHTML = '';
+    const container = document.getElementById('lista-leitores');
+    container.replaceChildren();
     leitores.forEach(l => {
         const extra = l.tipo === 'estudante' ? `Sala: ${l.sala} - Período: ${l.periodo}` : `Matéria: ${l.materia}`;
-        const telefoneInfo = l.telefone ? `<br><small>Tel: ${l.telefone}</small>` : '';
-        const item = document.createElement('div');
-        item.className = 'livro-item';
-        let buttons = '';
+        const item = textElement('div', '', 'livro-item');
+        const info = textElement('span', '');
+        info.append(textElement('strong', l.nome), document.createTextNode(` (${l.tipo}) - ${extra}`));
+        if (l.telefone) info.append(document.createElement('br'), textElement('small', `Tel: ${l.telefone}`));
+        const actions = textElement('span', '');
+        actions.style.cssText = 'display:flex; gap:8px;';
         if (isAdminGlobal) {
-            buttons = `<button class="btn-primary btn-small" onclick="editarLeitor(${l.id})">Editar</button><button class="btn-primary btn-small" style="background:#b33;" onclick="excluirLeitor(${l.id})">Excluir</button>`;
+            const edit = textElement('button', 'Editar', 'btn-primary btn-small');
+            edit.onclick = () => editarLeitor(l.id);
+            const remove = textElement('button', 'Excluir', 'btn-primary btn-small');
+            remove.style.background = '#b33';
+            remove.onclick = () => excluirLeitor(l.id);
+            actions.append(edit, remove);
         }
-        item.innerHTML = `<span><strong>${l.nome}</strong> (${l.tipo}) - ${extra}${telefoneInfo}</span><span style="display:flex; gap:8px;">${buttons}</span>`;
-        div.appendChild(item);
+        item.append(info, actions);
+        container.appendChild(item);
     });
 }
+
 
 
 function toggleLeitorTipo() {
@@ -158,58 +166,60 @@ function editarLeitor(id) {
 
 
 async function salvarLeitor() {
-    if (!isAdminGlobal) return;
-    const id = document.getElementById('leitor-id').value;
-    const tipo = document.getElementById('leitor-tipo').value;
-    let payload = {tipo};
-    if(tipo === 'estudante') {
-        payload.nome = document.getElementById('leitor-nome').value;
-        payload.sala = document.getElementById('leitor-sala').value;
-        payload.periodo = document.getElementById('leitor-periodo').value;
-        payload.email = document.getElementById('leitor-email').value;
-        payload.telefone = document.getElementById('leitor-telefone').value;
-        if(!payload.nome || !payload.sala || !payload.periodo) return showToast("Preencha todos os campos.", "warning");
-    } else {
-        payload.nome = document.getElementById('leitor-nome-prof').value;
-        payload.materia = document.getElementById('leitor-materia').value;
-        payload.email = document.getElementById('leitor-email-prof').value;
-        if(!payload.nome || !payload.materia) return showToast("Preencha todos os campos.", "warning");
-    }
-    const url = id ? `/api/leitores/${id}` : '/api/leitores';
-    const method = id ? 'PUT' : 'POST';
-    const res = await fetch(url, {
-        method: method,
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
+    return runAction('salvarLeitor', 'btn-salvar-leitor', async () => {
+        if (!isAdminGlobal) return;
+        const id = document.getElementById('leitor-id').value;
+        const tipo = document.getElementById('leitor-tipo').value;
+        let payload = {tipo};
+        if(tipo === 'estudante') {
+            payload.nome = document.getElementById('leitor-nome').value;
+            payload.sala = document.getElementById('leitor-sala').value;
+            payload.periodo = document.getElementById('leitor-periodo').value;
+            payload.email = document.getElementById('leitor-email').value;
+            payload.telefone = document.getElementById('leitor-telefone').value;
+            if(!payload.nome || !payload.sala || !payload.periodo) return showToast("Preencha todos os campos.", "warning");
+        } else {
+            payload.nome = document.getElementById('leitor-nome-prof').value;
+            payload.materia = document.getElementById('leitor-materia').value;
+            payload.email = document.getElementById('leitor-email-prof').value;
+            if(!payload.nome || !payload.materia) return showToast("Preencha todos os campos.", "warning");
+        }
+        const url = id ? `/api/leitores/${id}` : '/api/leitores';
+        const method = id ? 'PUT' : 'POST';
+        const res = await apiFetch(url, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        if(res.ok) {
+            showToast(id ? "Leitor atualizado!" : "Leitor cadastrado!", "success");
+            document.getElementById('leitor-id').value = '';
+            document.getElementById('leitor-nome').value = '';
+            document.getElementById('leitor-sala').value = '';
+            document.getElementById('leitor-periodo').value = '';
+            document.getElementById('leitor-email').value = '';
+            document.getElementById('leitor-nome-prof').value = '';
+            document.getElementById('leitor-materia').value = '';
+            document.getElementById('leitor-email-prof').value = '';
+            document.getElementById('leitor-telefone').value = '';
+            tipoLeitorModalSelect.setValue('estudante');
+            document.getElementById('leitor-aluno').style.display = 'block';
+            document.getElementById('leitor-prof').style.display = 'none';
+            closeModal('modalLeitor');
+            carregarLeitores();
+            document.getElementById('leitor-id').value = '';
+            document.getElementById('leitor-titulo').innerText = 'Novo Leitor';
+        } else {
+            showToast("Erro ao salvar leitor", "error");
+        }
     });
-    if(res.ok) {
-        showToast(id ? "Leitor atualizado!" : "Leitor cadastrado!", "success");
-        document.getElementById('leitor-id').value = '';
-        document.getElementById('leitor-nome').value = '';
-        document.getElementById('leitor-sala').value = '';
-        document.getElementById('leitor-periodo').value = '';
-        document.getElementById('leitor-email').value = '';
-        document.getElementById('leitor-nome-prof').value = '';
-        document.getElementById('leitor-materia').value = '';
-        document.getElementById('leitor-email-prof').value = '';
-        document.getElementById('leitor-telefone').value = '';
-        tipoLeitorModalSelect.setValue('estudante');
-        document.getElementById('leitor-aluno').style.display = 'block';
-        document.getElementById('leitor-prof').style.display = 'none';
-        closeModal('modalLeitor');
-        carregarLeitores();
-        document.getElementById('leitor-id').value = '';
-        document.getElementById('leitor-titulo').innerText = 'Novo Leitor';
-    } else {
-        showToast("Erro ao salvar leitor", "error");
-    }
 }
 
 
 async function excluirLeitor(id) {
     if (!isAdminGlobal) return;
     confirmAction("Excluir Leitor", "Tem certeza que deseja excluir este leitor?", async () => {
-        await fetch(`/api/leitores/${id}`, {method: 'DELETE'});
+        await apiFetch(`/api/leitores/${id}`, {method: 'DELETE'});
         showToast("Leitor excluído.", "success");
         carregarLeitores();
     });

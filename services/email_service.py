@@ -1,4 +1,4 @@
-from config import BASE_DIR, TEMPLATE_DIR
+from config import STATIC_DIR, TEMPLATE_DIR
 from jinja2 import Environment, FileSystemLoader
 from database.database import db_manager
 from datetime import datetime
@@ -13,13 +13,17 @@ import os
 import smtplib
 import threading
 import time
+import logging
+
+logger = logging.getLogger(__name__)
+_notification_lock = threading.Lock()
 
 
 # Email rendering must also work in background threads, without Flask context.
-# autoescape=False preserves the exact interpolation of the original messages.
+# Escape user data while keeping the original email layout.
 EMAIL_TEMPLATES = Environment(
     loader=FileSystemLoader(os.path.join(TEMPLATE_DIR, 'emails')),
-    autoescape=False,
+    autoescape=True,
     keep_trailing_newline=True,
 )
 
@@ -37,12 +41,12 @@ def anexar_capa_livro(msg, cover_url, cid_name='capa_livro'):
 
 def enviar_email_confirmacao(destinatario, nome_usuario, titulo_livro, data_devolucao, capa_url=None):
     if is_email_blocked():
-        print("E-mail bloqueado pelas configurações.")
+        logger.info("Envio de e-mail concluído ou indisponível conforme configuração")
         return False
     try:
         EMAIL_USER, EMAIL_PASSWORD = get_email_credenciais()
         if not EMAIL_USER or not EMAIL_PASSWORD:
-            print("Credenciais de e-mail não configuradas.")
+            logger.info("Envio de e-mail concluído ou indisponível conforme configuração")
             return False
         msg = MIMEMultipart("related")
         msg["Subject"] = "Empréstimo Confirmado - Biblioteca BIBI"
@@ -62,34 +66,33 @@ def enviar_email_confirmacao(destinatario, nome_usuario, titulo_livro, data_devo
         )
         msg_alternative.attach(MIMEText(html, "html"))
 
-        logo_path = os.path.join(BASE_DIR, "static", "images", "icon.png")
+        logo_path = os.path.join(STATIC_DIR, "images", "icon.png")
         if os.path.exists(logo_path):
             with open(logo_path, "rb") as img_file:
                 img = MIMEImage(img_file.read())
                 img.add_header("Content-ID", "<logo_bibi>")
                 msg.attach(img)
 
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(EMAIL_USER, EMAIL_PASSWORD)
-        server.send_message(msg)
-        server.quit()
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as server:
+            server.starttls()
+            server.login(EMAIL_USER, EMAIL_PASSWORD)
+            server.send_message(msg)
 
-        print(f"E-mail de confirmação enviado para {destinatario}")
+        logger.info("Envio de e-mail concluído ou indisponível conforme configuração")
         return True
     except Exception as e:
-        print(f"Erro ao enviar e-mail de confirmação: {e}")
+        logger.exception("Falha no envio de e-mail")
         return False
 
 
 def enviar_email_renovacao(destinatario, nome_usuario, titulo_livro, nova_data_devolucao, capa_url=None):
     if is_email_blocked():
-        print("E-mail bloqueado pelas configurações.")
+        logger.info("Envio de e-mail concluído ou indisponível conforme configuração")
         return False
     try:
         EMAIL_USER, EMAIL_PASSWORD = get_email_credenciais()
         if not EMAIL_USER or not EMAIL_PASSWORD:
-            print("Credenciais de e-mail não configuradas.")
+            logger.info("Envio de e-mail concluído ou indisponível conforme configuração")
             return False
         msg = MIMEMultipart("related")
         msg["Subject"] = "Renovação Confirmada - Biblioteca BIBI"
@@ -109,34 +112,33 @@ def enviar_email_renovacao(destinatario, nome_usuario, titulo_livro, nova_data_d
         )
         msg_alternative.attach(MIMEText(html, "html"))
 
-        logo_path = os.path.join(BASE_DIR, "static", "images", "icon.png")
+        logo_path = os.path.join(STATIC_DIR, "images", "icon.png")
         if os.path.exists(logo_path):
             with open(logo_path, "rb") as img_file:
                 img = MIMEImage(img_file.read())
                 img.add_header("Content-ID", "<logo_bibi>")
                 msg.attach(img)
 
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(EMAIL_USER, EMAIL_PASSWORD)
-        server.send_message(msg)
-        server.quit()
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as server:
+            server.starttls()
+            server.login(EMAIL_USER, EMAIL_PASSWORD)
+            server.send_message(msg)
 
-        print(f"E-mail de renovação enviado para {destinatario}")
+        logger.info("Envio de e-mail concluído ou indisponível conforme configuração")
         return True
     except Exception as e:
-        print(f"Erro ao enviar e-mail de renovação: {e}")
+        logger.exception("Falha no envio de e-mail")
         return False
 
 
 def enviar_email_devolucao(destinatario, nome_usuario, titulo_livro, data_devolucao_real, capa_url=None):
     if is_email_blocked():
-        print("E-mail bloqueado pelas configurações.")
+        logger.info("Envio de e-mail concluído ou indisponível conforme configuração")
         return False
     try:
         EMAIL_USER, EMAIL_PASSWORD = get_email_credenciais()
         if not EMAIL_USER or not EMAIL_PASSWORD:
-            print("Credenciais de e-mail não configuradas.")
+            logger.info("Envio de e-mail concluído ou indisponível conforme configuração")
             return False
         msg = MIMEMultipart("related")
         msg["Subject"] = "Devolução Confirmada - Biblioteca BIBI"
@@ -156,34 +158,33 @@ def enviar_email_devolucao(destinatario, nome_usuario, titulo_livro, data_devolu
         )
         msg_alternative.attach(MIMEText(html, "html"))
 
-        logo_path = os.path.join(BASE_DIR, "static", "images", "icon.png")
+        logo_path = os.path.join(STATIC_DIR, "images", "icon.png")
         if os.path.exists(logo_path):
             with open(logo_path, "rb") as img_file:
                 img = MIMEImage(img_file.read())
                 img.add_header("Content-ID", "<logo_bibi>")
                 msg.attach(img)
 
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(EMAIL_USER, EMAIL_PASSWORD)
-        server.send_message(msg)
-        server.quit()
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as server:
+            server.starttls()
+            server.login(EMAIL_USER, EMAIL_PASSWORD)
+            server.send_message(msg)
 
-        print(f"E-mail de devolução enviado para {destinatario}")
+        logger.info("Envio de e-mail concluído ou indisponível conforme configuração")
         return True
     except Exception as e:
-        print(f"Erro ao enviar e-mail de devolução: {e}")
+        logger.exception("Falha no envio de e-mail")
         return False
 
 
 def enviar_email_notificacao(destinatario, nome_usuario, titulo_livro, data_devolucao, dias_faltantes, capa_url=None):
     if is_email_blocked():
-        print("E-mail bloqueado pelas configurações.")
+        logger.info("Envio de e-mail concluído ou indisponível conforme configuração")
         return False
     try:
         EMAIL_USER, EMAIL_PASSWORD = get_email_credenciais()
         if not EMAIL_USER or not EMAIL_PASSWORD:
-            print("Credenciais de e-mail não configuradas.")
+            logger.info("Envio de e-mail concluído ou indisponível conforme configuração")
             return False
         msg = MIMEMultipart("related")
         msg["Subject"] = "Lembrete de Devolução - Biblioteca BIBI"
@@ -208,72 +209,71 @@ def enviar_email_notificacao(destinatario, nome_usuario, titulo_livro, data_devo
         )
         msg_alternative.attach(MIMEText(html, "html"))
 
-        logo_path = os.path.join(BASE_DIR, "static", "images", "icon.png")
+        logo_path = os.path.join(STATIC_DIR, "images", "icon.png")
         if os.path.exists(logo_path):
             with open(logo_path, "rb") as img_file:
                 img = MIMEImage(img_file.read())
                 img.add_header("Content-ID", "<logo_bibi>")
                 msg.attach(img)
 
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(EMAIL_USER, EMAIL_PASSWORD)
-        server.send_message(msg)
-        server.quit()
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as server:
+            server.starttls()
+            server.login(EMAIL_USER, EMAIL_PASSWORD)
+            server.send_message(msg)
 
-        print(f"E-mail enviado para {destinatario} ({dias_faltantes} dias)")
+        logger.info("Envio de e-mail concluído ou indisponível conforme configuração")
         return True
     except Exception as e:
-        print(f"Erro ao enviar e-mail: {e}")
+        logger.exception("Falha no envio de e-mail")
         return False
 
 
+def atualizar_atrasos():
+    with db_manager.connection() as conn:
+        conn.execute("UPDATE Emprestimo SET status = 'Atrasado' WHERE status = 'Aprovado' AND data_devolucao IS NULL AND date(data_vencimento) < ?", (get_brasilia_today().isoformat(),))
+        conn.commit()
+
+
 def verificar_e_enviar_notificacoes():
-    if is_email_blocked():
+    if not _notification_lock.acquire(blocking=False):
         return
-    conn = db_manager.get_connection()
-    cursor = conn.cursor()
-    hoje = get_brasilia_today()
-
-    cursor.execute('''
-        UPDATE Emprestimo 
-        SET status = 'Atrasado' 
-        WHERE status = 'Aprovado' AND date(data_vencimento) < ?
-    ''', (hoje.isoformat(),))
-    conn.commit()
-
-    cursor.execute('''
-        SELECT e.id, e.data_vencimento, e.notificacao_3dias, e.notificacao_hoje,
-               u.nome, u.email, l.nome as livro_titulo, l.capa_url
-        FROM Emprestimo e
-        JOIN Usuarios u ON e.usuarios_id = u.id
-        JOIN Livros l ON e.livros_id = l.id
-        WHERE e.status IN ('Aprovado', 'Atrasado') AND e.data_devolucao IS NULL
-    ''')
-    emprestimos = cursor.fetchall()
-
-    for emp in emprestimos:
-        emp_id, data_venc_str, notif_3, notif_hoje, nome_user, email_user, livro_titulo, capa_url = emp
-        data_venc = datetime.strptime(data_venc_str, "%Y-%m-%d").date()
-        dias_restantes = (data_venc - hoje).days
-
-        if dias_restantes == 3 and not notif_3:
-            threading.Thread(target=enviar_email_notificacao, args=(email_user, nome_user, livro_titulo, data_venc.strftime("%d/%m/%Y"), 3, capa_url)).start()
-            cursor.execute('UPDATE Emprestimo SET notificacao_3dias = 1 WHERE id = ?', (emp_id,))
-            conn.commit()
-        elif dias_restantes == 0 and not notif_hoje:
-            threading.Thread(target=enviar_email_notificacao, args=(email_user, nome_user, livro_titulo, data_venc.strftime("%d/%m/%Y"), 0, capa_url)).start()
-            cursor.execute('UPDATE Emprestimo SET notificacao_hoje = 1 WHERE id = ?', (emp_id,))
-            conn.commit()
-
-    conn.close()
+    try:
+        atualizar_atrasos()
+        if is_email_blocked():
+            return
+        hoje = get_brasilia_today()
+        with db_manager.connection() as conn:
+            emprestimos = conn.execute("""
+                SELECT e.id, e.data_vencimento, e.notificacao_3dias, e.notificacao_hoje,
+                       u.nome, u.email, l.nome, l.capa_url
+                FROM Emprestimo e
+                JOIN Usuarios u ON e.usuarios_id = u.id
+                JOIN Livros l ON e.livros_id = l.id
+                WHERE e.status IN ('Aprovado', 'Atrasado') AND e.data_devolucao IS NULL
+            """).fetchall()
+        for emp_id, vencimento, notif_3, notif_hoje, nome, email, titulo, capa in emprestimos:
+            try:
+                data_venc = datetime.strptime(vencimento, '%Y-%m-%d').date()
+                dias = (data_venc - hoje).days
+                flag = 'notificacao_3dias' if dias == 3 and not notif_3 else 'notificacao_hoje' if dias == 0 and not notif_hoje else None
+                if flag and enviar_email_notificacao(email, nome, titulo, data_venc.strftime('%d/%m/%Y'), dias, capa):
+                    with db_manager.connection() as conn:
+                        conn.execute(f"UPDATE Emprestimo SET {flag} = 1 WHERE id = ? AND data_vencimento = ? AND data_devolucao IS NULL AND status IN ('Aprovado', 'Atrasado')", (emp_id, vencimento))
+                        conn.commit()
+            except Exception:
+                logger.exception('Falha ao processar notificação do empréstimo %s', emp_id)
+    finally:
+        _notification_lock.release()
 
 
 def iniciar_verificacao_notificacoes(app):
     def _executar_periodicamente():
         while True:
-            with app.app_context():
-                verificar_e_enviar_notificacoes()
+            try:
+                with app.app_context():
+                    verificar_e_enviar_notificacoes()
+            except Exception:
+                logger.exception('Falha na verificação periódica de notificações')
             time.sleep(1800)
 
     thread = threading.Thread(target=_executar_periodicamente, daemon=True)

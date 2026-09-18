@@ -1,5 +1,6 @@
 """Inicializacao e orquestracao da Biblioteca Inteligente."""
 import os
+import logging
 import threading
 import time
 import webview
@@ -11,7 +12,7 @@ initialize_directories()
 db_manager = initialize_database()
 
 # Os services sao importados somente depois da inicializacao do banco.
-from routes import register_blueprints
+from routes import register_blueprints, register_error_handlers
 from services.email_service import iniciar_verificacao_notificacoes
 
 app = Flask(__name__, static_folder=STATIC_DIR, template_folder=TEMPLATE_DIR)
@@ -19,6 +20,8 @@ app.secret_key = os.getenv('SECRET_KEY', 'sua-chave-secreta-padrao')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 register_blueprints(app)
+register_error_handlers(app)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
 if __name__ == '__main__':
 

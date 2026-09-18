@@ -69,7 +69,7 @@ class CustomSelect {
         const selectedDiv = document.createElement('div');
         selectedDiv.className = 'select-selected';
         const selectedOption = this.options.find(opt => opt.value == this.selectedValue) || this.options[0];
-        selectedDiv.innerHTML = `<span>${selectedOption ? selectedOption.text : ''}</span>`;
+        selectedDiv.appendChild(textElement('span', selectedOption ? selectedOption.text : ''));
         this.container.appendChild(selectedDiv);
 
         const itemsDiv = document.createElement('div');
@@ -255,4 +255,60 @@ function tab(id) {
             carregarEmprestimosAtivos();
         }
     }
+}
+
+
+class ApiError extends Error {}
+
+async function apiFetch(url, options) {
+    try {
+        const response = await window.fetch(url, options);
+        let payload;
+        try { payload = await response.clone().json(); }
+        catch { throw new ApiError('O servidor retornou uma resposta inválida. Tente novamente.'); }
+        if (!response.ok) throw new ApiError(payload.erro || 'Não foi possível concluir a operação.');
+        return response;
+    } catch (error) {
+        const failure = error instanceof ApiError ? error : new ApiError('Não foi possível conectar ao servidor. Verifique a conexão e tente novamente.');
+        showToast(failure.message, 'error');
+        throw failure;
+    }
+}
+
+// Esperas de eventos do DOM não consomem promises. Erros HTTP já têm feedback.
+window.addEventListener('unhandledrejection', event => {
+    if (event.reason instanceof ApiError) event.preventDefault();
+});
+
+const pendingActions = new Set();
+async function runAction(key, buttonId, action) {
+    if (pendingActions.has(key)) return false;
+    pendingActions.add(key);
+    const button = buttonId.startsWith('#') ? document.querySelector(buttonId) : document.getElementById(buttonId);
+    const disabled = button?.disabled;
+    if (button) button.disabled = true;
+    try {
+        return await action();
+    } catch (error) {
+        if (!(error instanceof ApiError)) {
+            console.error('Falha na operação', error);
+            showToast('Não foi possível concluir a operação. Tente novamente.', 'error');
+        }
+        return false;
+    } finally {
+        pendingActions.delete(key);
+        if (button) button.disabled = disabled;
+    }
+}
+
+function textElement(tag, value, className = '') {
+    const element = document.createElement(tag);
+    element.textContent = value ?? '';
+    if (className) element.className = className;
+    return element;
+}
+
+function coverBackground(element, value) {
+    const url = String(value || '/static/images/placeholder.png');
+    element.style.backgroundImage = 'url(' + JSON.stringify(url) + ')';
 }

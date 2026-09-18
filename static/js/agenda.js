@@ -4,27 +4,31 @@ async function carregarAgenda() {
     periodoAtual = document.getElementById('agenda-periodo').value;
     let url = '/api/agendamentos?periodo=' + encodeURIComponent(periodoAtual);
     if (dataSelecionada) url += '&data=' + encodeURIComponent(dataSelecionada);
-    const res = await fetch(url);
+    const res = await apiFetch(url);
     const agendamentos = await res.json();
     const tabela = document.getElementById('tabela-agenda');
     tabela.innerHTML = '';
     const config = carregarConfig();
     const mostrarColunaAula = config.mostrarColunaAula;
     const qtdAulas = configAgenda.aulas;
-    let html = '<thead><tr>';
-    if (mostrarColunaAula) html += '<th>Aula</th>';
-    html += '<th>Agendamento</th></tr></thead><tbody>';
-    for(let aula=1; aula<=qtdAulas; aula++) {
+    const head = document.createElement('thead');
+    const header = document.createElement('tr');
+    if (mostrarColunaAula) header.appendChild(textElement('th', 'Aula'));
+    header.appendChild(textElement('th', 'Agendamento'));
+    head.appendChild(header);
+    const body = document.createElement('tbody');
+    for (let aula = 1; aula <= qtdAulas; aula++) {
         const ag = agendamentos.find(a => a.aula === aula);
-        const texto = ag ? `${ag.professor} - ${ag.materia}` : '-';
-        const classe = ag ? 'ocupado' : '';
-        const dataId = ag ? ag.id : '';
-        html += '<tr>';
-        if (mostrarColunaAula) html += `<td>${aula}ª Aula</td>`;
-        html += `<td class="${classe}" data-id="${dataId}" data-professor="${ag ? ag.professor : ''}" data-materia="${ag ? ag.materia : ''}" data-uso="${ag ? ag.uso : ''}" data-aula="${aula}" onclick="celulaAgendaClick(this)">${texto}</td>`;
-        html += '</tr>';
+        const row = document.createElement('tr');
+        if (mostrarColunaAula) row.appendChild(textElement('td', `${aula}ª Aula`));
+        const cell = textElement('td', ag ? `${ag.professor} - ${ag.materia}` : '-');
+        cell.className = ag ? 'ocupado' : '';
+        Object.assign(cell.dataset, {id: ag?.id ?? '', professor: ag?.professor ?? '', materia: ag?.materia ?? '', uso: ag?.uso ?? '', aula});
+        cell.onclick = () => celulaAgendaClick(cell);
+        row.appendChild(cell);
+        body.appendChild(row);
     }
-    tabela.innerHTML = html;
+    tabela.replaceChildren(head, body);
     carregarProximosAgendamentos();
     carregarAgendamentosPassados();
 }
@@ -48,7 +52,7 @@ function celulaAgendaClick(cell) {
         document.getElementById('detalhe-uso').innerText = uso;
         const btnExcluir = document.getElementById('btn-excluir-agendamento-detalhes');
         if (isAdminGlobal) {
-            fetch('/api/config/bloquear_excluir_agendamento/status')
+            apiFetch('/api/config/bloquear_excluir_agendamento/status')
                 .then(res => res.json())
                 .then(data => {
                     if (data.ativo) btnExcluir.style.display = 'none';
@@ -83,7 +87,7 @@ async function excluirAgendamentoDetalhes() {
     if (!isAdminGlobal) return;
     if (!agendamentoDetalhesId) return;
     confirmAction("Excluir Agendamento", "Tem certeza que deseja excluir este agendamento?", async () => {
-        const res = await fetch(`/api/agendamentos/${agendamentoDetalhesId}`, {method: 'DELETE'});
+        const res = await apiFetch(`/api/agendamentos/${agendamentoDetalhesId}`, {method: 'DELETE'});
         if (res.ok) {
             showToast("Agendamento excluído.", "success");
             closeModal('modalDetalhesAgendamento');
@@ -98,7 +102,7 @@ async function excluirAgendamentoDetalhes() {
 
 async function verificarExigirSenhaAgendamento(callback) {
     if (!isAdminGlobal) { callback(); return; }
-    const res = await fetch('/api/config/exigir_senha_agendamento/status');
+    const res = await apiFetch('/api/config/exigir_senha_agendamento/status');
     const data = await res.json();
     if (!data.ativo) { callback(); return; }
     const modal = document.getElementById('modalSenhaConfig');
@@ -110,7 +114,7 @@ async function verificarExigirSenhaAgendamento(callback) {
     const originalOnclick = btnOk.onclick;
     btnOk.onclick = async () => {
         const senha = document.getElementById('senha-input').value;
-        const resCheck = await fetch('/api/config/senha/verificar', {
+        const resCheck = await apiFetch('/api/config/senha/verificar', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({senha})
@@ -166,7 +170,7 @@ function navegarParaAgendamento(ag) {
 
 
 async function carregarProximosAgendamentos() {
-    const res = await fetch('/api/agendamentos/datas-com-agendamentos');
+    const res = await apiFetch('/api/agendamentos/datas-com-agendamentos');
     const proximos = await res.json();
     const container = document.getElementById('lista-proximos');
     container.innerHTML = '';
@@ -187,7 +191,7 @@ async function carregarProximosAgendamentos() {
 
 
 async function carregarAgendamentosPassados() {
-    const res = await fetch('/api/agendamentos/passados');
+    const res = await apiFetch('/api/agendamentos/passados');
     const datas = await res.json();
     const container = document.getElementById('lista-passados');
     container.innerHTML = '';
@@ -218,37 +222,39 @@ function limparFormAgenda() {
 
 
 async function salvarAgendamento() {
-    if (!isAdminGlobal) return;
-    const prof = document.getElementById('agenda-prof').value;
-    const mat = document.getElementById('agenda-mat').value;
-    const uso = document.getElementById('agenda-uso').value;
-    if(!prof || !mat || !uso) return showToast("Preencha todos os campos.", "warning");
-    const dia = parseInt(document.getElementById('agenda-dia').value);
-    const aula = parseInt(document.getElementById('agenda-aula').value);
-    const periodo = document.getElementById('agenda-periodo-modal').value;
-    const data = document.getElementById('agenda-data-modal').value;
-    let payload = {data, periodo, dia, aula, professor: prof, materia: mat, uso};
-    if (window.senhaAgendamentoGlobal) {
-        payload.senha = window.senhaAgendamentoGlobal;
-        window.senhaAgendamentoGlobal = null;
-    }
-    const res = await fetch('/api/agendamentos', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
+    return runAction('salvarAgendamento', 'btn-agendar', async () => {
+        if (!isAdminGlobal) return;
+        const prof = document.getElementById('agenda-prof').value;
+        const mat = document.getElementById('agenda-mat').value;
+        const uso = document.getElementById('agenda-uso').value;
+        if(!prof || !mat || !uso) return showToast("Preencha todos os campos.", "warning");
+        const dia = parseInt(document.getElementById('agenda-dia').value);
+        const aula = parseInt(document.getElementById('agenda-aula').value);
+        const periodo = document.getElementById('agenda-periodo-modal').value;
+        const data = document.getElementById('agenda-data-modal').value;
+        let payload = {data, periodo, dia, aula, professor: prof, materia: mat, uso};
+        if (window.senhaAgendamentoGlobal) {
+            payload.senha = window.senhaAgendamentoGlobal;
+            window.senhaAgendamentoGlobal = null;
+        }
+        const res = await apiFetch('/api/agendamentos', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        if (res.status === 400) {
+            const err = await res.json();
+            showToast(err.erro || "Erro ao agendar.", "error");
+            return;
+        }
+        if (res.ok) {
+            showToast("Agendamento salvo!", "success");
+            closeModal('modalAgendamento');
+            carregarAgenda();
+        } else {
+            showToast("Erro ao agendar.", "error");
+        }
     });
-    if (res.status === 400) {
-        const err = await res.json();
-        showToast(err.erro || "Erro ao agendar.", "error");
-        return;
-    }
-    if (res.ok) {
-        showToast("Agendamento salvo!", "success");
-        closeModal('modalAgendamento');
-        carregarAgenda();
-    } else {
-        showToast("Erro ao agendar.", "error");
-    }
 }
 
 
@@ -256,7 +262,7 @@ async function excluirAgendamentoAtual() {
     if (!isAdminGlobal) return;
     if(!agendamentoAtualId) return;
     confirmAction("Excluir Agendamento", "Tem certeza que deseja excluir este agendamento?", async () => {
-        const res = await fetch(`/api/agendamentos/${agendamentoAtualId}`, {method: 'DELETE'});
+        const res = await apiFetch(`/api/agendamentos/${agendamentoAtualId}`, {method: 'DELETE'});
         if (res.ok) {
             showToast("Agendamento excluído.", "success");
             closeModal('modalAgendamento');

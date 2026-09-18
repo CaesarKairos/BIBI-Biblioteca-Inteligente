@@ -5,10 +5,14 @@ let quantidadeAulasGlobal = Number(document.body.dataset.quantidadeAulas);
 
 let confirmCallback = null;
 
-document.getElementById('confirm-btn-sim').addEventListener('click', () => {
-    if (confirmCallback) confirmCallback();
-    closeModal('modalConfirmacao');
-    confirmCallback = null;
+document.getElementById('confirm-btn-sim').addEventListener('click', async () => {
+    const callback = confirmCallback;
+    if (!callback) return;
+    const result = await runAction('confirmation', 'confirm-btn-sim', callback);
+    if (result !== false) {
+        closeModal('modalConfirmacao');
+        confirmCallback = null;
+    }
 });
 
 const CONFIG_STORAGE_KEY = 'bibiConfig';
@@ -86,5 +90,5 @@ window.onload = () => {
     setupDragAndDrop('manual-capa-preview', 'manual-capa-url');
     setupDragAndDrop('edit-capa-preview', 'edit-capa-url');
     verificarObrigarLocalizacao();
-    setInterval(async () => { if (isAdminGlobal) await fetch('/api/emprestimos/ativos'); }, 30 * 60 * 1000);
+    setInterval(async () => { if (isAdminGlobal) await apiFetch('/api/emprestimos/ativos'); }, 30 * 60 * 1000);
 };

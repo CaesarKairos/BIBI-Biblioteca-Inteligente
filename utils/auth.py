@@ -22,12 +22,11 @@ def admin_required(f):
 def verificar_senha_admin(senha):
     if not senha:
         return False
-    conn = db_manager.get_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT valor FROM Configuracoes WHERE chave='senha_hash'")
-    row = cursor.fetchone()
-    conn.close()
-    if not row:
-        return False
-    senha_hash = hashlib.sha256(senha.encode()).hexdigest()
-    return senha_hash == row[0]
+    with db_manager.connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT valor FROM Configuracoes WHERE chave='senha_hash'")
+        row = cursor.fetchone()
+        if not row:
+            return False
+        senha_hash = hashlib.sha256(senha.encode()).hexdigest()
+        return senha_hash == row[0]

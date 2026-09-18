@@ -11,12 +11,7 @@ bp = Blueprint('emprestimos', __name__)
 @bp.route('/api/emprestimos', methods=['POST'])
 @admin_required
 def realizar_emprestimo():
-    try:
-        data = request.json
-    except Exception as e:
-        print(f"Erro detalhado no empréstimo: {e}")
-        return json_response(({"erro": f"Falha no servidor: {str(e)}"}, 500))
-    return json_response(emprestimos_service.realizar_emprestimo(data=data))
+    return json_response(emprestimos_service.realizar_emprestimo(data=request.json))
 
 
 @bp.route('/api/emprestimos/ativos/count', methods=['GET'])

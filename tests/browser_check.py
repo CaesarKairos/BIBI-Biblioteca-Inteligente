@@ -98,11 +98,74 @@ with sync_playwright() as playwright:
             variants.append((views,errors)); results.append({'version':name,'admin':admin,'views':len(views),'errors':errors})
             context.close()
         left,right=variants
-        assert left[1]==right[1],('New browser errors',left[1],right[1])
+        assert right[1]==[], ('Unexpected browser errors', right[1])
+        if admin: assert left[1]==[], ('Baseline admin errors',left[1])
         for view in left[0]:
             if left[0][view]!=right[0][view]:
                 pairs=[(i,a,b) for i,(a,b) in enumerate(zip(left[0][view],right[0][view])) if a!=b]
                 raise AssertionError((admin,view,'DOM/style difference',pairs[:4],len(left[0][view]),len(right[0][view])))
+    # Dedicated behavior checks for corrected flows, independent of the baseline.
+    admin=True; module=modular
+    context=browser.new_context(viewport={'width':1200,'height':700},locale='pt-BR',timezone_id='America/Sao_Paulo')
+    page=context.new_page(); failures=[]
+    page.on('pageerror',lambda error: failures.append(str(error)))
+    page.route('**/*',external); page.route('http://bibi.test/**',serve)
+    page.goto('http://bibi.test/app'); settle()
+    page.evaluate("tab('acervo'); openModalManual()")
+    page.locator('#manual-titulo').fill('Retry book')
+    page.locator('#manual-autor').fill('Autora')
+    page.locator('#manual-qtd').fill('1')
+    attempts=[]
+    def fail_post(route):
+        if route.request.method=='POST':
+            attempts.append(route.request.url); route.abort('failed')
+        else: route.fallback()
+    page.route('**/api/livros',fail_post)
+    page.evaluate('async () => { await Promise.all([salvarLivroManual(), salvarLivroManual()]); }')
+    assert len(attempts)==1, attempts
+    assert not page.locator('#btn-salvar-manual').is_disabled()
+    assert page.locator('#manual-titulo').input_value()=='Retry book'
+    assert page.locator('#modalManualLivro').evaluate("e => e.style.display")=='flex'
+    assert page.locator('.toast.error').count()>=1
+    assert page.locator('.toast.success').count()==0
+    page.unroute('**/api/livros',fail_post)
+    page.locator('#btn-salvar-manual').click(); settle()
+    assert page.locator('#modalManualLivro').evaluate("e => e.style.display")=='none'
+    assert page.locator('.toast.success').count()>=1
+    page.evaluate("document.querySelectorAll('.toast').forEach(e => e.remove())")
+    def reject_delete(route): route.fulfill(status=409,json={'erro':'Conflito de teste'})
+    page.route('**/api/leitores/99',reject_delete)
+    page.evaluate('excluirLeitor(99)')
+    page.locator('#confirm-btn-sim').click(); settle()
+    assert page.locator('#modalConfirmacao').evaluate("e => e.style.display")=='flex'
+    assert not page.locator('#confirm-btn-sim').is_disabled()
+    assert page.locator('.toast.success').count()==0
+    assert 'Conflito de teste' in page.locator('.toast.error').last.inner_text()
+    page.evaluate("closeModal('modalConfirmacao')")
+    danger='<img src=x onerror="window.__injected=true">'
+    page.evaluate("""danger => {
+        window.__injected=false;
+        exibirListaLeitores([{id:99,nome:danger,tipo:'estudante',sala:danger,periodo:danger,telefone:danger}]);
+        verDetalhes({id:1,titulo:danger,autor:danger,temas:danger,descricao:danger,disponivel:1});
+    }""",danger)
+    assert page.locator('#lista-leitores img').count()==0
+    assert page.locator('#det-temas img').count()==0
+    assert danger in page.locator('#lista-leitores').inner_text()
+    def loan_data(route): route.fulfill(json=[{'id':1,'livro':danger,'leitor':danger,'telefone':danger,'serie':danger,'capa':"x'); color:red; /*"}])
+    def agenda_data(route): route.fulfill(json=[{'id':1,'aula':1,'professor':danger,'materia':danger,'uso':danger}])
+    def ranking_data(route): route.fulfill(json=[{'nome':danger,'tipo':'estudante','sala':danger,'total':1}])
+    def top_data(route): route.fulfill(json=[{'id':1,'titulo':danger,'autor':danger,'capa':danger,'total_emprestimos':1}])
+    page.route('**/api/emprestimos/todos',loan_data)
+    page.route('**/api/agendamentos?*',agenda_data)
+    page.route('**/api/emprestimos/ranking-leitores',ranking_data)
+    page.route('**/api/emprestimos/mais-emprestados',top_data)
+    page.evaluate("async () => { await filtrarEmprestimos('todos'); await carregarAgenda(); await carregarRankingLeitores(); await carregarTopLivros(); }")
+    assert page.locator('#lista-ativos img, #tabela-agenda img, #ranking-leitores img, #top-livros img').count()==0
+    assert not page.evaluate('window.__injected')
+    assert page.locator('#tabela-agenda td.ocupado').get_attribute('data-professor')==danger
+    assert failures==[], failures
+    context.close()
     browser.close()
+    print('Corrected UI: public access, retry, duplicate submit guard, HTTP failure and safe text passed.')
 print(json.dumps(results,ensure_ascii=False,indent=2))
 print('Browser parity passed: DOM, computed styles, layout, navigation, theme and forms.')
