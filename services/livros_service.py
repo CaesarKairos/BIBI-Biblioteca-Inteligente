@@ -1,0 +1,327 @@
+from database.database import db_manager
+from services.configuracoes_service import is_obrigar_localizacao_livro
+from utils.datetime import get_brasilia_today
+import re
+import requests
+import uuid
+
+
+def buscar_open_library(isbn):
+    """API #1 - Open Library"""
+    try:
+        url = f"https://openlibrary.org/api/books?bibkeys=ISBN:{isbn}&format=json&jscmd=data"
+        r = requests.get(url, timeout=10)
+        if r.status_code == 200:
+            data = r.json()
+            key = f"ISBN:{isbn}"
+            if key in data:
+                book = data[key]
+                titulo = book.get('title', 'Título Desconhecido')
+                autores = book.get('authors')
+                autor = autores[0]['name'] if autores else 'Autor Desconhecido'
+                ano = None
+                if 'publish_date' in book:
+                    import re
+                    match = re.search(r'\d{4}', book['publish_date'])
+                    if match:
+                        ano = int(match.group())
+                descricao = ''
+                if 'excerpts' in book and book['excerpts']:
+                    descricao = book['excerpts'][0]['text']
+                temas = ''
+                if 'subjects' in book:
+                    temas = ', '.join([s['name'] for s in book['subjects'][:3]])
+                categoria = 'Ficção'
+                capa = ''
+                if 'cover' in book and book['cover']:
+                    capa_id = book['cover']['large'] if 'large' in book['cover'] else book['cover']['medium'] if 'medium' in book['cover'] else ''
+                    if capa_id:
+                        capa = capa_id
+                if not capa:
+                    capa = f"https://covers.openlibrary.org/b/isbn/{isbn}-L.jpg"
+                return {
+                    "titulo": titulo,
+                    "autor": autor,
+                    "ano_publicacao": ano,
+                    "descricao": descricao,
+                    "temas": temas,
+                    "categoria": categoria,
+                    "capa": capa
+                }
+    except Exception as e:
+        print(f"Erro Open Library: {e}")
+    return None
+
+
+def buscar_brasil_api(isbn):
+    """API #2 - BrasilAPI (ISBN)"""
+    try:
+        url = f"https://brasilapi.com.br/api/isbn/v1/{isbn}"
+        r = requests.get(url, timeout=10)
+        if r.status_code == 200:
+            data = r.json()
+            titulo = data.get('title', 'Título Desconhecido')
+            autor = ''
+            autores = data.get('authors', [])
+            if autores:
+                autor = autores[0] if isinstance(autores[0], str) else autores[0].get('name', '')
+            if not autor:
+                autor = data.get('author', 'Autor Desconhecido')
+            ano = None
+            if data.get('year'):
+                try:
+                    ano = int(data['year'])
+                except:
+                    pass
+            descricao = data.get('synopsis', '') or ''
+            temas = data.get('subjects', '') or ''
+            if isinstance(temas, list):
+                temas = ', '.join(temas[:3])
+            categoria = data.get('categories', '') or ''
+            if isinstance(categoria, list):
+                categoria = categoria[0] if categoria else 'Ficção'
+            if not categoria:
+                categoria = 'Ficção'
+            capa = data.get('cover_url', '') or ''
+            if not capa:
+                capa = f"https://covers.openlibrary.org/b/isbn/{isbn}-L.jpg"
+            return {
+                "titulo": titulo,
+                "autor": autor,
+                "ano_publicacao": ano,
+                "descricao": descricao,
+                "temas": temas,
+                "categoria": categoria,
+                "capa": capa
+            }
+    except Exception as e:
+        print(f"Erro BrasilAPI: {e}")
+    return None
+
+
+def buscar_google_books_por_isbn(isbn):
+    """API #3 - Google Books (por ISBN primeiro)"""
+    try:
+        url = f"https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}"
+        r = requests.get(url, timeout=10)
+        if r.status_code == 200:
+            data = r.json()
+            if 'items' in data and len(data['items']) > 0:
+                book = data['items'][0]['volumeInfo']
+                return _extrair_dados_google(book, isbn)
+    except Exception as e:
+        print(f"Erro Google Books (ISBN): {e}")
+    return None
+
+
+def buscar_google_books_por_titulo(titulo):
+    """API #3 - Google Books (fallback por título)"""
+    try:
+        url = f"https://www.googleapis.com/books/v1/volumes?q=intitle:{requests.utils.quote(titulo)}&maxResults=1"
+        r = requests.get(url, timeout=10)
+        if r.status_code == 200:
+            data = r.json()
+            if 'items' in data and len(data['items']) > 0:
+                book = data['items'][0]['volumeInfo']
+                return _extrair_dados_google(book, None)
+    except Exception as e:
+        print(f"Erro Google Books (Título): {e}")
+    return None
+
+
+def _extrair_dados_google(book, isbn):
+    titulo = book.get('title', 'Título Desconhecido')
+    autores = book.get('authors', [])
+    autor = autores[0] if autores else 'Autor Desconhecido'
+    ano = None
+    if 'publishedDate' in book:
+        try:
+            ano = int(book['publishedDate'][:4])
+        except:
+            pass
+    descricao = book.get('description', '') or ''
+    # Limpar tags HTML da descrição
+    descricao = re.sub(r'<[^>]+>', '', descricao)
+    temas_list = book.get('categories', [])
+    temas = ', '.join(temas_list[:3]) if temas_list else ''
+    categoria = temas_list[0] if temas_list else 'Ficção'
+    capa = ''
+    if 'imageLinks' in book:
+        capa = book['imageLinks'].get('thumbnail', '') or ''
+        if capa:
+            capa = capa.replace('http://', 'https://')
+    if not capa and isbn:
+        capa = f"https://covers.openlibrary.org/b/isbn/{isbn}-L.jpg"
+    return {
+        "titulo": titulo,
+        "autor": autor,
+        "ano_publicacao": ano,
+        "descricao": descricao,
+        "temas": temas,
+        "categoria": categoria,
+        "capa": capa
+    }
+
+
+def buscar_livro_cascata(isbn):
+    """
+    Busca dados do livro em cascata usando múltiplas APIs.
+    Preenche incrementalmente: se a primeira retornar parcialmente,
+    as seguintes complementam sem sobrescrever dados existentes.
+    """
+    # Dicionário vazio para acumular dados
+    dados = {
+        "titulo": None,
+        "autor": None,
+        "ano_publicacao": None,
+        "descricao": None,
+        "temas": None,
+        "categoria": None,
+        "capa": None
+    }
+
+    def preencher_faltantes(fonte):
+        """Preenche apenas campos que ainda estão vazios"""
+        modificado = False
+        for campo in dados:
+            if (dados[campo] is None or dados[campo] == '') and fonte.get(campo):
+                dados[campo] = fonte[campo]
+                modificado = True
+        return modificado
+
+    # 1. Open Library
+    print(f"Buscando ISBN {isbn} na Open Library...")
+    ol = buscar_open_library(isbn)
+    if ol:
+        preencher_faltantes(ol)
+        if all(v is not None and v != '' for v in dados.values() if v is not None):
+            return dados
+
+    # 2. BrasilAPI
+    print(f"Buscando ISBN {isbn} na BrasilAPI...")
+    br = buscar_brasil_api(isbn)
+    if br:
+        preencher_faltantes(br)
+        if all(v is not None and v != '' for v in dados.values() if v is not None):
+            return dados
+
+    # 3. Google Books (primeiro por ISBN)
+    print(f"Buscando ISBN {isbn} no Google Books...")
+    gb = buscar_google_books_por_isbn(isbn)
+    if gb:
+        preencher_faltantes(gb)
+        if all(v is not None and v != '' for v in dados.values() if v is not None):
+            return dados
+
+    # 4. Google Books (fallback por título, se tiver título)
+    if dados.get("titulo"):
+        print(f"Buscando '{dados['titulo']}' no Google Books (fallback por título)...")
+        gb_titulo = buscar_google_books_por_titulo(dados["titulo"])
+        if gb_titulo:
+            preencher_faltantes(gb_titulo)
+
+    # Se pelo menos título e autor foram preenchidos, considera sucesso
+    if dados.get("titulo") and dados.get("autor"):
+        return dados
+    return None
+
+
+def api_livros(admin, data, method):
+    conn = db_manager.get_connection()
+    cursor = conn.cursor()
+
+    if method == 'POST':
+        if not admin:
+            conn.close()
+            return {"erro": "Acesso negado. Operação permitida apenas para administradores."}, 403
+        hoje = get_brasilia_today().isoformat()
+        
+        localizacao = data.get('localizacao', '').strip()
+        if is_obrigar_localizacao_livro() and not localizacao:
+            conn.close()
+            return {"erro": "O campo Localização (prateleira) é obrigatório conforme configuração do sistema."}, 400
+
+        if data.get('manual'):
+            isbn = data.get('isbn', 'MANUAL_' + str(uuid.uuid4())[:8])
+            titulo = data['titulo']
+            autor = data['autor']
+            ano = data.get('ano')
+            descricao = data.get('descricao', '')
+            temas = data.get('temas', '')
+            categoria = data.get('categoria', 'Ficção')
+            quantidade = int(data['quantidade'])
+            capa = data.get('capa', '')
+            if not capa:
+                capa = '/static/images/placeholder.png'
+        else:
+            isbn = data['isbn']
+            quantidade = int(data['quantidade'])
+            info = buscar_livro_cascata(isbn)
+            if not info:
+                return {"erro": "ISBN não encontrado ou serviço indisponível"}, 404
+            titulo = info['titulo']
+            autor = info['autor']
+            ano = info['ano_publicacao']
+            descricao = info['descricao']
+            temas = info['temas']
+            categoria = info['categoria']
+            capa = info['capa']
+
+        cursor.execute('''
+            INSERT INTO Livros (isbn, nome, autor, ano_publicacao, capa_url, descricao, temas, categoria, estoque, quantidade_disponivel, data_cadastro, localizacao)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (isbn, titulo, autor, ano, capa, descricao, temas, categoria, quantidade, quantidade, hoje, localizacao))
+        conn.commit()
+        livro_id = cursor.lastrowid
+        conn.close()
+        return {
+            "id": livro_id, "isbn": isbn, "titulo": titulo, "autor": autor,
+            "ano": ano, "capa": capa, "descricao": descricao, "temas": temas,
+            "categoria": categoria, "estoque": quantidade, "disponivel": quantidade,
+            "data_cadastro": hoje, "localizacao": localizacao
+        }, 201
+
+    else:
+        cursor.execute('''
+            SELECT id, isbn, nome, autor, ano_publicacao, capa_url, descricao, temas, categoria, estoque, quantidade_disponivel, data_cadastro, localizacao
+            FROM Livros
+        ''')
+        livros = []
+        for row in cursor.fetchall():
+            livros.append({
+                "id": row[0], "isbn": row[1], "titulo": row[2], "autor": row[3],
+                "ano": row[4], "capa": row[5], "descricao": row[6], "temas": row[7],
+                "categoria": row[8], "estoque": row[9], "disponivel": row[10],
+                "data_cadastro": row[11], "localizacao": row[12] if len(row) > 12 else ''
+            })
+        conn.close()
+        return livros
+
+
+def editar_livro(id, data):
+    conn = db_manager.get_connection()
+    cursor = conn.cursor()
+    capa_url = data.get('capa')
+    if capa_url:
+        cursor.execute('UPDATE Livros SET capa_url = ? WHERE id = ?', (capa_url, id))
+    cursor.execute('''
+        UPDATE Livros
+        SET nome = ?, autor = ?, ano_publicacao = ?, descricao = ?, temas = ?, estoque = ?, quantidade_disponivel = ?, categoria = ?, localizacao = ?
+        WHERE id = ?
+    ''', (
+        data.get('titulo'), data.get('autor'), data.get('ano'),
+        data.get('descricao'), data.get('temas'), data.get('estoque'), data.get('disponivel'),
+        data.get('categoria'), data.get('localizacao', ''), id
+    ))
+    conn.commit()
+    conn.close()
+    return {"status": "ok"}
+
+
+def excluir_livro(id):
+    conn = db_manager.get_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM Livros WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    return {"status": "ok"}

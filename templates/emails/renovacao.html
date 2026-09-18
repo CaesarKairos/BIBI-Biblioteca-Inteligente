@@ -1,0 +1,39 @@
+
+        <!DOCTYPE html>
+        <html lang="pt-br">
+        <head><meta charset="UTF-8"><title>Renovação Confirmada</title></head>
+        <body style="margin:0; padding:0; background-color:#ffffff; font-family: 'Nunito', 'Segoe UI', Arial, sans-serif; color:#3e332a;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#ffffff; padding:20px 0;">
+        <tr><td align="center">
+        <table width="100%" style="max-width:600px; background-color:#fdfcfa; border-radius:20px; overflow:hidden;">
+        <tr>
+          <td style="background-color:#3e332a; padding:30px; text-align:center; color:#ffffff;">
+            <img src="cid:logo_bibi" width="55" style="display:block; margin:0 auto 10px auto; border-radius:8px;" alt="Logo">
+            <div style="font-size:28px; font-weight:800; letter-spacing:2px; margin-bottom:2px;">BIBI</div>
+            <div style="font-size:13px; opacity:0.8; text-transform:uppercase; letter-spacing:1px;">Biblioteca Inteligente</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:40px 30px; line-height:1.6; background-color:#f5eee6;">
+            <h2 style="color:#3e332a; margin-top:0;">Olá, {{ nome_usuario }}!</h2>
+            <p>Seu empréstimo foi <strong>renovado com sucesso</strong>.</p>
+            {% if cid_capa %}<div style="text-align:center; margin-bottom:20px;"><img src="{{ cid_capa }}" alt="Capa do livro" style="max-width:150px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);"></div>{% endif %}
+            <div style="background-color:#ffffff; border-left:5px solid #d4b59e; padding:20px; margin:20px 0; border-radius:4px;">
+            <strong>Livro:</strong> {{ titulo_livro }}<br>
+            <strong>Nova data de devolução:</strong> {{ nova_data_devolucao }}
+            </div>
+            <p>Fique atento ao novo prazo para evitar atrasos.</p>
+            <p style="margin-top:30px;">Atenciosamente,<br><strong>Equipe Biblioteca Inteligente</strong></p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color:#fdfcfa; padding:25px 20px; text-align:center; font-size:12px; color:#8c8279;">
+            <div>© 2026 Biblioteca Inteligente | Gerencie seu acervo com sabedoria.</div>
+          </td>
+        </tr>
+        </table>
+        </td></tr>
+        </table>
+        </body>
+        </html>
+        

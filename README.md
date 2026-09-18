@@ -70,35 +70,11 @@ BIBI é um sistema de gerenciamento de biblioteca desktop, projetado para escola
 
 ## Estrutura do Projeto
 
-```
-BIBI-Biblioteca-Inteligente/
-│
-├── app.py                 # Aplicação Flask principal (backend + HTML/CSS/JS embutidos)
-├── env.example            # Template de variáveis de ambiente Flask
-├── .env                   # Segredos de execução (não versionado)
-├── requirements.txt       # Dependências Python
-├── setup.iss.example      # Modelo de instalador para Inno Setup
-├── .gitignore
-│
-├── static/
-│   └── images/
-│       ├── icon.png       # Ícone do aplicativo
-│       ├── icon.ico       # Ícone Windows
-│       ├── iconphilocode.png
-│       ├── philocode.png
-│       ├── placeholder.png
-│       ├── catwaving.webm # Animação da barra lateral
-│       ├── hero/          # Banners de destaque (seleção aleatória)
-│       ├── uploadedcovers/ # Capas enviadas pelo usuário (runtime)
-│       └── externalcovers/ # Capas importadas por URL (runtime)
-│
-└── (saída do build na release)
-```
+A aplicacao esta organizada em `routes/`, `services/`, `database/`, `utils/`, `templates/` e `static/`. `app.py` inicializa o Flask, o banco, as notificacoes e o pywebview; `config.py` centraliza caminhos e ambiente.
 
-Observações:
-- Dados de execução são armazenados em `%LOCALAPPDATA%\BIBI\` (ex: `C:\Users\<usuario>\AppData\Local\BIBI\`).
-- O banco de dados SQLite (`Biblioteca.db`) fica dentro do diretório de dados.
-- Não há pasta `templates/` separada; a interface é renderizada via `render_template_string` dentro de `app.py`.
+Veja [o relatorio da refatoracao](docs/REFATORACAO.md) para a arvore completa, responsabilidades, todas as rotas por Blueprint, funcoes JavaScript, regras preservadas e limites de validacao. O [inventario original](docs/inventario_original.json) e a copia `legacy/app_monolitico.py` permitem comparar com o sistema anterior.
+
+Dados continuam em `%LOCALAPPDATA%\BIBI\Biblioteca.db`, com capas nas subpastas `uploadedcovers` e `externalcovers`. Os testes usam somente bancos temporarios.
 
 ---
 
@@ -157,13 +133,13 @@ Abra o navegador em `http://127.0.0.1:5000/app`.
 A partir da raiz do projeto:
 
 ```bash
-pyinstaller --onefile --windowed app.py
+pyinstaller --onedir --windowed --name BIBI --add-data "static;static" --add-data "templates;templates" --add-data "database/schema.sql;database" app.py
 ```
 
-`--onefile`: gera um único `.exe`.
+`--onedir`: conserva a estrutura `_internal` usada pelo aplicativo instalado.
 `--windowed`: suprime a janela do console.
 
-A saída fica em `dist/`.
+A saida fica em `dist/BIBI/`. Distribua a pasta inteira; os templates, estilos, scripts e `database/schema.sql` precisam acompanhar o executavel. O empacotamento deve ser homologado no ambiente de distribuicao.
 
 > **Nota:** Não há `app.spec` versionado no repositório. Use o comando acima diretamente.
 
@@ -276,10 +252,10 @@ Credenciais adicionais são armazenadas diretamente na tabela `Configuracoes` do
 ## Notas de Desenvolvimento
 
 ### Arquitetura
-- Aplicação Flask de arquivo único (`app.py`) com templates, estilos e scripts embutidos.
+- Flask com Blueprints em `routes/`, regras em `services/`, persistencia em `database/`, templates HTML e arquivos CSS/JavaScript separados.
 - SQLite por meio de uma classe `DatabaseManager` personalizada com modo WAL ativado.
 - Tarefas em segundo plano usando `threading` Python (verificação de notificações a cada 30 minutos).
-- Templates HTML de e-mail construídos inline em Python com logo e capa de livro embutidos.
+- Templates de e-mail em `templates/emails/`, com logo e capa embutidos pelo servico MIME.
 - Frontend responsivo desktop-first com layout de 3 colunas (`260px / 1fr / 320px`).
 
 ### Observações de Comportamento
@@ -303,3 +279,18 @@ Credenciais adicionais são armazenadas diretamente na tabela `Configuracoes` do
 ## Licença
 
 Este projeto está licenciado sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) para obter detalhes.
+
+
+### Verificacao da refatoracao
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+A comparacao opcional no navegador requer `pip install playwright` e Edge ou Chrome instalado:
+
+```powershell
+python tests/browser_check.py
+```
+
+Resultados e limitacoes estao em [docs/REFATORACAO.md](docs/REFATORACAO.md). As chamadas SMTP e as APIs de livros sao simuladas nos testes; nenhuma mensagem real e enviada.

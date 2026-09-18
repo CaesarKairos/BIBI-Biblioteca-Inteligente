@@ -1,0 +1,265 @@
+{
+  "styles": {
+    "s1": "margin-top:20px;",
+    "s2": "display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;",
+    "s3": "width:auto;",
+    "s4": "display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;",
+    "s5": "background:#b33;",
+    "s6": "background:#CD853F;",
+    "s7": "background:#666;",
+    "s8": "overflow-x: auto;",
+    "s9": "display:flex; flex-wrap:wrap; align-items:center; gap:15px; margin-bottom:8px;",
+    "s10": "display:flex; align-items:center; gap:5px;",
+    "s11": "width:150px;",
+    "s12": "margin-bottom:20px;",
+    "s13": "margin-top:50px; color:var(--light);",
+    "s14": "display:none;",
+    "s15": "font-size:12px; margin-bottom:5px;",
+    "s16": "font-size:11px; color:var(--light); margin-bottom:10px;",
+    "s17": "text-align:center; font-size:12px;",
+    "s18": "text-align:center; font-size:11px; color:var(--light); margin-top:10px;",
+    "s19": "margin:10px 0;",
+    "s20": "margin-bottom:10px;",
+    "s21": "margin-top:10px;",
+    "s22": "font-size:12px; margin:15px 0 20px 0; color: var(--text);",
+    "s23": "max-width:560px;",
+    "s24": "max-width:400px;",
+    "s25": "margin-top:15px;",
+    "s26": "margin-bottom:30px; display:block;",
+    "s27": "background:#b33; margin-bottom:10px;",
+    "s28": "margin:20px 0;",
+    "s29": "display:flex; gap:10px; justify-content:center;",
+    "s30": "background:#b33; margin-bottom:10px; display:none;",
+    "s31": "color: var(--accent-clay); font-weight: bold; font-style: normal;"
+  },
+  "handlers": {
+    "h1": {
+      "event": "onclick",
+      "code": "window.location='/'"
+    },
+    "h2": {
+      "event": "onerror",
+      "code": "this.style.display='none'"
+    },
+    "h3": {
+      "event": "onclick",
+      "code": "tab('dash')"
+    },
+    "h4": {
+      "event": "onclick",
+      "code": "tab('acervo')"
+    },
+    "h5": {
+      "event": "onclick",
+      "code": "tab('emp')"
+    },
+    "h6": {
+      "event": "onclick",
+      "code": "tab('age')"
+    },
+    "h7": {
+      "event": "onclick",
+      "code": "tab('lei')"
+    },
+    "h8": {
+      "event": "onclick",
+      "code": "toggleTheme()"
+    },
+    "h9": {
+      "event": "onclick",
+      "code": "abrirConfiguracoes()"
+    },
+    "h10": {
+      "event": "onclick",
+      "code": "tab('emp'); setTimeout(()=>filtrarEmprestimos('ativos'), 100);"
+    },
+    "h11": {
+      "event": "onclick",
+      "code": "tab('emp'); setTimeout(()=>filtrarEmprestimos('atrasados'), 100);"
+    },
+    "h12": {
+      "event": "onclick",
+      "code": "tab('emp'); setTimeout(()=>filtrarEmprestimos('hoje'), 100);"
+    },
+    "h13": {
+      "event": "onclick",
+      "code": "openModal('modalAddLivro')"
+    },
+    "h14": {
+      "event": "oninput",
+      "code": "filtrarAcervo()"
+    },
+    "h15": {
+      "event": "onclick",
+      "code": "filtrarEmprestimos('todos')"
+    },
+    "h16": {
+      "event": "onclick",
+      "code": "filtrarEmprestimos('ativos')"
+    },
+    "h17": {
+      "event": "onclick",
+      "code": "filtrarEmprestimos('atrasados')"
+    },
+    "h18": {
+      "event": "onclick",
+      "code": "filtrarEmprestimos('hoje')"
+    },
+    "h19": {
+      "event": "onclick",
+      "code": "filtrarEmprestimos('devolvidos')"
+    },
+    "h20": {
+      "event": "oninput",
+      "code": "filtrarLeitores()"
+    },
+    "h21": {
+      "event": "onclick",
+      "code": "openModal('modalLeitor')"
+    },
+    "h22": {
+      "event": "onclick",
+      "code": "emprestarSelecionado()"
+    },
+    "h23": {
+      "event": "onclick",
+      "code": "editarLivroSelecionado()"
+    },
+    "h24": {
+      "event": "onclick",
+      "code": "confirmarExclusaoLivro()"
+    },
+    "h25": {
+      "event": "onclick",
+      "code": "salvarLivro()"
+    },
+    "h26": {
+      "event": "onclick",
+      "code": "openModalManual()"
+    },
+    "h27": {
+      "event": "onclick",
+      "code": "closeModal('modalAddLivro')"
+    },
+    "h28": {
+      "event": "onchange",
+      "code": "previewCapaManual(event)"
+    },
+    "h29": {
+      "event": "onclick",
+      "code": "salvarLivroManual()"
+    },
+    "h30": {
+      "event": "onclick",
+      "code": "closeModal('modalManualLivro')"
+    },
+    "h31": {
+      "event": "onchange",
+      "code": "previewCapaEdit(event)"
+    },
+    "h32": {
+      "event": "onclick",
+      "code": "salvarEdicaoLivro()"
+    },
+    "h33": {
+      "event": "onclick",
+      "code": "closeModal('modalEditarLivro')"
+    },
+    "h34": {
+      "event": "oninput",
+      "code": "aplicarMascaraTelefone(this)"
+    },
+    "h35": {
+      "event": "onclick",
+      "code": "salvarLeitor()"
+    },
+    "h36": {
+      "event": "onclick",
+      "code": "closeModal('modalLeitor')"
+    },
+    "h37": {
+      "event": "oninput",
+      "code": "buscarLeitoresAutocomplete()"
+    },
+    "h38": {
+      "event": "onblur",
+      "code": "formatarSala()"
+    },
+    "h39": {
+      "event": "onclick",
+      "code": "confirmarEmprestimoRapido()"
+    },
+    "h40": {
+      "event": "onclick",
+      "code": "closeModal('modalEmprestimoRapido')"
+    },
+    "h41": {
+      "event": "onclick",
+      "code": "salvarConfigGerais()"
+    },
+    "h42": {
+      "event": "onclick",
+      "code": "closeModal('modalConfiguracoes')"
+    },
+    "h43": {
+      "event": "onclick",
+      "code": "salvarConfigAgenda()"
+    },
+    "h44": {
+      "event": "onclick",
+      "code": "closeModal('modalConfigAgenda')"
+    },
+    "h45": {
+      "event": "onclick",
+      "code": "verificarSenhaConfig()"
+    },
+    "h46": {
+      "event": "onclick",
+      "code": "closeModal('modalSenhaConfig')"
+    },
+    "h47": {
+      "event": "onclick",
+      "code": "closeModal('modalAtrasos')"
+    },
+    "h48": {
+      "event": "onclick",
+      "code": "closeModal('modalDevolucoesHoje')"
+    },
+    "h49": {
+      "event": "onclick",
+      "code": "excluirAgendamentoAtual()"
+    },
+    "h50": {
+      "event": "onclick",
+      "code": "closeModal('modalAgendamento')"
+    },
+    "h51": {
+      "event": "onclick",
+      "code": "salvarAgendamento()"
+    },
+    "h52": {
+      "event": "onclick",
+      "code": "closeModal('modalConfirmacao')"
+    },
+    "h53": {
+      "event": "onclick",
+      "code": "excluirAgendamentoDetalhes()"
+    },
+    "h54": {
+      "event": "onclick",
+      "code": "closeModal('modalDetalhesAgendamento')"
+    },
+    "h55": {
+      "event": "onclick",
+      "code": "showSection('home')"
+    },
+    "h56": {
+      "event": "onclick",
+      "code": "showSection('about')"
+    },
+    "h57": {
+      "event": "onclick",
+      "code": "window.location.href='/app'"
+    }
+  }
+}

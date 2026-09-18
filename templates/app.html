@@ -1,0 +1,414 @@
+
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+        <title>BIBI - Sistema</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <link rel="stylesheet" href="/static/css/app.css">
+    </head>
+    <body data-admin="{{ admin | tojson }}" data-quantidade-aulas="{{ quantidade_aulas }}">
+        <div class="toast-container" id="toast-container"></div>
+        <div class="app-container">
+            <aside class="sidebar">
+                <div class="logo" data-bibi-onclick="h1">
+                    <img src="/static/images/icon.png" alt="BIBI" data-bibi-onerror="h2">
+                    BIBI
+                </div>
+                <ul class="nav-menu">
+                    {% if admin %}<li data-bibi-onclick="h3" id="m-dash"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-data" viewBox="0 0 16 16"><path d="M4 11a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0zm6-4a1 1 0 1 1 2 0v5a1 1 0 1 1-2 0zM7 9a1 1 0 0 1 2 0v3a1 1 0 1 1-2 0z"/><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg><span>Dashboard</span><span class="shortcut">Ctrl+1</span></li>{% endif %}
+                    <li data-bibi-onclick="h4" id="m-acervo" class="active">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-journal" viewBox="0 0 16 16">
+                            <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"/>
+                            <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"/>
+                        </svg>
+                        <span>Acervo</span>
+                        <span class="shortcut">Ctrl+1</span>
+                    </li>
+                    {% if admin %}<li data-bibi-onclick="h5" id="m-emp"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list-check" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0"/></svg><span>Empréstimos</span><span class="shortcut">Ctrl+3</span></li>{% endif %}
+                    <li data-bibi-onclick="h6" id="m-age">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-check" viewBox="0 0 16 16">
+                            <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+                        </svg>
+                        <span>Agenda</span>
+                        <span class="shortcut">Ctrl+2</span>
+                    </li>
+                    {% if admin %}<li data-bibi-onclick="h7" id="m-lei"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/></svg><span>Leitores</span><span class="shortcut">Ctrl+5</span></li>{% endif %}
+                </ul>
+                <div class="sidebar-buttons">
+                    <div class="theme-item" id="theme-toggle-btn" data-bibi-onclick="h8" title="Alternar tema">
+                        <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon-stars" viewBox="0 0 16 16">
+                            <path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278M4.858 1.311A7.27 7.27 0 0 0 1.025 7.71c0 4.02 3.279 7.276 7.319 7.276a7.32 7.32 0 0 0 5.205-2.162q-.506.063-1.029.063c-4.61 0-8.343-3.714-8.343-8.29 0-1.167.242-2.278.681-3.286"/>
+                            <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.73 1.73 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.73 1.73 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.73 1.73 0 0 0 1.097-1.097zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z"/>
+                        </svg>
+                    </div>
+                    {% if admin %}<div class="config-item" data-bibi-onclick="h9" title="Configurações"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear-wide-connected" viewBox="0 0 16 16"><path d="M7.068.727c.243-.97 1.62-.97 1.864 0l.071.286a.96.96 0 0 0 1.622.434l.205-.211c.695-.719 1.888-.03 1.613.931l-.08.284a.96.96 0 0 0 1.187 1.187l.283-.081c.96-.275 1.65.918.931 1.613l-.211.205a.96.96 0 0 0 .434 1.622l.286.071c.97.243.97 1.62 0 1.864l-.286.071a.96.96 0 0 0-.434 1.622l.211.205c.719.695.03 1.888-.931 1.613l-.284-.08a.96.96 0 0 0-1.187 1.187l.081.283c.275.96-.918 1.65-1.613.931l-.205-.211a.96.96 0 0 0-1.622.434l-.071.286c-.243.97-1.62.97-1.864 0l-.071-.286a.96.96 0 0 0-1.622-.434l-.205.211c-.695.719-1.888.03-1.613-.931l.08-.284a.96.96 0 0 0-1.186-1.187l-.284.081c-.96.275-1.65-.918-.931-1.613l.211-.205a.96.96 0 0 0-.434-1.622l-.286-.071c-.97-.243-.97-1.62 0-1.864l.286-.071a.96.96 0 0 0 .434-1.622l-.211-.205c-.719-.695-.03-1.888.931-1.613l.284.08a.96.96 0 0 0 1.187-1.186l-.081-.284c-.275-.96.918-1.65 1.613-.931l.205.211a.96.96 0 0 0 1.622-.434zM12.973 8.5H8.25l-2.834 3.779A4.998 4.998 0 0 0 12.973 8.5m0-1a4.998 4.998 0 0 0-7.557-3.779l2.834 3.78zM5.048 3.967l-.087.065zm-.431.355A4.98 4.98 0 0 0 3.002 8c0 1.455.622 2.765 1.615 3.678L7.375 8zm.344 7.646.087.065z"/></svg></div>{% endif %}
+                </div>
+                <div class="cat-container">
+                    <video autoplay loop muted playsinline class="cat-waving" src="/static/images/catwaving.webm"></video>
+                </div>
+            </aside>
+
+            <main class="content-area">
+                <div id="dash" class="section">
+                    <h2>Dashboard - Bibliometria</h2>
+                    <div class="dash-grid">
+                        <div class="card"><h3>Total Títulos</h3><p id="stat-total">0</p></div>
+                        <div class="card"><h3>Exemplares</h3><p id="stat-exemplares">0</p></div>
+                        <div class="card green" data-bibi-onclick="h10"><h3>Empréstimos Ativos</h3><p id="stat-emp">0</p></div>
+                        <div class="card alert" data-bibi-onclick="h11"><h3>Atrasos</h3><p id="stat-atraso">0</p></div>
+                        <div class="card today" data-bibi-onclick="h12"><h3>Devoluções Hoje</h3><p id="stat-hoje">0</p></div>
+                        <div class="card" data-bibi-onclick="h6"><h3>Agenda</h3><p id="stat-agenda">0</p></div>
+                        <div class="card" data-bibi-onclick="h7"><h3>Leitores</h3><p id="stat-leitores">0</p></div>
+                    </div>
+                    
+                    <div class="dashboard-row">
+                        <div class="dashboard-panel">
+                            <h3>Gêneros em Circulação</h3>
+                            <canvas id="grafico-generos" width="200" height="200"></canvas>
+                        </div>
+                        <div class="dashboard-panel">
+                            <h3>Preferência Histórica</h3>
+                            <canvas id="grafico-historico" width="200" height="200"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-row">
+                        <div class="dashboard-panel">
+                            <h3>Leitores Mais Ativos (Trimestre)</h3>
+                            <ol class="ranking-list" id="ranking-leitores"></ol>
+                        </div>
+                        <div class="dashboard-panel">
+                            <h3>Livros Mais Emprestados</h3>
+                            <div class="top-livros-grid" id="top-livros"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-panel" data-bibi-style="s1">
+                        <h3>Livros Adormecidos (sem empréstimos há 6 meses)</h3>
+                        <div id="lista-adormecidos" data-bibi-style="s2"></div>
+                    </div>
+                </div>
+
+                <div id="acervo" class="section active">
+                    <div class="section-header">
+                        <h2>Gerenciar Acervo</h2>
+                        {% if admin %}<button class="btn-primary" data-bibi-style="s3" data-bibi-onclick="h13">+ Adicionar Livro</button>{% endif %}
+                    </div>
+                    <div class="search-box">
+                        <input type="text" id="busca-acervo" placeholder="Buscar por título ou ISBN..." data-bibi-oninput="h14">
+                    </div>
+                    <div id="acervo-prateleiras"></div>
+                </div>
+
+                <div id="emp" class="section">
+                    <h2>Empréstimos</h2>
+                    <div data-bibi-style="s4">
+                        <button class="btn-primary btn-filtro active-filtro" id="btn-filtro-todos" data-bibi-onclick="h15">Todos</button>
+                        <button class="btn-primary btn-filtro green" id="btn-filtro-ativos" data-bibi-onclick="h16">Ativos</button>
+                        <button class="btn-primary btn-filtro" id="btn-filtro-atrasados" data-bibi-onclick="h17" data-bibi-style="s5">Atrasados</button>
+                        <button class="btn-primary btn-filtro" id="btn-filtro-hoje" data-bibi-onclick="h18" data-bibi-style="s6">Devoluções Hoje</button>
+                        <button class="btn-primary btn-filtro" id="btn-filtro-devolvidos" data-bibi-onclick="h19" data-bibi-style="s7">Devolvidos</button>
+                    </div>
+                    <div id="lista-ativos" data-bibi-style="s8"></div>
+                </div>
+
+                <div id="age" class="section">
+                    <div class="section-header">
+                        <h2>Agenda da Sala</h2>
+                    </div>
+                    <div class="agenda-container">
+                        <div class="agenda-header">
+                            <div class="periodo-selector" data-bibi-style="s9">
+                                <div data-bibi-style="s10">
+                                    <label>Data:</label>
+                                    <input type="hidden" id="agenda-data">
+                                    <input type="text" id="agenda-data-alt" readonly placeholder="Selecionar Data">
+                                </div>
+                                <div data-bibi-style="s10">
+                                    <label>Período:</label>
+                                    <div id="custom-select-periodo-agenda" class="custom-select" data-bibi-style="s11"></div>
+                                    <input type="hidden" id="agenda-periodo" value="Manhã">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="agenda-tabela">
+                            <table id="tabela-agenda"></table>
+                        </div>
+                        <div class="agendas-laterais">
+                            <h4>Próximos Agendamentos</h4>
+                            <div id="lista-proximos"></div>
+                        </div>
+                        <div class="agendas-laterais">
+                            <h4>Últimos Agendamentos</h4>
+                            <div id="lista-passados"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="lei" class="section">
+                    <h2>Leitores Cadastrados</h2>
+                    <div class="search-box" data-bibi-style="s12">
+                        <input type="text" id="busca-leitor" placeholder="Buscar por nome..." data-bibi-oninput="h20">
+                    </div>
+                    <div id="lista-leitores" data-bibi-style="s1"></div>
+                    <button class="btn-primary" data-bibi-style="s1" data-bibi-onclick="h21">+ Novo Leitor</button>
+                </div>
+            </main>
+
+            <aside class="right-bar">
+                <h3>Informações</h3>
+                <div id="info-vazio" data-bibi-style="s13">Selecione um livro</div>
+                <div id="info-livro" data-bibi-style="s14">
+                    <div class="detail-capa" id="det-capa"></div>
+                    <h4 id="det-titulo"></h4>
+                    <p id="det-autor" data-bibi-style="s15"></p>
+                    <p id="det-ano" data-bibi-style="s16"></p>
+                    <div data-bibi-style="s17" id="det-temas"></div>
+                    <div data-bibi-style="s18" id="det-desc"></div>
+                    <p data-bibi-style="s19"><span id="det-estoque"></span> exemplares disponíveis</p>
+                    {% if admin %}<button class="btn-primary" id="btn-emprestar" data-bibi-style="s20" data-bibi-onclick="h22">Emprestar este</button><button class="btn-primary" data-bibi-style="s20" data-bibi-onclick="h23">Editar</button><button class="btn-primary" id="btn-excluir-livro" data-bibi-style="s5" data-bibi-onclick="h24">Excluir Livro</button>{% endif %}
+                </div>
+            </aside>
+        </div>
+
+        {% if admin %}
+            <div id="modalAddLivro" class="modal">
+                <div class="modal-content">
+                    <h3>Adicionar Livro</h3>
+                    <input type="text" id="add-isbn" placeholder="ISBN (ex: 9788533302273)">
+                    <input type="number" id="add-qtd" placeholder="Quantidade">
+                    <button class="btn-primary" id="btn-buscar-salvar" data-bibi-onclick="h25">Buscar e Salvar</button>
+                    <button class="btn-primary" data-bibi-style="s21" data-bibi-onclick="h26">Adicionar Manualmente</button>
+                    <button class="btn-cancel" data-bibi-style="s21" data-bibi-onclick="h27">Cancelar</button>
+                </div>
+            </div>
+            <div id="modalManualLivro" class="modal">
+                <div class="modal-content">
+                    <h3>Cadastro Manual de Livro</h3>
+                    <label>ISBN (opcional)</label><input type="text" id="manual-isbn">
+                    <label>Título *</label><input type="text" id="manual-titulo">
+                    <label>Autor *</label><input type="text" id="manual-autor">
+                    <div class="campo-ano"><label>Ano</label><input type="number" id="manual-ano"></div>
+                    <div class="campo-descricao"><label>Descrição</label><textarea id="manual-descricao" rows="3"></textarea></div>
+                    <div class="campo-temas"><label>Temas (separados por vírgula)</label><input type="text" id="manual-temas" placeholder="Ficção, Aventura..."></div>
+                    <div class="campo-categoria">
+                        <label>Categoria</label>
+                        <div id="custom-select-categoria-manual" class="custom-select"></div>
+                        <input type="hidden" id="manual-categoria" value="Ficção">
+                    </div>
+                    <div class="campo-localizacao" id="campo-localizacao-manual" data-bibi-style="s14">
+                        <label>Localização (Prateleira) *</label>
+                        <input type="text" id="manual-localizacao" placeholder="Ex: Prateleira A, Corredor 3">
+                    </div>
+                    <label>Quantidade *</label><input type="number" id="manual-qtd" min="1" value="1">
+                    <label>Capa (upload, arraste ou cole)</label>
+                    <input type="file" id="manual-capa-file" accept="image/*" data-bibi-onchange="h28">
+                    <div class="capa-preview" id="manual-capa-preview"><div class="preview-text">Arraste ou cole imagem aqui</div></div>
+                    <input type="hidden" id="manual-capa-url">
+                    <button class="btn-primary" id="btn-salvar-manual" data-bibi-onclick="h29">Salvar Livro</button>
+                    <button class="btn-cancel" data-bibi-style="s21" data-bibi-onclick="h30">Cancelar</button>
+                </div>
+            </div>
+            <div id="modalEditarLivro" class="modal">
+                <div class="modal-content">
+                    <h3>Editar Livro</h3>
+                    <input type="hidden" id="edit-id">
+                    <label>Título</label><input type="text" id="edit-titulo">
+                    <label>Autor</label><input type="text" id="edit-autor">
+                    <div class="campo-ano"><label>Ano</label><input type="number" id="edit-ano"></div>
+                    <div class="campo-descricao"><label>Descrição</label><textarea id="edit-descricao" rows="3"></textarea></div>
+                    <div class="campo-temas"><label>Temas</label><input type="text" id="edit-temas" placeholder="Ficção, Aventura..."></div>
+                    <div class="campo-categoria">
+                        <label>Categoria</label>
+                        <div id="custom-select-categoria-edit" class="custom-select"></div>
+                        <input type="hidden" id="edit-categoria">
+                    </div>
+                    <div class="campo-localizacao" id="campo-localizacao-edit" data-bibi-style="s14">
+                        <label>Localização (Prateleira)</label>
+                        <input type="text" id="edit-localizacao" placeholder="Ex: Prateleira A, Corredor 3">
+                    </div>
+                    <label>Estoque Total</label><input type="number" id="edit-estoque">
+                    <label>Disponível</label><input type="number" id="edit-disponivel">
+                    <label>Nova Capa (opcional - arraste ou cole)</label>
+                    <input type="file" id="edit-capa-file" accept="image/*" data-bibi-onchange="h31">
+                    <div class="capa-preview" id="edit-capa-preview"><div class="preview-text">Arraste ou cole imagem aqui</div></div>
+                    <input type="hidden" id="edit-capa-url">
+                    <button class="btn-primary" id="btn-salvar-edicao" data-bibi-onclick="h32">Salvar Alterações</button>
+                    <button class="btn-cancel" data-bibi-style="s21" data-bibi-onclick="h33">Cancelar</button>
+                </div>
+            </div>
+        {% endif %}
+        {% if admin %}
+            <div id="modalLeitor" class="modal">
+                <div class="modal-content">
+                    <h3 id="leitor-titulo">Novo Leitor</h3>
+                    <input type="hidden" id="leitor-id">
+                    <label>Tipo</label>
+                    <div id="custom-select-tipo-leitor" class="custom-select"></div>
+                    <input type="hidden" id="leitor-tipo" value="estudante">
+                    <div id="leitor-aluno">
+                        <label>Nome</label><input type="text" id="leitor-nome" placeholder="Nome completo">
+                        <label>Sala</label><input type="text" id="leitor-sala" placeholder="Ex: 9° ano">
+                        <small class="instrucao-ordinal">(Para digitar º use AltGr + °)</small>
+                        <label>Período</label><input type="text" id="leitor-periodo" placeholder="Manhã / Tarde">
+                        <label>E-mail</label><input type="email" id="leitor-email" placeholder="email@escola.com">
+                        <label>Telefone do Aluno</label><input type="text" id="leitor-telefone" placeholder="(11) 99999-9999" data-bibi-oninput="h34">
+                    </div>
+                    <div id="leitor-prof" data-bibi-style="s14">
+                        <label>Nome</label><input type="text" id="leitor-nome-prof" placeholder="Nome do professor">
+                        <label>Matéria</label><input type="text" id="leitor-materia" placeholder="Disciplina">
+                        <label>E-mail (opcional)</label><input type="email" id="leitor-email-prof" placeholder="email@escola.com">
+                    </div>
+                    <button class="btn-primary" id="btn-salvar-leitor" data-bibi-onclick="h35">Salvar</button>
+                    <button class="btn-cancel" data-bibi-style="s21" data-bibi-onclick="h36">Cancelar</button>
+                </div>
+            </div>
+        {% endif %}
+        {% if admin %}
+            <div id="modalEmprestimoRapido" class="modal">
+                <div class="modal-content">
+                    <h3>Empréstimo Rápido</h3>
+                    <input type="hidden" id="emprestimo-rapido-livro-id">
+                    <label>Tipo de Leitor</label>
+                    <div id="custom-select-tipo-rapido" class="custom-select"></div>
+                    <input type="hidden" id="rapido-tipo" value="estudante">
+                    <div id="rapido-aluno">
+                        <label>Nome</label>
+                        <div class="relative-container">
+                            <input type="text" id="rapido-nome" placeholder="Nome completo" autocomplete="off" data-bibi-oninput="h37">
+                            <div class="autocomplete-suggestions" id="rapido-nome-suggestions"></div>
+                        </div>
+                        <label>Sala/Turma</label><input type="text" id="rapido-sala" placeholder="Ex: 9° ano" data-bibi-onblur="h38">
+                        <small class="instrucao-ordinal">(Para digitar º use AltGr + °)</small>
+                        <label>Período</label>
+                        <div id="custom-select-periodo-rapido" class="custom-select"></div>
+                        <input type="hidden" id="rapido-periodo" value="Manhã">
+                        <label>E-mail</label><input type="email" id="rapido-email" placeholder="email@escola.com">
+                        <div class="campo-telefone-aluno">
+                            <label>Telefone do Aluno</label><input type="text" id="rapido-telefone" placeholder="(11) 99999-9999" data-bibi-oninput="h34">
+                        </div>
+                        <label>Prazo (dias)</label>
+                        <div id="custom-select-prazo-rapido" class="custom-select"></div>
+                        <input type="hidden" id="rapido-prazo" value="7">
+                    </div>
+                    <div id="rapido-professor" data-bibi-style="s14">
+                        <label>Nome</label><input type="text" id="rapido-nome-prof" placeholder="Nome do professor">
+                        <label>Matéria</label><input type="text" id="rapido-materia" placeholder="Disciplina">
+                        <p data-bibi-style="s22">Devolução no mesmo dia.</p>
+                    </div>
+                    <button class="btn-primary" id="btn-confirmar-emprestimo" data-bibi-onclick="h39">Confirmar Empréstimo</button>
+                    <button class="btn-cancel" data-bibi-style="s21" data-bibi-onclick="h40">Cancelar</button>
+                </div>
+            </div>
+        {% endif %}
+        {% if admin %}
+            <div id="modalConfiguracoes" class="modal">
+                <div class="modal-content" data-bibi-style="s23">
+                    <h3>Configurações</h3>
+                    <div class="config-panel" id="lista-config-toggles">
+                    </div>
+                    <button class="btn-primary" data-bibi-onclick="h41">Salvar</button>
+                    <button class="btn-cancel" data-bibi-style="s21" data-bibi-onclick="h42">Cancelar</button>
+                </div>
+            </div>
+            <div id="modalConfigAgenda" class="modal">
+                <div class="modal-content">
+                    <h3>Configurações da Agenda</h3>
+                    <div class="config-panel">
+                        <label>Quantidade de aulas por dia:</label>
+                        <input type="number" id="cfg-qtd-aulas" min="1" max="20" value="6">
+                    </div>
+                    <button class="btn-primary" id="btn-salvar-config" data-bibi-onclick="h43">Salvar Configurações</button>
+                    <button class="btn-cancel" data-bibi-style="s21" data-bibi-onclick="h44">Cancelar</button>
+                </div>
+            </div>
+        {% endif %}
+        {% if admin %}
+            <div id="modalSenhaConfig" class="modal">
+                <div class="modal-content" data-bibi-style="s24">
+                    <h3 id="senha-titulo">Acessar Configurações</h3>
+                    <p id="senha-mensagem" data-bibi-style="s19">Digite a senha (4 caracteres):</p>
+                    <input type="password" id="senha-input" class="pin-simple" maxlength="4" placeholder="****" autocomplete="off">
+                    <input type="password" id="senha-confirm" class="pin-simple" maxlength="4" placeholder="****" data-bibi-style="s14" autocomplete="off">
+                    <button class="btn-primary" id="btn-senha" data-bibi-style="s25" data-bibi-onclick="h45">Ok</button>
+                    <button class="btn-cancel" data-bibi-style="s21" data-bibi-onclick="h46">Cancelar</button>
+                </div>
+            </div>
+        {% endif %}
+        <div id="modalAtrasos" class="modal">
+            <div class="modal-content">
+                <h3>Empréstimos em Atraso</h3>
+                <div id="lista-atrasos"></div>
+                <button class="btn-cancel" data-bibi-style="s1" data-bibi-onclick="h47">Fechar</button>
+            </div>
+        </div>
+        <div id="modalDevolucoesHoje" class="modal">
+            <div class="modal-content">
+                <h3>Devoluções para Hoje</h3>
+                <div id="lista-devolucoes-hoje"></div>
+                <button class="btn-cancel" data-bibi-style="s1" data-bibi-onclick="h48">Fechar</button>
+            </div>
+        </div>
+        <div id="modalAgendamento" class="modal">
+            <div class="modal-content">
+                <h3 id="agenda-titulo">Agendar Aula</h3>
+                <input type="hidden" id="agenda-id">
+                <input type="hidden" id="agenda-dia">
+                <input type="hidden" id="agenda-aula">
+                <input type="hidden" id="agenda-periodo-modal">
+                <input type="hidden" id="agenda-data-modal">
+                <div id="agenda-existente" data-bibi-style="s14">
+                    <p><strong>Professor:</strong> <span id="agenda-prof-view"></span></p>
+                    <p><strong>Matéria:</strong> <span id="agenda-mat-view"></span></p>
+                    <p><strong>Uso:</strong> <span id="agenda-uso-view" data-bibi-style="s26"></span></p>
+                    <button class="btn-cancel" id="btn-excluir-agendamento" data-bibi-style="s27" data-bibi-onclick="h49">Excluir Agendamento</button>
+                    <button class="btn-cancel" data-bibi-style="s21" data-bibi-onclick="h50">Fechar</button>
+                </div>
+                <div id="agenda-form">
+                    <label>Professor</label><input type="text" id="agenda-prof" placeholder="Nome do professor">
+                    <label>Matéria</label><input type="text" id="agenda-mat" placeholder="Disciplina">
+                    <label>Uso da sala</label><textarea id="agenda-uso" rows="2" placeholder="Descreva a atividade..."></textarea>
+                    <button class="btn-primary" id="btn-agendar" data-bibi-onclick="h51">Agendar</button>
+                    <button class="btn-cancel" data-bibi-style="s21" data-bibi-onclick="h50">Cancelar</button>
+                </div>
+            </div>
+        </div>
+        <div id="modalConfirmacao" class="modal">
+            <div class="modal-content" data-bibi-style="s24">
+                <h3 id="confirm-titulo">Confirmar</h3>
+                <p id="confirm-mensagem" data-bibi-style="s28">Tem certeza?</p>
+                <div data-bibi-style="s29">
+                    <button class="btn-primary" id="confirm-btn-sim" data-bibi-style="s3">Sim</button>
+                    <button class="btn-cancel" data-bibi-style="s3" data-bibi-onclick="h52">Cancelar</button>
+                </div>
+            </div>
+        </div>
+        <div id="modalDetalhesAgendamento" class="modal">
+            <div class="modal-content">
+                <h3>Detalhes do Agendamento</h3>
+                <p><strong>Professor:</strong> <span id="detalhe-professor"></span></p>
+                <p><strong>Matéria:</strong> <span id="detalhe-materia"></span></p>
+                <p><strong>Uso da sala:</strong> <span id="detalhe-uso"></span></p>
+                <button class="btn-cancel" id="btn-excluir-agendamento-detalhes" data-bibi-style="s30" data-bibi-onclick="h53">Excluir Agendamento</button>
+                <button class="btn-cancel" data-bibi-style="s21" data-bibi-onclick="h54">Fechar</button>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
+        <script src="/static/js/template.js"></script>
+        <script src="/static/js/ui.js"></script>
+        <script src="/static/js/configuracoes.js"></script>
+        <script src="/static/js/livros.js"></script>
+        <script src="/static/js/leitores.js"></script>
+        <script src="/static/js/emprestimos.js"></script>
+        <script src="/static/js/dashboard.js"></script>
+        <script src="/static/js/agenda.js"></script>
+        <script src="/static/js/app.js"></script>
+    </body>
+    </html>
+    

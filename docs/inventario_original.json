@@ -1,0 +1,1334 @@
+{
+  "routes": [
+    {
+      "function": "landing",
+      "path": "/",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "pages"
+    },
+    {
+      "function": "app_principal",
+      "path": "/app",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "pages"
+    },
+    {
+      "function": "serve_images",
+      "path": "/static/images/<path:filename>",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "pages"
+    },
+    {
+      "function": "admin_status",
+      "path": "/api/admin/status",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "admin"
+    },
+    {
+      "function": "hero_image",
+      "path": "/api/hero-image",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "pages"
+    },
+    {
+      "function": "senha_status",
+      "path": "/api/config/senha/status",
+      "methods": [
+        "GET"
+      ],
+      "admin": true,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "definir_senha",
+      "path": "/api/config/senha/definir",
+      "methods": [
+        "POST"
+      ],
+      "admin": true,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "verificar_senha",
+      "path": "/api/config/senha/verificar",
+      "methods": [
+        "POST"
+      ],
+      "admin": false,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "bloquear_email_status",
+      "path": "/api/config/bloquear_email/status",
+      "methods": [
+        "GET"
+      ],
+      "admin": true,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "set_bloquear_email",
+      "path": "/api/config/bloquear_email/set",
+      "methods": [
+        "POST"
+      ],
+      "admin": true,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "exigir_senha_emprestimo_status",
+      "path": "/api/config/exigir_senha_emprestimo/status",
+      "methods": [
+        "GET"
+      ],
+      "admin": true,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "set_exigir_senha_emprestimo",
+      "path": "/api/config/exigir_senha_emprestimo/set",
+      "methods": [
+        "POST"
+      ],
+      "admin": true,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "obrigar_localizacao_livro_status",
+      "path": "/api/config/obrigar_localizacao_livro/status",
+      "methods": [
+        "GET"
+      ],
+      "admin": true,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "set_obrigar_localizacao_livro",
+      "path": "/api/config/obrigar_localizacao_livro/set",
+      "methods": [
+        "POST"
+      ],
+      "admin": true,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "exigir_senha_agendamento_status",
+      "path": "/api/config/exigir_senha_agendamento/status",
+      "methods": [
+        "GET"
+      ],
+      "admin": true,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "set_exigir_senha_agendamento",
+      "path": "/api/config/exigir_senha_agendamento/set",
+      "methods": [
+        "POST"
+      ],
+      "admin": true,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "bloquear_excluir_agendamento_status",
+      "path": "/api/config/bloquear_excluir_agendamento/status",
+      "methods": [
+        "GET"
+      ],
+      "admin": true,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "set_bloquear_excluir_agendamento",
+      "path": "/api/config/bloquear_excluir_agendamento/set",
+      "methods": [
+        "POST"
+      ],
+      "admin": true,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "quantidade_aulas_status",
+      "path": "/api/config/quantidade_aulas/status",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "set_quantidade_aulas_route",
+      "path": "/api/config/quantidade_aulas/set",
+      "methods": [
+        "POST"
+      ],
+      "admin": true,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "config_email_status",
+      "path": "/api/config/email/status",
+      "methods": [
+        "GET"
+      ],
+      "admin": true,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "set_config_email",
+      "path": "/api/config/email/set",
+      "methods": [
+        "POST"
+      ],
+      "admin": true,
+      "blueprint": "configuracoes"
+    },
+    {
+      "function": "api_livros",
+      "path": "/api/livros",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "admin": false,
+      "blueprint": "livros"
+    },
+    {
+      "function": "upload_imagem",
+      "path": "/api/upload",
+      "methods": [
+        "POST"
+      ],
+      "admin": true,
+      "blueprint": "livros"
+    },
+    {
+      "function": "uploaded_file",
+      "path": "/uploadedcovers/<filename>",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "livros"
+    },
+    {
+      "function": "external_file",
+      "path": "/externalcovers/<filename>",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "livros"
+    },
+    {
+      "function": "editar_livro",
+      "path": "/api/livros/<int:id>",
+      "methods": [
+        "PUT"
+      ],
+      "admin": true,
+      "blueprint": "livros"
+    },
+    {
+      "function": "excluir_livro",
+      "path": "/api/livros/<int:id>",
+      "methods": [
+        "DELETE"
+      ],
+      "admin": true,
+      "blueprint": "livros"
+    },
+    {
+      "function": "api_leitores",
+      "path": "/api/leitores",
+      "methods": [
+        "GET"
+      ],
+      "admin": true,
+      "blueprint": "leitores"
+    },
+    {
+      "function": "buscar_leitor",
+      "path": "/api/leitores/buscar",
+      "methods": [
+        "GET"
+      ],
+      "admin": true,
+      "blueprint": "leitores"
+    },
+    {
+      "function": "criar_leitor",
+      "path": "/api/leitores",
+      "methods": [
+        "POST"
+      ],
+      "admin": true,
+      "blueprint": "leitores"
+    },
+    {
+      "function": "editar_leitor",
+      "path": "/api/leitores/<int:id>",
+      "methods": [
+        "PUT"
+      ],
+      "admin": true,
+      "blueprint": "leitores"
+    },
+    {
+      "function": "excluir_leitor",
+      "path": "/api/leitores/<int:id>",
+      "methods": [
+        "DELETE"
+      ],
+      "admin": true,
+      "blueprint": "leitores"
+    },
+    {
+      "function": "realizar_emprestimo",
+      "path": "/api/emprestimos",
+      "methods": [
+        "POST"
+      ],
+      "admin": true,
+      "blueprint": "emprestimos"
+    },
+    {
+      "function": "contar_emprestimos_ativos",
+      "path": "/api/emprestimos/ativos/count",
+      "methods": [
+        "GET"
+      ],
+      "admin": true,
+      "blueprint": "emprestimos"
+    },
+    {
+      "function": "listar_emprestimos_ativos",
+      "path": "/api/emprestimos/ativos",
+      "methods": [
+        "GET"
+      ],
+      "admin": true,
+      "blueprint": "emprestimos"
+    },
+    {
+      "function": "listar_todos_emprestimos",
+      "path": "/api/emprestimos/todos",
+      "methods": [
+        "GET"
+      ],
+      "admin": true,
+      "blueprint": "emprestimos"
+    },
+    {
+      "function": "listar_emprestimos_devolvidos",
+      "path": "/api/emprestimos/devolvidos",
+      "methods": [
+        "GET"
+      ],
+      "admin": true,
+      "blueprint": "emprestimos"
+    },
+    {
+      "function": "listar_devolucoes_hoje",
+      "path": "/api/emprestimos/devolucoes-hoje",
+      "methods": [
+        "GET"
+      ],
+      "admin": true,
+      "blueprint": "emprestimos"
+    },
+    {
+      "function": "listar_atrasos",
+      "path": "/api/emprestimos/atrasos",
+      "methods": [
+        "GET"
+      ],
+      "admin": true,
+      "blueprint": "emprestimos"
+    },
+    {
+      "function": "devolver_emprestimo",
+      "path": "/api/emprestimos/<int:id>/devolver",
+      "methods": [
+        "POST"
+      ],
+      "admin": true,
+      "blueprint": "emprestimos"
+    },
+    {
+      "function": "renovar_emprestimo",
+      "path": "/api/emprestimos/<int:id>/renovar",
+      "methods": [
+        "POST"
+      ],
+      "admin": true,
+      "blueprint": "emprestimos"
+    },
+    {
+      "function": "listar_mais_emprestados",
+      "path": "/api/emprestimos/mais-emprestados",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "emprestimos"
+    },
+    {
+      "function": "listar_ativos_por_genero",
+      "path": "/api/emprestimos/ativos-por-genero",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "emprestimos"
+    },
+    {
+      "function": "listar_historico_por_genero",
+      "path": "/api/emprestimos/historico-por-genero",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "emprestimos"
+    },
+    {
+      "function": "listar_ranking_leitores",
+      "path": "/api/emprestimos/ranking-leitores",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "emprestimos"
+    },
+    {
+      "function": "listar_livros_adormecidos",
+      "path": "/api/livros/adormecidos",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "emprestimos"
+    },
+    {
+      "function": "api_agendamentos",
+      "path": "/api/agendamentos",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "agendamentos"
+    },
+    {
+      "function": "datas_com_agendamentos",
+      "path": "/api/agendamentos/datas-com-agendamentos",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "agendamentos"
+    },
+    {
+      "function": "agendamentos_passados",
+      "path": "/api/agendamentos/passados",
+      "methods": [
+        "GET"
+      ],
+      "admin": false,
+      "blueprint": "agendamentos"
+    },
+    {
+      "function": "criar_agendamento",
+      "path": "/api/agendamentos",
+      "methods": [
+        "POST"
+      ],
+      "admin": true,
+      "blueprint": "agendamentos"
+    },
+    {
+      "function": "excluir_agendamento",
+      "path": "/api/agendamentos/<int:id>",
+      "methods": [
+        "DELETE"
+      ],
+      "admin": true,
+      "blueprint": "agendamentos"
+    }
+  ],
+  "python_functions": [
+    "allowed_file",
+    "get_brasilia_now",
+    "get_brasilia_today",
+    "is_admin",
+    "admin_required",
+    "DatabaseManager",
+    "is_email_blocked",
+    "is_exigir_senha_emprestimo",
+    "is_obrigar_localizacao_livro",
+    "is_exigir_senha_agendamento",
+    "is_bloquear_excluir_agendamento",
+    "get_email_credenciais",
+    "get_quantidade_aulas",
+    "set_quantidade_aulas",
+    "verificar_senha_admin",
+    "download_image_from_url",
+    "get_book_cover_image_bytes",
+    "anexar_capa_livro",
+    "enviar_email_confirmacao",
+    "enviar_email_renovacao",
+    "enviar_email_devolucao",
+    "enviar_email_notificacao",
+    "verificar_e_enviar_notificacoes",
+    "iniciar_verificacao_notificacoes",
+    "landing",
+    "app_principal",
+    "serve_images",
+    "admin_status",
+    "hero_image",
+    "senha_status",
+    "definir_senha",
+    "verificar_senha",
+    "bloquear_email_status",
+    "set_bloquear_email",
+    "exigir_senha_emprestimo_status",
+    "set_exigir_senha_emprestimo",
+    "obrigar_localizacao_livro_status",
+    "set_obrigar_localizacao_livro",
+    "exigir_senha_agendamento_status",
+    "set_exigir_senha_agendamento",
+    "bloquear_excluir_agendamento_status",
+    "set_bloquear_excluir_agendamento",
+    "quantidade_aulas_status",
+    "set_quantidade_aulas_route",
+    "config_email_status",
+    "set_config_email",
+    "api_livros",
+    "upload_imagem",
+    "uploaded_file",
+    "external_file",
+    "editar_livro",
+    "excluir_livro",
+    "api_leitores",
+    "buscar_leitor",
+    "criar_leitor",
+    "editar_leitor",
+    "excluir_leitor",
+    "realizar_emprestimo",
+    "contar_emprestimos_ativos",
+    "listar_emprestimos_ativos",
+    "listar_todos_emprestimos",
+    "listar_emprestimos_devolvidos",
+    "listar_devolucoes_hoje",
+    "listar_atrasos",
+    "devolver_emprestimo",
+    "renovar_emprestimo",
+    "listar_mais_emprestados",
+    "listar_ativos_por_genero",
+    "listar_historico_por_genero",
+    "listar_ranking_leitores",
+    "listar_livros_adormecidos",
+    "api_agendamentos",
+    "datas_com_agendamentos",
+    "agendamentos_passados",
+    "criar_agendamento",
+    "excluir_agendamento",
+    "get_app_html",
+    "buscar_open_library",
+    "buscar_brasil_api",
+    "buscar_google_books_por_isbn",
+    "buscar_google_books_por_titulo",
+    "_extrair_dados_google",
+    "buscar_livro_cascata"
+  ],
+  "methods": {
+    "DatabaseManager": [
+      "__init__",
+      "init_database",
+      "get_connection"
+    ]
+  },
+  "static_files": [
+    "static/images/catwaving.webm",
+    "static/images/icon.ico",
+    "static/images/icon.png",
+    "static/images/iconphilocode.png",
+    "static/images/philocode.png",
+    "static/images/placeholder.png",
+    "static/images/externalcovers/placeholder.png",
+    "static/images/hero/hero.jpg",
+    "static/images/hero/hero10.jpg",
+    "static/images/hero/hero11.jpg",
+    "static/images/hero/hero12.jpg",
+    "static/images/hero/hero13.jpg",
+    "static/images/hero/hero2.jpg",
+    "static/images/hero/hero3.jpg",
+    "static/images/hero/hero4.jpg",
+    "static/images/hero/hero5.jpg",
+    "static/images/hero/hero6.jpg",
+    "static/images/hero/hero7.jpg",
+    "static/images/hero/hero8.jpg",
+    "static/images/hero/hero9.jpg",
+    "static/images/uploadedcovers/placeholder.png"
+  ],
+  "modals": [
+    "modalAddLivro",
+    "modalManualLivro",
+    "modalEditarLivro",
+    "modalLeitor",
+    "modalEmprestimoRapido",
+    "modalConfiguracoes",
+    "modalConfigAgenda",
+    "modalSenhaConfig",
+    "modalAtrasos",
+    "modalDevolucoesHoje",
+    "modalAgendamento",
+    "modalConfirmacao",
+    "modalDetalhesAgendamento"
+  ],
+  "sections": [
+    "dash",
+    "acervo",
+    "emp",
+    "age",
+    "lei"
+  ],
+  "forms": [],
+  "fetch_calls": [
+    "'/api/upload', {method: 'POST', body: formData});",
+    "'/api/upload', {method: 'POST', body: formData});",
+    "'/api/config/quantidade_aulas/status');",
+    "'/api/config/quantidade_aulas/set', {",
+    "'/api/livros');",
+    "'/api/livros', {",
+    "'/api/livros', {",
+    "'/api/config/obrigar_localizacao_livro/status');",
+    "`/api/livros/${id}`, {",
+    "`/api/livros/${livroSelecionado.id}`, {method: 'DELETE'});",
+    "'/api/config/exigir_senha_emprestimo/status');",
+    "'/api/config/senha/verificar', {",
+    "`/api/leitores/buscar?q=${encodeURIComponent(termo)}`);",
+    "'/api/emprestimos', {",
+    "url);",
+    "`/api/emprestimos/${id}/devolver`, {method: 'POST'});",
+    "`/api/emprestimos/${id}/renovar`, {method: 'POST'});",
+    "'/api/emprestimos/ativos-por-genero');",
+    "'/api/emprestimos/historico-por-genero');",
+    "'/api/emprestimos/ranking-leitores');",
+    "'/api/emprestimos/mais-emprestados');",
+    "'/api/livros/adormecidos');",
+    "'/api/livros');",
+    "'/api/emprestimos/ativos/count');",
+    "'/api/emprestimos/atrasos');",
+    "'/api/emprestimos/devolucoes-hoje');",
+    "'/api/leitores');",
+    "'/api/agendamentos?periodo=' + periodoAtual);",
+    "url);",
+    "'/api/config/bloquear_excluir_agendamento/status')",
+    "`/api/agendamentos/${agendamentoDetalhesId}`, {method: 'DELETE'});",
+    "'/api/config/exigir_senha_agendamento/status');",
+    "'/api/config/senha/verificar', {",
+    "'/api/agendamentos/datas-com-agendamentos');",
+    "'/api/agendamentos/passados');",
+    "'/api/agendamentos', {",
+    "`/api/agendamentos/${agendamentoAtualId}`, {method: 'DELETE'});",
+    "'/api/leitores');",
+    "url, {",
+    "`/api/leitores/${id}`, {method: 'DELETE'});",
+    "'/api/config/senha/status');",
+    "'/api/config/senha/definir', {",
+    "'/api/config/senha/verificar', {",
+    "'/api/config/exigir_senha_emprestimo/status');",
+    "'/api/config/obrigar_localizacao_livro/status');",
+    "'/api/config/exigir_senha_agendamento/status');",
+    "'/api/config/bloquear_email/status');",
+    "'/api/config/bloquear_excluir_agendamento/status');",
+    "'/api/config/quantidade_aulas/status');",
+    "'/api/config/email/status');",
+    "'/api/config/bloquear_email/set', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({bloqueado}) });",
+    "'/api/config/exigir_senha_emprestimo/set', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ativo}) });",
+    "'/api/config/obrigar_localizacao_livro/set', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ativo}) });",
+    "'/api/config/exigir_senha_agendamento/set', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ativo}) });",
+    "'/api/config/bloquear_excluir_agendamento/set', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ativo}) });",
+    "'/api/config/quantidade_aulas/set', {",
+    "'/api/config/email/set', {",
+    "'/api/emprestimos/ativos'); }, 30 * 60 * 1000);",
+    "'/api/hero-image');"
+  ],
+  "javascript_files": {
+    "ui": [
+      "CustomSelect",
+      "closeModal",
+      "confirmAction",
+      "getOpenModalId",
+      "initCustomSelects",
+      "openModal",
+      "showToast",
+      "tab",
+      "toggleTheme",
+      "triggerModalAction",
+      "verificarAdmin"
+    ],
+    "configuracoes": [
+      "abrirConfiguracoes",
+      "abrirModalConfiguracoes",
+      "atualizarBloquearExcluirAgendamento",
+      "atualizarBloqueioEmail",
+      "atualizarExigirSenhaAgendamento",
+      "atualizarExigirSenhaEmprestimo",
+      "atualizarObrigarLocalizacao",
+      "carregarConfig",
+      "carregarConfigAgenda",
+      "salvarConfig",
+      "salvarConfigAgenda",
+      "salvarConfigGerais"
+    ],
+    "livros": [
+      "aplicarFiltroAcervo",
+      "aplicarVisibilidadeCamposLivro",
+      "carregarAcervo",
+      "confirmarExclusaoLivro",
+      "editarLivroSelecionado",
+      "exibirPrateleiras",
+      "filtrarAcervo",
+      "handleClipboardPaste",
+      "openModalManual",
+      "previewCapaEdit",
+      "previewCapaManual",
+      "salvarEdicaoLivro",
+      "salvarLivro",
+      "salvarLivroManual",
+      "setupDragAndDrop",
+      "uploadCapa",
+      "uploadImageFile",
+      "verDetalhes",
+      "verificarObrigarLocalizacao"
+    ],
+    "leitores": [
+      "aplicarFiltroLeitores",
+      "aplicarMascaraTelefone",
+      "buscarLeitoresAutocomplete",
+      "carregarLeitores",
+      "editarLeitor",
+      "excluirLeitor",
+      "exibirListaLeitores",
+      "filtrarLeitores",
+      "formatarSala",
+      "salvarLeitor",
+      "toggleLeitorTipo"
+    ],
+    "emprestimos": [
+      "aplicarVisibilidadeCamposEmprestimo",
+      "confirmarEmprestimoRapido",
+      "devolverEmprestimo",
+      "emprestarSelecionado",
+      "filtrarEmprestimos",
+      "renovarEmprestimo",
+      "verificarExigirSenhaEmprestimo"
+    ],
+    "dashboard": [
+      "carregarDashboard",
+      "carregarGraficoGeneros",
+      "carregarGraficoHistorico",
+      "carregarLivrosAdormecidos",
+      "carregarRankingLeitores",
+      "carregarTopLivros"
+    ],
+    "agenda": [
+      "carregarAgenda",
+      "carregarAgendamentosPassados",
+      "carregarProximosAgendamentos",
+      "celulaAgendaClick",
+      "excluirAgendamentoAtual",
+      "excluirAgendamentoDetalhes",
+      "initFlatpickr",
+      "limparFormAgenda",
+      "navegarParaAgendamento",
+      "salvarAgendamento",
+      "verificarExigirSenhaAgendamento"
+    ],
+    "app": [],
+    "landing": [
+      "showSection",
+      "carregarHeroImage"
+    ],
+    "template": [
+      "initializeTemplate (57 handlers extraidos; contratos de style/onclick)"
+    ]
+  },
+  "python_inventory": [
+    {
+      "name": "allowed_file",
+      "line": 93,
+      "end_line": 97,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "get_brasilia_now",
+      "line": 103,
+      "end_line": 105,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "get_brasilia_today",
+      "line": 107,
+      "end_line": 109,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "is_admin",
+      "line": 113,
+      "end_line": 116,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "admin_required",
+      "line": 119,
+      "end_line": 125,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "admin_required.decorated_function",
+      "line": 120,
+      "end_line": 123,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "DatabaseManager",
+      "line": 127,
+      "end_line": 229,
+      "kind": "ClassDef"
+    },
+    {
+      "name": "DatabaseManager.__init__",
+      "line": 128,
+      "end_line": 130,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "DatabaseManager.init_database",
+      "line": 132,
+      "end_line": 224,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "DatabaseManager.get_connection",
+      "line": 226,
+      "end_line": 229,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "is_email_blocked",
+      "line": 233,
+      "end_line": 239,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "is_exigir_senha_emprestimo",
+      "line": 241,
+      "end_line": 247,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "is_obrigar_localizacao_livro",
+      "line": 249,
+      "end_line": 255,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "is_exigir_senha_agendamento",
+      "line": 257,
+      "end_line": 263,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "is_bloquear_excluir_agendamento",
+      "line": 265,
+      "end_line": 271,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "get_email_credenciais",
+      "line": 273,
+      "end_line": 285,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "get_quantidade_aulas",
+      "line": 287,
+      "end_line": 295,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "set_quantidade_aulas",
+      "line": 297,
+      "end_line": 302,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "verificar_senha_admin",
+      "line": 304,
+      "end_line": 315,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "download_image_from_url",
+      "line": 317,
+      "end_line": 336,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "get_book_cover_image_bytes",
+      "line": 338,
+      "end_line": 360,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "anexar_capa_livro",
+      "line": 362,
+      "end_line": 370,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "enviar_email_confirmacao",
+      "line": 372,
+      "end_line": 452,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "enviar_email_renovacao",
+      "line": 455,
+      "end_line": 535,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "enviar_email_devolucao",
+      "line": 538,
+      "end_line": 618,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "enviar_email_notificacao",
+      "line": 621,
+      "end_line": 712,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "verificar_e_enviar_notificacoes",
+      "line": 714,
+      "end_line": 752,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "iniciar_verificacao_notificacoes",
+      "line": 754,
+      "end_line": 762,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "iniciar_verificacao_notificacoes._executar_periodicamente",
+      "line": 755,
+      "end_line": 759,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "landing",
+      "line": 765,
+      "end_line": 766,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "app_principal",
+      "line": 769,
+      "end_line": 773,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "serve_images",
+      "line": 776,
+      "end_line": 780,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "admin_status",
+      "line": 783,
+      "end_line": 785,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "hero_image",
+      "line": 788,
+      "end_line": 811,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "senha_status",
+      "line": 816,
+      "end_line": 822,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "definir_senha",
+      "line": 826,
+      "end_line": 841,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "verificar_senha",
+      "line": 844,
+      "end_line": 857,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "bloquear_email_status",
+      "line": 861,
+      "end_line": 867,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "set_bloquear_email",
+      "line": 871,
+      "end_line": 879,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "exigir_senha_emprestimo_status",
+      "line": 883,
+      "end_line": 889,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "set_exigir_senha_emprestimo",
+      "line": 893,
+      "end_line": 901,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "obrigar_localizacao_livro_status",
+      "line": 905,
+      "end_line": 911,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "set_obrigar_localizacao_livro",
+      "line": 915,
+      "end_line": 923,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "exigir_senha_agendamento_status",
+      "line": 927,
+      "end_line": 933,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "set_exigir_senha_agendamento",
+      "line": 937,
+      "end_line": 945,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "bloquear_excluir_agendamento_status",
+      "line": 949,
+      "end_line": 955,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "set_bloquear_excluir_agendamento",
+      "line": 959,
+      "end_line": 967,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "quantidade_aulas_status",
+      "line": 970,
+      "end_line": 973,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "set_quantidade_aulas_route",
+      "line": 977,
+      "end_line": 983,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "config_email_status",
+      "line": 987,
+      "end_line": 993,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "set_config_email",
+      "line": 997,
+      "end_line": 1010,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "api_livros",
+      "line": 1014,
+      "end_line": 1084,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "upload_imagem",
+      "line": 1088,
+      "end_line": 1109,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "uploaded_file",
+      "line": 1112,
+      "end_line": 1116,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "external_file",
+      "line": 1119,
+      "end_line": 1123,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "editar_livro",
+      "line": 1127,
+      "end_line": 1145,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "excluir_livro",
+      "line": 1149,
+      "end_line": 1155,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "api_leitores",
+      "line": 1160,
+      "end_line": 1171,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "buscar_leitor",
+      "line": 1175,
+      "end_line": 1192,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "criar_leitor",
+      "line": 1196,
+      "end_line": 1210,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "editar_leitor",
+      "line": 1214,
+      "end_line": 1229,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "excluir_leitor",
+      "line": 1233,
+      "end_line": 1239,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "realizar_emprestimo",
+      "line": 1244,
+      "end_line": 1369,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "contar_emprestimos_ativos",
+      "line": 1373,
+      "end_line": 1379,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "listar_emprestimos_ativos",
+      "line": 1383,
+      "end_line": 1403,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "listar_todos_emprestimos",
+      "line": 1407,
+      "end_line": 1426,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "listar_emprestimos_devolvidos",
+      "line": 1430,
+      "end_line": 1449,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "listar_devolucoes_hoje",
+      "line": 1453,
+      "end_line": 1471,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "listar_atrasos",
+      "line": 1475,
+      "end_line": 1493,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "devolver_emprestimo",
+      "line": 1497,
+      "end_line": 1526,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "renovar_emprestimo",
+      "line": 1530,
+      "end_line": 1564,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "listar_mais_emprestados",
+      "line": 1567,
+      "end_line": 1588,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "listar_ativos_por_genero",
+      "line": 1591,
+      "end_line": 1609,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "listar_historico_por_genero",
+      "line": 1612,
+      "end_line": 1629,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "listar_ranking_leitores",
+      "line": 1632,
+      "end_line": 1653,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "listar_livros_adormecidos",
+      "line": 1656,
+      "end_line": 1678,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "api_agendamentos",
+      "line": 1682,
+      "end_line": 1719,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "datas_com_agendamentos",
+      "line": 1722,
+      "end_line": 1753,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "agendamentos_passados",
+      "line": 1756,
+      "end_line": 1781,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "criar_agendamento",
+      "line": 1785,
+      "end_line": 1817,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "excluir_agendamento",
+      "line": 1821,
+      "end_line": 1829,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "get_app_html",
+      "line": 1832,
+      "end_line": 4817,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "buscar_open_library",
+      "line": 5111,
+      "end_line": 5155,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "buscar_brasil_api",
+      "line": 5157,
+      "end_line": 5200,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "buscar_google_books_por_isbn",
+      "line": 5202,
+      "end_line": 5214,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "buscar_google_books_por_titulo",
+      "line": 5216,
+      "end_line": 5228,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "_extrair_dados_google",
+      "line": 5230,
+      "end_line": 5261,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "buscar_livro_cascata",
+      "line": 5263,
+      "end_line": 5323,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "buscar_livro_cascata.preencher_faltantes",
+      "line": 5280,
+      "end_line": 5287,
+      "kind": "FunctionDef"
+    },
+    {
+      "name": "start_flask",
+      "line": 5333,
+      "end_line": 5339,
+      "kind": "FunctionDef"
+    }
+  ],
+  "original_sha256": "c34168e0239d6ab8606ad8ea660c8134b7355227e952d442996a3587dc5c0548",
+  "logical_forms": [
+    "modalAddLivro",
+    "modalManualLivro",
+    "modalEditarLivro",
+    "modalLeitor",
+    "modalEmprestimoRapido",
+    "modalConfiguracoes",
+    "modalConfigAgenda",
+    "modalSenhaConfig",
+    "modalAgendamento"
+  ],
+  "tables": {
+    "Livros": "Acervo, estoque, disponibilidade, capa, categoria, localizacao e data_cadastro",
+    "Usuarios": "Estudantes, professores e bibliotecarios; email unico",
+    "Emprestimo": "FK usuarios_id -> Usuarios.id; livros_id -> Livros.id; datas, quantidade, status e flags de notificacao",
+    "Agendamento": "Data, periodo, dia_semana, aula, professor, materia, uso e turma",
+    "Configuracoes": "chave primaria textual -> valor textual"
+  }
+}

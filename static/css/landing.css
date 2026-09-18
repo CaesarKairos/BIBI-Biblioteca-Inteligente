@@ -1,0 +1,190 @@
+:root {
+    --bg-light: #fdfaf5;
+    --container-bg: #ffffff;
+    --accent-clay: #bc8a5f;
+    --text-dark: #2d2926;
+    --text-muted: #7d756d;
+    --border-color: #eee9e0;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-light);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: var(--text-dark);
+    transition: all 0.3s ease;
+}
+
+.container {
+    background-color: var(--container-bg);
+    width: 92%;
+    max-width: 1100px;
+    border-radius: 40px;
+    padding: 60px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+    position: relative;
+    min-height: 650px;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 60px;
+}
+
+.logo-img { 
+    height: 40px;
+    width: auto;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-muted);
+    transition: color 0.3s;
+    cursor: pointer;
+}
+
+.nav-links a:hover { color: var(--accent-clay); }
+
+#home-section, #about-section { display: none; }
+#home-section.active, #about-section.active { display: flex; }
+
+.content-wrapper { align-items: center; gap: 60px; }
+.text-section { flex: 1.2; }
+.main-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 4.2rem;
+    line-height: 1;
+    margin-bottom: 35px;
+    color: var(--text-dark);
+}
+.discover-row { display: flex; align-items: center; gap: 15px; }
+.inline-icon { height: 45px; width: auto; opacity: 0.9; }
+.sub-title {
+    display: block;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 3.8rem;
+    color: var(--accent-clay);
+}
+.quote {
+    font-size: 1.15rem;
+    max-width: 420px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+.cta-button {
+    background-color: var(--text-dark);
+    color: #ffffff;
+    border: none;
+    padding: 18px 40px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+.cta-button:hover {
+    background-color: var(--accent-clay);
+    transform: translateY(-2px);
+}
+
+.image-section { flex: 1; }
+.image-container {
+    width: 100%;
+    aspect-ratio: 0.85 / 1;
+    background-color: #f0f0f0;
+    border-radius: 200px 200px 20px 20px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+#hero-image { width: 100%; height: 100%; object-fit: cover; }
+
+.about-content {
+    flex-direction: column;
+    max-width: 800px;
+    margin: 0 auto;
+}
+.about-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    margin-bottom: 30px;
+    text-align: center;
+}
+.about-text {
+    line-height: 1.8;
+    color: var(--text-dark);
+    font-size: 1.05rem;
+    text-align: justify;
+}
+.about-text p { margin-bottom: 20px; }
+
+.social-footer {
+    margin-top: 40px;
+    text-align: center;
+    border-top: 1px solid var(--border-color);
+    padding-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    flex-wrap: wrap;
+}
+.social-link {
+    text-decoration: none;
+    color: var(--text-dark);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.8;
+    font-weight: 600;
+    transition: opacity 0.3s;
+}
+.social-link:hover { opacity: 1; color: var(--accent-clay); }
+
+body.dark-mode {
+    --bg-light: #1e1e1e;
+    --container-bg: #2d2a26;
+    --accent-clay: #a0522d;
+    --text-dark: #f0e7de;
+    --text-muted: #a3968c;
+    --border-color: #5a4e44;
+}
+body.dark-mode .cta-button {
+    background-color: #2d2926;
+    color: #f0e7de;
+    border: 1px solid var(--accent-clay);
+}
+body.dark-mode .cta-button:hover {
+    background-color: var(--accent-clay);
+    color: #ffffff;
+}
+
+@media (max-width: 900px) {
+    .content-wrapper { flex-direction: column-reverse; text-align: center; }
+    .discover-row { justify-content: center; }
+    .main-title { font-size: 3rem; }
+    .sub-title { font-size: 2.5rem; }
+}
+
+
+/* Declaracoes de apresentacao extraidas dos atributos do template. */
+[data-bibi-style="s31"] { color: var(--accent-clay); font-weight: bold; font-style: normal; }
