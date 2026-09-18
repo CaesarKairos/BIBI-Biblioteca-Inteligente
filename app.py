@@ -21,7 +21,7 @@ from dotenv import load_dotenv
 import sys
 
 # ==========================================
-# DIRETÓRIOS DO SISTEMA
+# DIRETÓRIOS DO SISTEMA Nicolly
 # ==========================================
 
 if getattr(sys, "frozen", False):
