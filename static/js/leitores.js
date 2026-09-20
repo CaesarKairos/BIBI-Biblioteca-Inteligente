@@ -111,6 +111,7 @@ function filtrarLeitores() { aplicarFiltroLeitores(); }
 function exibirListaLeitores(leitores) {
     const container = document.getElementById('lista-leitores');
     container.replaceChildren();
+    if (!leitores.length) container.appendChild(textElement('p', 'Nenhum leitor encontrado.'));
     leitores.forEach(l => {
         const extra = l.tipo === 'estudante' ? `Sala: ${l.sala} - Período: ${l.periodo}` : `Matéria: ${l.materia}`;
         const item = textElement('div', '', 'livro-item');
@@ -123,7 +124,8 @@ function exibirListaLeitores(leitores) {
             const edit = textElement('button', 'Editar', 'btn-primary btn-small');
             edit.onclick = () => editarLeitor(l.id);
             const remove = textElement('button', 'Excluir', 'btn-primary btn-small');
-            remove.style.background = '#b33';
+            remove.style.background = 'var(--danger-bg)';
+            remove.style.color = 'var(--on-status)';
             remove.onclick = () => excluirLeitor(l.id);
             actions.append(edit, remove);
         }

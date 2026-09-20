@@ -60,6 +60,7 @@
         h55: function(event) { showSection('home') },
         h56: function(event) { showSection('about') },
         h57: function(event) { window.location.href='/app' },
+        h58: function(event) { fecharDetalhes() },
     };
     for (const eventName of ["onblur", "onchange", "onclick", "onerror", "oninput"]) {
         document.querySelectorAll('[data-bibi-' + eventName + ']').forEach(element => {

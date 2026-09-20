@@ -124,9 +124,23 @@ async function confirmarEmprestimoRapido() {
 }
 
 
+let emprestimosDoFiltro = [];
+let requisicaoEmprestimos = 0;
+
+// Busca local: não faz uma requisição a cada tecla e ignora acentos/maiúsculas.
+function normalizarNomeEmprestimo(nome) {
+    return String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
+}
+
+document.getElementById('busca-emprestimos')?.addEventListener('input', renderizarEmprestimos);
+
 async function filtrarEmprestimos(filtro) {
     if (!isAdminGlobal) return;
     filtroEmprestimosAtual = filtro;
+    const requisicao = ++requisicaoEmprestimos;
+    emprestimosDoFiltro = [];
+    document.getElementById('lista-ativos').replaceChildren();
+    document.getElementById('resultado-busca-emprestimos').textContent = 'Carregando empréstimos...';
     document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('active-filtro'));
     let btnId = 'btn-filtro-todos';
     if (filtro === 'ativos') btnId = 'btn-filtro-ativos';
@@ -144,10 +158,24 @@ async function filtrarEmprestimos(filtro) {
 
     const res = await apiFetch(url);
     const dados = await res.json();
+    // Uma resposta anterior não deve sobrescrever o filtro escolhido mais recentemente.
+    if (requisicao !== requisicaoEmprestimos) return;
+    emprestimosDoFiltro = dados;
+    renderizarEmprestimos();
+}
+
+function renderizarEmprestimos() {
+    if (!isAdminGlobal) return;
+    const filtro = filtroEmprestimosAtual;
+    const termos = normalizarNomeEmprestimo(document.getElementById('busca-emprestimos').value).trim().split(/\s+/).filter(Boolean);
+    const dados = emprestimosDoFiltro.filter(e => termos.every(termo => normalizarNomeEmprestimo(e.leitor).includes(termo)));
+    document.getElementById('resultado-busca-emprestimos').textContent = `${dados.length} ${dados.length === 1 ? 'empréstimo encontrado' : 'empréstimos encontrados'} no filtro selecionado.`;
     const div = document.getElementById('lista-ativos');
 
     if (dados.length === 0) {
-        div.innerHTML = '<p>Nenhum empréstimo encontrado para este filtro.</p>';
+        div.replaceChildren(textElement('p', termos.length
+            ? 'Nenhum empréstimo encontrado para esse nome neste filtro. Confira o nome ou selecione Todos.'
+            : 'Nenhum empréstimo encontrado para este filtro.'));
         return;
     }
 
@@ -165,7 +193,10 @@ async function filtrarEmprestimos(filtro) {
         coverCell.appendChild(cover);
         row.appendChild(coverCell);
         [e.livro, e.leitor, e.telefone || '-', e.serie || '-', e.data_emprestimo || '-', e.data_vencimento || e.vencimento || '-'].forEach(value => row.appendChild(textElement('td', value)));
-        const actions = textElement('td', '', 'acoes-botoes');
+        // O td precisa continuar sendo uma célula de tabela; flex pertence ao filho.
+        const actionCell = document.createElement('td');
+        const actions = textElement('div', '', 'acoes-botoes');
+        actionCell.appendChild(actions);
         if (filtro === 'devolvidos') actions.appendChild(textElement('span', `Devolvido em ${e.data_devolucao}`));
         else if (isAdminGlobal) {
             const devolver = textElement('button', 'Devolver', 'btn-primary btn-small');
@@ -174,7 +205,7 @@ async function filtrarEmprestimos(filtro) {
             renovar.onclick = () => renovarEmprestimo(e.id);
             actions.append(devolver, renovar);
         } else actions.appendChild(textElement('span', 'Sem permissão'));
-        row.appendChild(actions);
+        row.appendChild(actionCell);
         body.appendChild(row);
     });
     table.append(head, body);

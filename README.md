@@ -23,6 +23,7 @@ O sistema tem **arquitetura modular em camadas**, com rotas HTTP, serviços, per
 ## Funcionalidades
 
 - **Acervo:** cadastro manual ou por ISBN, edição, categorias, descrição, localização/prateleira e controle de exemplares disponíveis.
+- **Interface:** ocupa toda a janela, com prateleiras, painel de detalhes fechável, temas claro/escuro e navegação por teclado. Capas nas prateleiras têm tamanho uniforme. Número de páginas opcional, preenchido manualmente ou pelas fontes de ISBN.
 - **Capas:** upload, arrastar/colar imagens, obtenção por URL e imagem substituta quando não há capa.
 - **Leitores:** cadastro de estudantes e professores, com campos de sala, período, matéria, e-mail e telefone conforme o tipo.
 - **Empréstimos:** fluxo rápido, consulta de ativos e histórico, devolução, renovação e atualização de estoque.
@@ -52,6 +53,8 @@ Atalhos administrativos: `Ctrl+1` Dashboard, `Ctrl+2` Acervo, `Ctrl+3` Emprésti
 As páginas `/` e `/app` são renderizadas pelo Flask. O JavaScript consome endpoints `/api/...` e recebe dados iniciais do template, como o perfil administrativo e a quantidade de aulas. Os scripts são separados em arquivos por funcionalidade e compartilham funções e estado no navegador.
 
 Os serviços recebem dados das rotas e executam as regras e consultas SQL por meio do `DatabaseManager`. A persistência usa SQLite em modo WAL. Essa organização permite manter cada responsabilidade em seu módulo, embora frontend e backend continuem compartilhando os contratos da API e o mesmo processo de distribuição.
+
+O [relatório da modernização visual](docs/MODERNIZACAO_UI.md) descreve a interface, a migração idempotente de `numero_paginas` e os testes. As áreas **✦ BIBI** são preparação visual: a quinta prateleira mostra uma amostra identificada do acervo e o Dashboard usa um resumo local, sem integração de IA.
 
 O [relatório da refatoração](docs/REFATORACAO.md) e o [inventário original](docs/inventario_original.json) documentam a migração inicial. São registros históricos: informações sobre o estado do workspace e resultados daquela etapa não substituem a implementação atual.
 
@@ -220,7 +223,7 @@ python -m unittest discover -s tests -v
 
 `test_regression.py` compara contratos e comportamentos com a implementação preservada em `legacy/`. `test_improvements.py` cobre correções como validação e concorrência de empréstimos, devoluções, notificações e processamento de imagens. Os testes usam bancos temporários e simulam SMTP e chamadas às APIs de livros.
 
-A comparação opcional de páginas e interações no navegador requer Playwright e Edge ou Chrome instalado nos caminhos procurados por `tests/browser_check.py`:
+A verificação opcional de layout e interações no navegador requer Playwright e Edge ou Chrome instalado nos caminhos procurados por `tests/browser_check.py`:
 
 ```powershell
 python -m pip install playwright

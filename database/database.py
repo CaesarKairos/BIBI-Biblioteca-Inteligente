@@ -24,6 +24,7 @@ class DatabaseManager:
                 ('Livros', 'data_cadastro', "TEXT NOT NULL DEFAULT ''"),
                 ('Usuarios', 'telefone', 'TEXT'),
                 ('Livros', 'localizacao', 'TEXT'),
+                ('Livros', 'numero_paginas', "INTEGER CHECK (numero_paginas IS NULL OR (typeof(numero_paginas) = 'integer' AND numero_paginas > 0))"),
             )
             for table, column, definition in migrations:
                 columns = {row[1] for row in cursor.execute(f'PRAGMA table_info({table})')}

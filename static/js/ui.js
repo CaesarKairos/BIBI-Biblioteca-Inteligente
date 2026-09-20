@@ -26,9 +26,48 @@ function showToast(message, type = 'info') {
 }
 
 
-function openModal(id) { document.getElementById(id).style.display='flex'; }
+const modalFocus = new Map();
+const modalStack = [];
+function openModal(id) {
+    const modal = document.getElementById(id);
+    modalFocus.set(id, document.activeElement);
+    const previousIndex = modalStack.indexOf(id);
+    if (previousIndex >= 0) modalStack.splice(previousIndex, 1);
+    modalStack.push(id);
+    modal.style.zIndex = 1000 + modalStack.length;
+    modal.style.display = 'flex';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    const heading = modal.querySelector('h3');
+    if (heading) {
+        if (!heading.id) heading.id = `${id}-title`;
+        modal.setAttribute('aria-labelledby', heading.id);
+    }
+    requestAnimationFrame(() => {
+        modal.querySelector('input:not([type="hidden"]), textarea, button')?.focus();
+    });
+}
 
-function closeModal(id) { document.getElementById(id).style.display='none'; }
+function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+    const index = modalStack.indexOf(id);
+    if (index >= 0) modalStack.splice(index, 1);
+    const target = modalFocus.get(id);
+    if (target?.isConnected) target.focus({preventScroll: true});
+    modalFocus.delete(id);
+}
+
+document.addEventListener('keydown', event => {
+    const id = modalStack[modalStack.length - 1];
+    if (!id) return;
+    if (event.key === 'Escape') { event.preventDefault(); closeModal(id); }
+    if (event.key !== 'Tab') return;
+    const focusable = [...document.getElementById(id).querySelectorAll('button, input, textarea, select, [tabindex="0"]')]
+        .filter(el => !el.disabled && el.getClientRects().length);
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+});
 
 function confirmAction(titulo, mensagem, callback) {
     document.getElementById('confirm-titulo').innerText = titulo;
@@ -49,8 +88,10 @@ function toggleTheme(ativar) {
     const config = carregarConfig();
     config.darkMode = ativar;
     salvarConfig(config);
-    carregarGraficoGeneros();
-    carregarGraficoHistorico();
+    if (isAdminGlobal) {
+        carregarGraficoGeneros();
+        carregarGraficoHistorico();
+    }
     verificarObrigarLocalizacao();
 }
 
@@ -68,6 +109,19 @@ class CustomSelect {
         this.container.className = 'custom-select';
         const selectedDiv = document.createElement('div');
         selectedDiv.className = 'select-selected';
+        selectedDiv.tabIndex = 0;
+        selectedDiv.setAttribute('role', 'button');
+        selectedDiv.setAttribute('aria-expanded', 'false');
+        selectedDiv.setAttribute('aria-label', this.container.previousElementSibling?.textContent || this.container.parentElement.querySelector('label')?.textContent || 'Selecionar opção');
+        selectedDiv.addEventListener('keydown', event => {
+            if (['Enter', ' '].includes(event.key)) {
+                event.preventDefault(); event.stopPropagation(); this.toggle();
+            } else if (['ArrowDown', 'ArrowUp'].includes(event.key)) {
+                event.preventDefault();
+                const index = this.options.findIndex(opt => opt.value == this.selectedValue);
+                this.setValue(this.options[(index + (event.key === 'ArrowDown' ? 1 : -1) + this.options.length) % this.options.length].value);
+            } else if (event.key === 'Escape') this.close();
+        });
         const selectedOption = this.options.find(opt => opt.value == this.selectedValue) || this.options[0];
         selectedDiv.appendChild(textElement('span', selectedOption ? selectedOption.text : ''));
         this.container.appendChild(selectedDiv);
@@ -97,10 +151,12 @@ class CustomSelect {
     toggle() {
         const items = this.container.querySelector('.select-items');
         items.style.display = items.style.display === 'block' ? 'none' : 'block';
+        this.container.querySelector('.select-selected').setAttribute('aria-expanded', String(items.style.display === 'block'));
     }
     close() {
         const items = this.container.querySelector('.select-items');
         if (items) items.style.display = 'none';
+        this.container.querySelector('.select-selected')?.setAttribute('aria-expanded', 'false');
     }
     setValue(value) {
         this.selectedValue = value;
@@ -202,6 +258,7 @@ function initCustomSelects() {
 
 
 function getOpenModalId() {
+    if (modalStack.length) return modalStack[modalStack.length - 1];
     const modals = ['modalAddLivro', 'modalManualLivro', 'modalEditarLivro', 'modalAgendamento',
                    'modalLeitor', 'modalEmprestimoRapido', 'modalConfigAgenda', 'modalConfirmacao',
                    'modalAtrasos', 'modalDevolucoesHoje', 'modalSenhaConfig', 'modalConfiguracoes', 'modalDetalhesAgendamento'];
@@ -233,10 +290,13 @@ function triggerModalAction(modalId) {
 
 
 function tab(id) {
+    if (!isAdminGlobal && !['acervo', 'age'].includes(id)) return;
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-menu li').forEach(l => l.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     document.getElementById('m-'+id).classList.add('active');
+    document.querySelectorAll('.nav-menu li').forEach(item => item.setAttribute('aria-current', item.id === `m-${id}` ? 'page' : 'false'));
+    document.querySelector('.content-area').scrollTop = 0;
     if(id === 'acervo') carregarAcervo();
     if(id === 'dash' && isAdminGlobal) carregarDashboard();
     if(id === 'lei' && isAdminGlobal) carregarLeitores();
@@ -306,6 +366,16 @@ function textElement(tag, value, className = '') {
     element.textContent = value ?? '';
     if (className) element.className = className;
     return element;
+}
+
+function tornarAcionavel(element) {
+    element.tabIndex = 0;
+    element.setAttribute('role', 'button');
+    element.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault(); event.stopPropagation(); element.click();
+        }
+    });
 }
 
 function coverBackground(element, value) {

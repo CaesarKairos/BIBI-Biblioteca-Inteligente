@@ -127,6 +127,11 @@ async function carregarAcervo() {
     const res = await apiFetch('/api/livros');
     todosLivros = await res.json();
     aplicarFiltroAcervo();
+    if (livroSelecionado) {
+        const atualizado = todosLivros.find(l => l.id === livroSelecionado.id);
+        if (atualizado) verDetalhes(atualizado);
+        else fecharDetalhes();
+    }
 }
 
 
@@ -144,9 +149,50 @@ function filtrarAcervo() {
 }
 
 
+// Contrato futuro: uma lista de IDs ordenados. null ativa apenas o fallback visual
+// determinístico; [] representa uma seleção explicitamente vazia. Não há IA aqui.
+let idsRecomendacoesBibi = null;
+function definirRecomendacoesBibi(ids) {
+    idsRecomendacoesBibi = Array.isArray(ids) ? [...new Set(ids)] : null;
+    aplicarFiltroAcervo();
+}
+
+function criarLivroPrateleira(l) {
+    const book = document.createElement('button');
+    book.type = 'button';
+    book.className = 'book';
+    book.dataset.livroId = l.id;
+    const indisponivel = Number(l.disponivel) <= 0;
+    book.classList.toggle('unavailable', indisponivel);
+    book.title = `${l.titulo} — ${l.autor || 'Autor desconhecido'}${indisponivel ? ' — Não existem exemplares disponíveis' : ''}`;
+    book.setAttribute('aria-label', book.title);
+    book.setAttribute('aria-pressed', String(livroSelecionado?.id === l.id));
+    coverBackground(book, l.capa);
+    book.onclick = () => {
+        verDetalhes(l);
+        if (window.matchMedia('(max-width: 700px)').matches) {
+            document.querySelector('.right-bar').scrollIntoView({block: 'start'});
+        }
+    };
+    return book;
+}
+
 function exibirPrateleiras(livros) {
     const container = document.getElementById('acervo-prateleiras');
     container.innerHTML = '';
+    const especial = document.createElement('section');
+    especial.className = 'shelf shelf-bibi';
+    especial.id = 'prateleira-bibi';
+    especial.setAttribute('aria-labelledby', 'recomendacoes-titulo');
+    especial.dataset.contentSource = idsRecomendacoesBibi === null ? 'placeholder' : 'ids';
+    especial.innerHTML = '<div class="shelf-heading"><h3 id="recomendacoes-titulo"><span class="bibi-cat-icon" aria-hidden="true"></span>Recomendações da BIBI</h3><span class="preview-badge">Em preparação</span></div><p class="shelf-note">Uma amostra do acervo. Recomendações inteligentes chegam no futuro.</p><div class="books-grid"></div><div class="shelf-base"></div>';
+    const demonstracao = idsRecomendacoesBibi === null
+        ? [...livros].sort((a, b) => a.id - b.id).slice(0, 8)
+        : idsRecomendacoesBibi.map(id => livros.find(l => l.id === id)).filter(Boolean);
+    const especialGrid = especial.querySelector('.books-grid');
+    demonstracao.forEach(l => especialGrid.appendChild(criarLivroPrateleira(l)));
+    if (!demonstracao.length) especialGrid.appendChild(textElement('p', 'Nenhum livro para exibir nesta seleção.', 'shelf-empty'));
+    container.appendChild(especial);
     const categorias = ['Ficção', 'Não-ficção', 'Poesia', 'Quadrinhos'];
     categorias.forEach(cat => {
         const livrosCat = livros.filter(l => l.categoria === cat);
@@ -157,14 +203,11 @@ function exibirPrateleiras(livros) {
         const grid = shelfDiv.querySelector('.books-grid');
         if (livrosCat.length > 0) {
             livrosCat.forEach(l => {
-                const div = document.createElement('div');
-                div.className = 'book';
-                coverBackground(div, l.capa);
-                div.onclick = () => verDetalhes(l);
-                grid.appendChild(div);
+                grid.appendChild(criarLivroPrateleira(l));
             });
         } else {
             const emptyMsg = document.createElement('p');
+            emptyMsg.className = 'shelf-empty';
             emptyMsg.style.color = 'var(--light)';
             emptyMsg.style.fontStyle = 'italic';
             emptyMsg.innerText = 'Nenhum livro nesta prateleira.';
@@ -175,16 +218,32 @@ function exibirPrateleiras(livros) {
 
 
 function verDetalhes(l) {
+    const mudouLivro = livroSelecionado?.id !== l.id;
     livroSelecionado = l;
     document.getElementById('info-vazio').style.display = 'none';
     document.getElementById('info-livro').style.display = 'block';
+    document.querySelectorAll('.book[data-livro-id]').forEach(book => {
+        book.setAttribute('aria-pressed', String(book.dataset.livroId === String(l.id)));
+    });
+    const details = document.getElementById('info-livro');
+    if (mudouLivro) document.querySelector('.right-bar').scrollTop = 0;
+    if (mudouLivro && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        details.getAnimations().forEach(animation => animation.cancel());
+        details.animate([{opacity: 0, transform: 'translateY(5px)'}, {opacity: 1, transform: 'translateY(0)'}], {duration: 200});
+    }
     coverBackground(document.getElementById('det-capa'), l.capa);
     document.getElementById('det-titulo').innerText = l.titulo;
     document.getElementById('det-autor').innerText = l.autor || 'Autor desconhecido';
     document.getElementById('det-ano').innerText = l.ano ? `Ano: ${l.ano}` : '';
+    for (const [id, value] of [['det-paginas', l.numero_paginas ? `${l.numero_paginas} páginas` : ''], ['det-isbn', l.isbn && !l.isbn.startsWith('MANUAL_') ? `ISBN: ${l.isbn}` : ''], ['det-localizacao', l.localizacao ? `Localização: ${l.localizacao}` : '']]) {
+        const field = document.getElementById(id);
+        field.textContent = value;
+        field.hidden = !value;
+    }
     document.getElementById('det-temas').replaceChildren(textElement('strong', 'Temas:'), document.createTextNode(' ' + (l.temas || 'Não informado')));
-    document.getElementById('det-desc').innerText = (l.descricao || 'Sem descrição.').substring(0, 250) + (l.descricao && l.descricao.length > 250 ? '...' : '');
+    document.getElementById('det-desc').innerText = l.descricao || 'Sem descrição.';
     document.getElementById('det-estoque').innerText = l.disponivel;
+    document.querySelector('.availability').classList.toggle('unavailable', Number(l.disponivel) <= 0);
 
     const btnEmprestar = document.getElementById('btn-emprestar');
     if (btnEmprestar) {
@@ -204,6 +263,27 @@ function verDetalhes(l) {
     }
 }
 
+
+function fecharDetalhes() {
+    const id = livroSelecionado?.id;
+    const devolverFoco = document.getElementById('info-livro').contains(document.activeElement);
+    livroSelecionado = null;
+    document.getElementById('info-livro').style.display = 'none';
+    document.getElementById('info-vazio').style.display = 'block';
+    document.querySelectorAll('.book').forEach(book => book.setAttribute('aria-pressed', 'false'));
+    if (devolverFoco) document.querySelector(`.book[data-livro-id="${id}"]`)?.focus({preventScroll: true});
+}
+
+function validarCampoPaginas(prefixo) {
+    const input = document.getElementById(`${prefixo}-paginas`);
+    if (!input.checkValidity() || (input.value && !Number.isSafeInteger(Number(input.value)))) {
+        input.reportValidity();
+        input.focus();
+        showToast('Número de páginas deve ser um inteiro positivo válido.', 'warning');
+        return false;
+    }
+    return true;
+}
 
 async function salvarLivro() {
     return runAction('salvarLivro', 'btn-buscar-salvar', async () => {
@@ -246,6 +326,7 @@ async function salvarLivro() {
 async function salvarLivroManual() {
     return runAction('salvarLivroManual', 'btn-salvar-manual', async () => {
         if (!isAdminGlobal) return;
+        if (!validarCampoPaginas('manual')) return;
         const titulo = document.getElementById('manual-titulo').value;
         const autor = document.getElementById('manual-autor').value;
         const qtd = document.getElementById('manual-qtd').value;
@@ -261,6 +342,7 @@ async function salvarLivroManual() {
             titulo: titulo,
             autor: autor,
             ano: document.getElementById('manual-ano').value || null,
+            numero_paginas: document.getElementById('manual-paginas').value ? Number(document.getElementById('manual-paginas').value) : null,
             descricao: document.getElementById('manual-descricao').value,
             temas: document.getElementById('manual-temas').value,
             categoria: document.getElementById('manual-categoria').value,
@@ -280,6 +362,7 @@ async function salvarLivroManual() {
             document.getElementById('manual-titulo').value = '';
             document.getElementById('manual-autor').value = '';
             document.getElementById('manual-ano').value = '';
+            document.getElementById('manual-paginas').value = '';
             document.getElementById('manual-descricao').value = '';
             document.getElementById('manual-temas').value = '';
             document.getElementById('manual-qtd').value = '1';
@@ -309,6 +392,7 @@ function editarLivroSelecionado() {
     document.getElementById('edit-titulo').value = livroSelecionado.titulo;
     document.getElementById('edit-autor').value = livroSelecionado.autor;
     document.getElementById('edit-ano').value = livroSelecionado.ano || '';
+    document.getElementById('edit-paginas').value = livroSelecionado.numero_paginas || '';
     document.getElementById('edit-descricao').value = livroSelecionado.descricao || '';
     document.getElementById('edit-temas').value = livroSelecionado.temas || '';
     document.getElementById('edit-categoria').value = livroSelecionado.categoria || 'Ficção';
@@ -368,11 +452,13 @@ async function verificarObrigarLocalizacao() {
 async function salvarEdicaoLivro() {
     return runAction('salvarEdicaoLivro', 'btn-salvar-edicao', async () => {
         if (!isAdminGlobal) return;
+        if (!validarCampoPaginas('edit')) return;
         const id = document.getElementById('edit-id').value;
         const payload = {
             titulo: document.getElementById('edit-titulo').value,
             autor: document.getElementById('edit-autor').value,
             ano: document.getElementById('edit-ano').value,
+            numero_paginas: document.getElementById('edit-paginas').value ? Number(document.getElementById('edit-paginas').value) : null,
             descricao: document.getElementById('edit-descricao').value,
             temas: document.getElementById('edit-temas').value,
             categoria: document.getElementById('edit-categoria').value,
@@ -409,9 +495,7 @@ function confirmarExclusaoLivro() {
     confirmAction("Excluir Livro", `Deseja realmente excluir "${livroSelecionado.titulo}"?`, async () => {
         await apiFetch(`/api/livros/${livroSelecionado.id}`, {method: 'DELETE'});
         showToast("Livro excluído.", "success");
-        livroSelecionado = null;
-        document.getElementById('info-livro').style.display = 'none';
-        document.getElementById('info-vazio').style.display = 'block';
+        fecharDetalhes();
         carregarAcervo();
         if (isAdminGlobal) carregarDashboard();
     });

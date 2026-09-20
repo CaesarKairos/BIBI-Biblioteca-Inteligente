@@ -22,6 +22,8 @@ async function carregarAgenda() {
         const row = document.createElement('tr');
         if (mostrarColunaAula) row.appendChild(textElement('td', `${aula}ª Aula`));
         const cell = textElement('td', ag ? `${ag.professor} - ${ag.materia}` : '-');
+        tornarAcionavel(cell);
+        cell.setAttribute('aria-label', `${aula}ª aula: ${ag ? `${ag.professor} — ${ag.materia}` : 'Disponível'}`);
         cell.className = ag ? 'ocupado' : '';
         Object.assign(cell.dataset, {id: ag?.id ?? '', professor: ag?.professor ?? '', materia: ag?.materia ?? '', uso: ag?.uso ?? '', aula});
         cell.onclick = () => celulaAgendaClick(cell);
@@ -181,6 +183,7 @@ async function carregarProximosAgendamentos() {
     proximos.slice(0, 5).forEach(ag => {
         const span = document.createElement('span');
         span.className = 'proximo-dia';
+        tornarAcionavel(span);
         const dataFormatada = new Date(ag.data + 'T00:00:00').toLocaleDateString('pt-BR');
         span.textContent = dataFormatada;
         span.title = `${ag.professor} - ${ag.materia}`;
@@ -202,6 +205,7 @@ async function carregarAgendamentosPassados() {
     datas.forEach(ag => {
         const span = document.createElement('span');
         span.className = 'passado-dia';
+        tornarAcionavel(span);
         const dataFormatada = new Date(ag.data + 'T00:00:00').toLocaleDateString('pt-BR');
         span.textContent = dataFormatada;
         span.title = `${ag.professor} - ${ag.materia}`;

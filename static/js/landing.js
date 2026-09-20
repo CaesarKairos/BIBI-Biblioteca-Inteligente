@@ -26,7 +26,12 @@ async function carregarHeroImage() {
 
 document.addEventListener('DOMContentLoaded', () => {
     carregarHeroImage();
-    if (localStorage.getItem('darkMode') === 'true') {
+    let darkMode = localStorage.getItem('darkMode') === 'true';
+    try {
+        const config = JSON.parse(localStorage.getItem('bibiConfig'));
+        if (typeof config?.darkMode === 'boolean') darkMode = config.darkMode;
+    } catch { /* Preserva o fallback de instalações anteriores. */ }
+    if (darkMode) {
         document.body.classList.add('dark-mode');
     }
 });

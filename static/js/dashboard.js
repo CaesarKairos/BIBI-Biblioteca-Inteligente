@@ -1,7 +1,9 @@
 async function carregarGraficoGeneros() {
+    if (!isAdminGlobal) return;
     const res = await apiFetch('/api/emprestimos/ativos-por-genero');
     const dados = await res.json();
     const ctx = document.getElementById('grafico-generos').getContext('2d');
+    estadoVazioGrafico(ctx.canvas, dados);
     if (graficoGenerosInstance) graficoGenerosInstance.destroy();
     const isDark = document.body.classList.contains('dark-mode');
     const textColor = isDark ? '#f0e7de' : '#3e332a';
@@ -11,15 +13,17 @@ async function carregarGraficoGeneros() {
     graficoGenerosInstance = new Chart(ctx, {
         type: 'pie',
         data: { labels, datasets: [{ data: valores, backgroundColor: cores.slice(0, labels.length), borderColor: isDark ? '#3c332c' : '#ffffff', borderWidth: 2 }] },
-        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Nunito', size: 12 }, padding: 15 } }, tooltip: { callbacks: { label: function(context) { const total = context.dataset.data.reduce((a,b)=>a+b,0); const value = context.raw; const percent = total > 0 ? Math.round((value/total)*100) : 0; return ` ${context.label}: ${value} (${percent}%)`; } } } } }
+        options: { animation: {duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 220}, responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Nunito', size: 12 }, padding: 15 } }, tooltip: { callbacks: { label: function(context) { const total = context.dataset.data.reduce((a,b)=>a+b,0); const value = context.raw; const percent = total > 0 ? Math.round((value/total)*100) : 0; return ` ${context.label}: ${value} (${percent}%)`; } } } } }
     });
 }
 
 
 async function carregarGraficoHistorico() {
+    if (!isAdminGlobal) return;
     const res = await apiFetch('/api/emprestimos/historico-por-genero');
     const dados = await res.json();
     const ctx = document.getElementById('grafico-historico').getContext('2d');
+    estadoVazioGrafico(ctx.canvas, dados);
     if (graficoHistoricoInstance) graficoHistoricoInstance.destroy();
     const isDark = document.body.classList.contains('dark-mode');
     const textColor = isDark ? '#f0e7de' : '#3e332a';
@@ -29,7 +33,7 @@ async function carregarGraficoHistorico() {
     graficoHistoricoInstance = new Chart(ctx, {
         type: 'pie',
         data: { labels, datasets: [{ data: valores, backgroundColor: cores.slice(0, labels.length), borderColor: isDark ? '#3c332c' : '#ffffff', borderWidth: 2 }] },
-        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Nunito', size: 12 }, padding: 15 } }, tooltip: { callbacks: { label: function(context) { const total = context.dataset.data.reduce((a,b)=>a+b,0); const value = context.raw; const percent = total > 0 ? Math.round((value/total)*100) : 0; return ` ${context.label}: ${value} (${percent}%)`; } } } } }
+        options: { animation: {duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 220}, responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Nunito', size: 12 }, padding: 15 } }, tooltip: { callbacks: { label: function(context) { const total = context.dataset.data.reduce((a,b)=>a+b,0); const value = context.raw; const percent = total > 0 ? Math.round((value/total)*100) : 0; return ` ${context.label}: ${value} (${percent}%)`; } } } } }
     });
 }
 
@@ -68,6 +72,7 @@ async function carregarTopLivros() {
     top3.forEach((l, index) => {
         const item = document.createElement('div');
         item.className = 'top-livro-item';
+        tornarAcionavel(item);
         item.onclick = () => { 
             const livroCompleto = todosLivros.find(tl => tl.id === l.id);
             if (livroCompleto) { verDetalhes(livroCompleto); tab('acervo'); }
@@ -94,6 +99,7 @@ async function carregarLivrosAdormecidos() {
     adormecidos.forEach(l => {
         const tag = document.createElement('span');
         tag.className = 'adormecido-tag';
+        tornarAcionavel(tag);
         tag.textContent = l.titulo;
         tag.title = `${l.autor || 'Autor desconhecido'}`;
         tag.onclick = () => {
@@ -130,9 +136,36 @@ async function carregarDashboard() {
     const agenda = await resAgenda.json();
     const agendaFutura = agenda.filter(a => a.data >= hojeStr);
     document.getElementById('stat-agenda').innerText = agendaFutura.length;
+    // Resumo local determinístico. Futuramente o mesmo renderizador pode receber
+    // dados de um endpoint; não há geração, chatbot ou chamada de IA nesta versão.
+    const hora = new Date().getHours();
+    atualizarMensagemBibi({
+        saudacao: hora < 12 ? 'Bom dia.' : hora < 18 ? 'Boa tarde.' : 'Boa noite.',
+        texto: `A biblioteca reúne ${livros.length} títulos. Hoje, há ${hojeList.length} devoluções previstas. Boa leitura!`
+    });
     carregarGraficoGeneros();
     carregarGraficoHistorico();
     carregarRankingLeitores();
     carregarTopLivros();
     carregarLivrosAdormecidos();
+}
+
+function atualizarMensagemBibi({saudacao, texto}) {
+    document.getElementById('bibi-greeting').textContent = saudacao;
+    document.getElementById('bibi-message-text').textContent = texto;
+}
+
+function estadoVazioGrafico(canvas, dados) {
+    const id = `${canvas.id}-vazio`;
+    let message = document.getElementById(id);
+    if (!message) {
+        message = textElement('p', 'Os gêneros aparecerão aqui quando houver empréstimos.', 'chart-empty');
+        message.id = id;
+        canvas.after(message);
+    }
+    const vazio = !dados.some(item => item.total > 0);
+    message.hidden = !vazio;
+    canvas.hidden = vazio;
+    canvas.setAttribute('role', 'img');
+    canvas.setAttribute('aria-label', dados.map(item => `${item.categoria}: ${item.total}`).join('; ') || 'Sem empréstimos');
 }

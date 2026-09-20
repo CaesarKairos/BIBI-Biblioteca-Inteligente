@@ -5,6 +5,7 @@
                 nome TEXT NOT NULL,
                 autor TEXT NOT NULL,
                 ano_publicacao INTEGER,
+                numero_paginas INTEGER CHECK (numero_paginas IS NULL OR (typeof(numero_paginas) = 'integer' AND numero_paginas > 0)),
                 capa_url TEXT,
                 descricao TEXT,
                 temas TEXT,
@@ -57,4 +58,3 @@
                 chave TEXT PRIMARY KEY,
                 valor TEXT
             );
-        

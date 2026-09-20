@@ -186,7 +186,7 @@ class ImprovementTests(unittest.TestCase):
         def provider(name,data):
             def run(*args): calls.append(name); return data
             return run
-        with patch.object(livros_service,'buscar_open_library',side_effect=provider('ol',{'titulo':'Original'})),patch.object(livros_service,'buscar_brasil_api',side_effect=provider('br',{'titulo':'Other','autor':'Autor'})),patch.object(livros_service,'buscar_google_books_por_isbn',side_effect=provider('isbn',{'ano_publicacao':2000,'categoria':'Poesia'})),patch.object(livros_service,'buscar_google_books_por_titulo',side_effect=provider('title',{'descricao':'Descricao','temas':'Tema','capa':'https://example.test/cover.png'})):
+        with patch.object(livros_service,'buscar_open_library',side_effect=provider('ol',{'titulo':'Original'})),patch.object(livros_service,'buscar_brasil_api',side_effect=provider('br',{'titulo':'Other','autor':'Autor'})),patch.object(livros_service,'buscar_google_books_por_isbn',side_effect=provider('isbn',{'ano_publicacao':2000,'categoria':'Poesia','numero_paginas':240})),patch.object(livros_service,'buscar_google_books_por_titulo',side_effect=provider('title',{'descricao':'Descricao','temas':'Tema','capa':'https://example.test/cover.png'})):
             result=livros_service.buscar_livro_cascata('123')
         self.assertEqual(calls,['ol','br','isbn','title'])
         self.assertEqual(result['titulo'],'Original')

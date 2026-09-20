@@ -10,6 +10,25 @@ import requests
 import uuid
 
 
+def validar_numero_paginas(valor):
+    """Campo opcional; não trunca decimais nem aceita booleanos como inteiros."""
+    if valor is None or valor == '':
+        return None
+    if isinstance(valor, str) and re.fullmatch(r'[0-9]+', valor.strip()):
+        valor = int(valor.strip())
+    if type(valor) is not int or not 0 < valor <= 9007199254740991:
+        raise ValueError('Número de páginas deve ser um inteiro positivo válido.')
+    return valor
+
+
+def paginas_da_fonte(valor):
+    """Metadados externos inválidos são ausência de informação, não erro de cadastro."""
+    try:
+        return validar_numero_paginas(valor)
+    except ValueError:
+        return None
+
+
 def buscar_open_library(isbn):
     """API #1 - Open Library"""
     try:
@@ -47,6 +66,7 @@ def buscar_open_library(isbn):
                     "titulo": titulo,
                     "autor": autor,
                     "ano_publicacao": ano,
+                    "numero_paginas": paginas_da_fonte(book.get('number_of_pages')),
                     "descricao": descricao,
                     "temas": temas,
                     "categoria": categoria,
@@ -93,6 +113,7 @@ def buscar_brasil_api(isbn):
                 "titulo": titulo,
                 "autor": autor,
                 "ano_publicacao": ano,
+                "numero_paginas": paginas_da_fonte(data.get('page_count')),
                 "descricao": descricao,
                 "temas": temas,
                 "categoria": categoria,
@@ -160,6 +181,7 @@ def _extrair_dados_google(book, isbn):
         "titulo": titulo,
         "autor": autor,
         "ano_publicacao": ano,
+        "numero_paginas": paginas_da_fonte(book.get('pageCount')),
         "descricao": descricao,
         "temas": temas,
         "categoria": categoria,
@@ -178,6 +200,7 @@ def buscar_livro_cascata(isbn):
         "titulo": None,
         "autor": None,
         "ano_publicacao": None,
+        "numero_paginas": None,
         "descricao": None,
         "temas": None,
         "categoria": None,
@@ -237,6 +260,12 @@ def api_livros(admin, data, method):
         if method == 'POST':
             if not admin:
                 return {"erro": "Acesso negado. Operação permitida apenas para administradores."}, 403
+            if not isinstance(data, dict):
+                return {"erro": "Envie os dados do livro em um objeto JSON."}, 400
+            try:
+                numero_paginas = validar_numero_paginas(data.get('numero_paginas'))
+            except ValueError as error:
+                return {"erro": str(error)}, 400
             hoje = get_brasilia_today().isoformat()
         
             localizacao = data.get('localizacao', '').strip()
@@ -268,23 +297,24 @@ def api_livros(admin, data, method):
                 temas = info['temas']
                 categoria = info['categoria']
                 capa = info['capa']
+                numero_paginas = paginas_da_fonte(info.get('numero_paginas'))
 
             cursor.execute('''
-                INSERT INTO Livros (isbn, nome, autor, ano_publicacao, capa_url, descricao, temas, categoria, estoque, quantidade_disponivel, data_cadastro, localizacao)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (isbn, titulo, autor, ano, capa, descricao, temas, categoria, quantidade, quantidade, hoje, localizacao))
+                INSERT INTO Livros (isbn, nome, autor, ano_publicacao, capa_url, descricao, temas, categoria, estoque, quantidade_disponivel, data_cadastro, localizacao, numero_paginas)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (isbn, titulo, autor, ano, capa, descricao, temas, categoria, quantidade, quantidade, hoje, localizacao, numero_paginas))
             conn.commit()
             livro_id = cursor.lastrowid
             return {
                 "id": livro_id, "isbn": isbn, "titulo": titulo, "autor": autor,
                 "ano": ano, "capa": capa, "descricao": descricao, "temas": temas,
                 "categoria": categoria, "estoque": quantidade, "disponivel": quantidade,
-                "data_cadastro": hoje, "localizacao": localizacao
+                "data_cadastro": hoje, "localizacao": localizacao, "numero_paginas": numero_paginas
             }, 201
 
         else:
             cursor.execute('''
-                SELECT id, isbn, nome, autor, ano_publicacao, capa_url, descricao, temas, categoria, estoque, quantidade_disponivel, data_cadastro, localizacao
+                SELECT id, isbn, nome, autor, ano_publicacao, capa_url, descricao, temas, categoria, estoque, quantidade_disponivel, data_cadastro, localizacao, numero_paginas
                 FROM Livros
             ''')
             livros = []
@@ -293,14 +323,23 @@ def api_livros(admin, data, method):
                     "id": row[0], "isbn": row[1], "titulo": row[2], "autor": row[3],
                     "ano": row[4], "capa": row[5], "descricao": row[6], "temas": row[7],
                     "categoria": row[8], "estoque": row[9], "disponivel": row[10],
-                    "data_cadastro": row[11], "localizacao": row[12] if len(row) > 12 else ''
+                    "data_cadastro": row[11], "localizacao": row[12], "numero_paginas": row[13]
                 })
             return livros
 
 
 def editar_livro(id, data):
+    if not isinstance(data, dict):
+        return {"erro": "Envie os dados do livro em um objeto JSON."}, 400
+    try:
+        numero_paginas = validar_numero_paginas(data.get('numero_paginas'))
+    except ValueError as error:
+        return {"erro": str(error)}, 400
     with db_manager.connection() as conn:
         cursor = conn.cursor()
+        # Clientes anteriores que não enviam o novo campo preservam seu valor.
+        if 'numero_paginas' in data:
+            cursor.execute('UPDATE Livros SET numero_paginas = ? WHERE id = ?', (numero_paginas, id))
         capa_url = data.get('capa')
         if capa_url:
             cursor.execute('UPDATE Livros SET capa_url = ? WHERE id = ?', (capa_url, id))

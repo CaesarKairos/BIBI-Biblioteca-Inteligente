@@ -40,7 +40,7 @@ document.addEventListener('keydown', (e) => {
     }
     if (e.key === 'Enter' && !e.ctrlKey && !e.altKey && !e.metaKey) {
         const openModalId = getOpenModalId();
-        if (openModalId) {
+        if (openModalId && !e.defaultPrevented && !e.target.closest('button, [role="button"], textarea')) {
             e.preventDefault();
             e.stopPropagation();
             triggerModalAction(openModalId);
@@ -71,6 +71,8 @@ let senhaEmprestimoGlobal = null;
 let senhaAgendamentoGlobal = null;
 
 window.onload = () => {
+    iniciarRedimensionamentoPaineis();
+    prepararAcessibilidade();
     verificarAdmin();
     const config = carregarConfig();
     if (config.darkMode) toggleTheme(true);
@@ -92,3 +94,31 @@ window.onload = () => {
     verificarObrigarLocalizacao();
     setInterval(async () => { if (isAdminGlobal) await apiFetch('/api/emprestimos/ativos'); }, 30 * 60 * 1000);
 };
+
+function prepararAcessibilidade() {
+    document.querySelectorAll('.nav-menu li, .logo, .theme-item, .config-item, .card[data-bibi-onclick]').forEach(element => {
+        element.tabIndex = 0;
+        element.setAttribute('role', 'button');
+        if (element.title) element.setAttribute('aria-label', element.title);
+        element.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault(); element.click();
+            }
+        });
+    });
+    document.querySelectorAll('label:not([for])').forEach(label => {
+        const input = label.nextElementSibling;
+        if (input?.matches('input[id], textarea[id], select[id]')) label.htmlFor = input.id;
+    });
+    document.querySelectorAll('input[placeholder]:not([aria-label])').forEach(input => {
+        if (!input.labels?.length) input.setAttribute('aria-label', input.placeholder);
+    });
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updateMascot = () => {
+        const video = document.querySelector('.cat-waving');
+        if (reduceMotion.matches) video.pause();
+        else video.play().catch(() => {});
+    };
+    reduceMotion.addEventListener('change', updateMascot);
+    updateMascot();
+}

@@ -10,7 +10,7 @@
         <link rel="stylesheet" href="/static/css/app.css">
     </head>
     <body data-admin="{{ admin | tojson }}" data-quantidade-aulas="{{ quantidade_aulas }}">
-        <div class="toast-container" id="toast-container"></div>
+        <div class="toast-container" id="toast-container" role="status" aria-live="polite"></div>
         <div class="app-container">
             <aside class="sidebar">
                 <div class="logo" data-bibi-onclick="h1">
@@ -52,8 +52,14 @@
                 </div>
             </aside>
 
+            <div class="panel-resizer" id="resize-sidebar" role="separator" aria-orientation="vertical" aria-label="Redimensionar menu esquerdo" tabindex="0" title="Arraste para ajustar. Use as setas ou dê dois cliques para restaurar."></div>
             <main class="content-area">
                 <div id="dash" class="section">
+                    <section class="bibi-message" aria-labelledby="bibi-heading" data-content-source="local">
+                        <span class="eyebrow" id="bibi-heading"><span class="bibi-cat-icon" aria-hidden="true"></span>BIBI</span>
+                        <h2 id="bibi-greeting">Boas-vindas à biblioteca.</h2>
+                        <p id="bibi-message-text">Aqui está o que está acontecendo na biblioteca.</p>
+                    </section>
                     <h2>Dashboard - Bibliometria</h2>
                     <div class="dash-grid">
                         <div class="card"><h3>Total Títulos</h3><p id="stat-total">0</p></div>
@@ -95,17 +101,22 @@
 
                 <div id="acervo" class="section active">
                     <div class="section-header">
-                        <h2>Gerenciar Acervo</h2>
+                        <div><span class="eyebrow">BIBLIOTECA INTELIGENTE</span><h2>Nosso acervo</h2><p class="section-intro">Entre prateleiras, encontre sua próxima leitura.</p></div>
                         {% if admin %}<button class="btn-primary" data-bibi-style="s3" data-bibi-onclick="h13">+ Adicionar Livro</button>{% endif %}
                     </div>
                     <div class="search-box">
-                        <input type="text" id="busca-acervo" placeholder="Buscar por título ou ISBN..." data-bibi-oninput="h14">
+                        <input type="search" id="busca-acervo" aria-label="Buscar no acervo por título ou ISBN" placeholder="Buscar por título ou ISBN..." data-bibi-oninput="h14">
                     </div>
                     <div id="acervo-prateleiras"></div>
                 </div>
 
                 <div id="emp" class="section">
                     <h2>Empréstimos</h2>
+                    <div class="emprestimos-busca">
+                        <label for="busca-emprestimos">Buscar pelo nome do leitor</label>
+                        <input type="search" id="busca-emprestimos" placeholder="Digite o nome de quem pegou o livro..." autocomplete="off" aria-describedby="resultado-busca-emprestimos">
+                        <p id="resultado-busca-emprestimos" role="status" aria-live="polite"></p>
+                    </div>
                     <div data-bibi-style="s4">
                         <button class="btn-primary btn-filtro active-filtro" id="btn-filtro-todos" data-bibi-onclick="h15">Todos</button>
                         <button class="btn-primary btn-filtro green" id="btn-filtro-ativos" data-bibi-onclick="h16">Ativos</button>
@@ -159,17 +170,17 @@
                 </div>
             </main>
 
-            <aside class="right-bar">
-                <h3>Informações</h3>
-                <div id="info-vazio" data-bibi-style="s13">Selecione um livro</div>
+            <div class="panel-resizer" id="resize-details" role="separator" aria-orientation="vertical" aria-label="Redimensionar painel de detalhes" tabindex="0" title="Arraste para ajustar. Use as setas ou dê dois cliques para restaurar."></div>
+            <aside class="right-bar" aria-label="Detalhes do livro">
+                <div id="info-vazio" aria-hidden="true"></div>
                 <div id="info-livro" data-bibi-style="s14">
+                    <div class="details-header"><span class="eyebrow">SEU PRÓXIMO CAPÍTULO</span><button type="button" class="icon-button" id="fechar-detalhes" aria-label="Fechar detalhes do livro" title="Fechar detalhes" data-bibi-onclick="h58">×</button></div>
                     <div class="detail-capa" id="det-capa"></div>
-                    <h4 id="det-titulo"></h4>
-                    <p id="det-autor" data-bibi-style="s15"></p>
-                    <p id="det-ano" data-bibi-style="s16"></p>
-                    <div data-bibi-style="s17" id="det-temas"></div>
-                    <div data-bibi-style="s18" id="det-desc"></div>
-                    <p data-bibi-style="s19"><span id="det-estoque"></span> exemplares disponíveis</p>
+                    <h4 id="det-titulo" aria-live="polite"></h4>
+                    <p id="det-autor"></p>
+                    <p class="availability"><span id="det-estoque"></span> exemplares disponíveis</p>
+                    <div class="book-metadata"><p id="det-ano"></p><p id="det-paginas" hidden></p><p id="det-isbn" hidden></p><p id="det-localizacao" hidden></p><div id="det-temas"></div></div>
+                    <div id="det-desc"></div>
                     {% if admin %}<button class="btn-primary" id="btn-emprestar" data-bibi-style="s20" data-bibi-onclick="h22">Emprestar este</button><button class="btn-primary" data-bibi-style="s20" data-bibi-onclick="h23">Editar</button><button class="btn-primary" id="btn-excluir-livro" data-bibi-style="s5" data-bibi-onclick="h24">Excluir Livro</button>{% endif %}
                 </div>
             </aside>
@@ -193,6 +204,7 @@
                     <label>Título *</label><input type="text" id="manual-titulo">
                     <label>Autor *</label><input type="text" id="manual-autor">
                     <div class="campo-ano"><label>Ano</label><input type="number" id="manual-ano"></div>
+                    <div class="campo-paginas"><label for="manual-paginas">Número de páginas (opcional)</label><input type="number" id="manual-paginas" min="1" step="1" max="9007199254740991" inputmode="numeric"></div>
                     <div class="campo-descricao"><label>Descrição</label><textarea id="manual-descricao" rows="3"></textarea></div>
                     <div class="campo-temas"><label>Temas (separados por vírgula)</label><input type="text" id="manual-temas" placeholder="Ficção, Aventura..."></div>
                     <div class="campo-categoria">
@@ -220,6 +232,7 @@
                     <label>Título</label><input type="text" id="edit-titulo">
                     <label>Autor</label><input type="text" id="edit-autor">
                     <div class="campo-ano"><label>Ano</label><input type="number" id="edit-ano"></div>
+                    <div class="campo-paginas"><label for="edit-paginas">Número de páginas (opcional)</label><input type="number" id="edit-paginas" min="1" step="1" max="9007199254740991" inputmode="numeric"></div>
                     <div class="campo-descricao"><label>Descrição</label><textarea id="edit-descricao" rows="3"></textarea></div>
                     <div class="campo-temas"><label>Temas</label><input type="text" id="edit-temas" placeholder="Ficção, Aventura..."></div>
                     <div class="campo-categoria">
@@ -408,7 +421,7 @@
         <script src="/static/js/emprestimos.js"></script>
         <script src="/static/js/dashboard.js"></script>
         <script src="/static/js/agenda.js"></script>
+        <script src="/static/js/layout.js"></script>
         <script src="/static/js/app.js"></script>
     </body>
     </html>
-    
