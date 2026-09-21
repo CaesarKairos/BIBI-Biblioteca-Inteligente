@@ -99,3 +99,19 @@ class IntegrationTests(AppTest):
         worker.assert_called_once_with(self.app)
         window.create_window.assert_called_once()
         server.close.assert_called_once()
+
+    def test_slow_worker_does_not_block_normal_requests(self):
+        import threading
+        from database.database import maintenance_lock
+        started=threading.Event();finish=threading.Event()
+        def worker():
+            with maintenance_lock:
+                started.set();finish.wait(5)
+        thread=threading.Thread(target=worker);thread.start()
+        try:
+            self.assertTrue(started.wait(2))
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                response=pool.submit(lambda:self.app.test_client().get('/api/acesso/csrf')).result(timeout=2)
+            self.assertEqual(response.status_code,200)
+        finally:
+            finish.set();thread.join(timeout=2)

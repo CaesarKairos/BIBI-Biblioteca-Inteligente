@@ -95,6 +95,8 @@ def pedir_verificacao(data):
             raise BadRequest('Confirme sua senha atual.')
         if conn.execute('SELECT 1 FROM Contas WHERE email=? AND id!=?',(email,g.conta['id'])).fetchone():
             raise BadRequest('Não foi possível utilizar este endereço.')
+        if email!=g.conta['email'] and conn.execute('SELECT 1 FROM Usuarios WHERE lower(email)=? AND id!=?',(email,g.conta['leitor_id'] or -1)).fetchone():
+            raise BadRequest('Este endereço já está associado a outro cadastro. Procure a biblioteca.')
     info=criar_codigo_conta(g.conta['id'],email,'verificacao')
     if not enviar_codigo(info,'verificação de e-mail'):
         raise BadRequest('Envio indisponível ou recusado. A conta continua funcionando. Procure a biblioteca.')

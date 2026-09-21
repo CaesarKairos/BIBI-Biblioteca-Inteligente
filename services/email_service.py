@@ -263,7 +263,8 @@ def iniciar_verificacao_notificacoes(app):
     def _executar_periodicamente():
         while True:
             try:
-                with app.app_context():
+                from database.database import maintenance_lock
+                with maintenance_lock, app.app_context():
                     verificar_e_enviar_notificacoes()
             except Exception:
                 logger.exception('Falha na verificação periódica de notificações')

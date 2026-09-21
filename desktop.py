@@ -11,9 +11,9 @@ def run_desktop(app):
         trusted_proxy='127.0.0.1',trusted_proxy_headers={'x-forwarded-for','x-forwarded-host','x-forwarded-proto'},
         clear_untrusted_proxy_headers=True,max_request_body_size=512*1024*1024)
     threading.Thread(target=server.run,daemon=True).start()
-    iniciar_verificacao_notificacoes(app)
-    webview.create_window('BIBI — Biblioteca Inteligente','http://127.0.0.1:5000',width=1366,height=768,resizable=True)
     try:
+        iniciar_verificacao_notificacoes(app)
+        webview.create_window('BIBI — Biblioteca Inteligente','http://127.0.0.1:5000',width=1366,height=768,resizable=True)
         webview.start()
     finally:
         server.close()

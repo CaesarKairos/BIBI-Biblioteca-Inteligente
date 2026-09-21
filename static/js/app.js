@@ -27,7 +27,7 @@ document.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.key >= '1' && e.key <= '5') {
         e.preventDefault();
         if (!isAdminGlobal) {
-            // Apenas Ctrl+1 (acervo) e Ctrl+2 (agenda) são permitidos
+            // Leitores acessam o acervo e sua própria conta.
             if (e.key === '1') {
                 tab('acervo');
             } else if (e.key === '2') {

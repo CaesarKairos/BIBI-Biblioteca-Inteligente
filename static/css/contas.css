@@ -12,6 +12,17 @@
 .account-card input[type=checkbox] { width: auto; margin-right: 8px; }
 .account-card [hidden] { display: none !important; }
 .account-card a { color: var(--accent-strong); }
+.account-card button { font: inherit; cursor: pointer; transition: background 180ms ease, transform 180ms ease; }
+.account-card button:not(.btn-primary) { color: var(--text); background: var(--main); border: 1px solid var(--border); border-radius: 8px; padding: 9px 13px; margin: 5px 4px 5px 0; min-height: 40px; }
+.account-card button:not(.btn-primary):hover { background: var(--accent-soft); }
+.account-card button:disabled { opacity: .55; cursor: not-allowed; }
+.account-card button:focus-visible,.account-card a:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 3px; }
+.account-card .account-links button { background: transparent; border: 0; padding: 0; margin: 0; min-height: auto; }
+.account-card input[type=color] { height: 42px; padding: 5px; }
+.account-card h2 { margin-bottom: 14px; }
+.account-card form + h2 { margin-top: 28px; }
+.account-card .access-tabs a { padding: 8px 10px; border-radius: 8px; background: var(--main); text-decoration: none; }
+@media (prefers-reduced-motion:reduce) { .account-card button { transition: none; } }
 .account-brand { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: 800; text-decoration: none; }
 .account-brand img { width: 36px; height: 36px; object-fit: contain; }
 .access-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 24px 0; }

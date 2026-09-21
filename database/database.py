@@ -9,6 +9,8 @@ from datetime import datetime
 import threading
 
 operation_lock = threading.RLock()
+# Envio externo pode ser lento: bloqueia restauração, não o uso normal da biblioteca.
+maintenance_lock = threading.RLock()
 
 class DatabaseManager:
     def __init__(self, db_name=DB_NAME, initialize=True):
