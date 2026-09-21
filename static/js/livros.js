@@ -123,30 +123,37 @@ function openModalManual() {
 }
 
 
-async function carregarAcervo() {
-    const res = await apiFetch('/api/livros');
-    todosLivros = await res.json();
+let catalogPage=1,catalogRequest=0,catalogTimer;
+async function carregarAcervo(append=false) {
+    if(!append) catalogPage=1;
+    const sequence=++catalogRequest;
+    const params=new URLSearchParams({paginado:'1',pagina:catalogPage,q:document.getElementById('busca-acervo').value,categoria:document.getElementById('catalog-category').value,disponibilidade:document.getElementById('catalog-availability').value});
+    const res = await apiFetch('/api/livros?'+params);
+    const result=await res.json();if(sequence!==catalogRequest)return;
+    todosLivros = append?[...todosLivros,...result.livros]:result.livros;
+    document.getElementById('catalog-count').textContent=`${todosLivros.length} de ${result.total} títulos`;
+    document.getElementById('catalog-more').hidden=!result.mais;
     aplicarFiltroAcervo();
     if (livroSelecionado) {
         const atualizado = todosLivros.find(l => l.id === livroSelecionado.id);
         if (atualizado) verDetalhes(atualizado);
-        else fecharDetalhes();
+        // Filtrar a lista não apaga os detalhes do livro já selecionado.
     }
 }
 
 
 function aplicarFiltroAcervo() {
-    const termo = document.getElementById('busca-acervo').value.toLowerCase();
-    const filtrados = todosLivros.filter(l => 
-        l.titulo.toLowerCase().includes(termo) || (l.isbn && l.isbn.includes(termo))
-    );
-    exibirPrateleiras(filtrados);
+    exibirPrateleiras(todosLivros);
 }
 
 
 function filtrarAcervo() {
-    aplicarFiltroAcervo();
+    clearTimeout(catalogTimer);catalogTimer=setTimeout(()=>carregarAcervo(),180);
 }
+document.getElementById('catalog-category').addEventListener('change',()=>carregarAcervo());
+document.getElementById('catalog-availability').addEventListener('change',()=>carregarAcervo());
+document.getElementById('catalog-clear').addEventListener('click',()=>{document.getElementById('busca-acervo').value='';document.getElementById('catalog-category').value='';document.getElementById('catalog-availability').value='';carregarAcervo();});
+document.getElementById('catalog-more').addEventListener('click',async event=>{event.target.disabled=true;++catalogPage;try{await carregarAcervo(true);}catch{--catalogPage;}finally{event.target.disabled=false;}});
 
 
 // Contrato futuro: uma lista de IDs ordenados. null ativa apenas o fallback visual
@@ -195,7 +202,7 @@ function exibirPrateleiras(livros) {
     container.appendChild(especial);
     const categorias = ['Ficção', 'Não-ficção', 'Poesia', 'Quadrinhos'];
     categorias.forEach(cat => {
-        const livrosCat = livros.filter(l => l.categoria === cat);
+        const livrosCat = livros.filter(l => (l.prateleira || l.categoria) === cat);
         const shelfDiv = document.createElement('div');
         shelfDiv.className = 'shelf';
         shelfDiv.innerHTML = `<h3>${cat}</h3><div class="books-grid" id="grid-${cat.replace(/\s/g,'')}"></div><div class="shelf-base"></div>`;
@@ -248,8 +255,8 @@ function verDetalhes(l) {
     const btnEmprestar = document.getElementById('btn-emprestar');
     if (btnEmprestar) {
         if (l.disponivel <= 0) {
-            btnEmprestar.disabled = true;
-            btnEmprestar.title = "Não há exemplares disponíveis";
+            btnEmprestar.disabled = !isAdminGlobal;
+            btnEmprestar.title = "Sem exemplares livres. Verifique a retirada de reserva para o leitor selecionado.";
         } else {
             btnEmprestar.disabled = false;
             btnEmprestar.title = "";
@@ -463,7 +470,6 @@ async function salvarEdicaoLivro() {
             temas: document.getElementById('edit-temas').value,
             categoria: document.getElementById('edit-categoria').value,
             estoque: parseInt(document.getElementById('edit-estoque').value),
-            disponivel: parseInt(document.getElementById('edit-disponivel').value),
             localizacao: document.getElementById('edit-localizacao') ? document.getElementById('edit-localizacao').value : ''
         };
         const novaCapa = document.getElementById('edit-capa-url').value;

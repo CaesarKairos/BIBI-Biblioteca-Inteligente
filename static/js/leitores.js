@@ -31,6 +31,7 @@ function aplicarMascaraTelefone(input) {
 
 
 async function buscarLeitoresAutocomplete() {
+    leitorSelecionadoEmprestimo = null;
     const termo = document.getElementById('rapido-nome').value.trim();
     const suggestionsDiv = document.getElementById('rapido-nome-suggestions');
     if (termo.length < 2) {
@@ -67,6 +68,7 @@ async function buscarLeitoresAutocomplete() {
                 document.getElementById('rapido-nome-prof').value = leitor.nome;
                 document.getElementById('rapido-materia').value = leitor.materia || '';
             }
+            leitorSelecionadoEmprestimo = leitor.id;
             suggestionsDiv.style.display = 'none';
         });
         suggestionsDiv.appendChild(div);
@@ -123,11 +125,13 @@ function exibirListaLeitores(leitores) {
         if (isAdminGlobal) {
             const edit = textElement('button', 'Editar', 'btn-primary btn-small');
             edit.onclick = () => editarLeitor(l.id);
-            const remove = textElement('button', 'Excluir', 'btn-primary btn-small');
+            const remove = textElement('button', 'Arquivar', 'btn-primary btn-small');
             remove.style.background = 'var(--danger-bg)';
             remove.style.color = 'var(--on-status)';
             remove.onclick = () => excluirLeitor(l.id);
-            actions.append(edit, remove);
+            const convite = textElement('button', 'Acesso / convite', 'btn-primary btn-small');
+            convite.onclick = () => location.assign('/gestao?leitor=' + l.id);
+            actions.append(edit, remove, convite);
         }
         item.append(info, actions);
         container.appendChild(item);
@@ -220,9 +224,10 @@ async function salvarLeitor() {
 
 async function excluirLeitor(id) {
     if (!isAdminGlobal) return;
-    confirmAction("Excluir Leitor", "Tem certeza que deseja excluir este leitor?", async () => {
-        await apiFetch(`/api/leitores/${id}`, {method: 'DELETE'});
-        showToast("Leitor excluído.", "success");
+    confirmAction("Arquivar Leitor", "Tem certeza que deseja arquivar este leitor e bloquear sua conta?", async () => {
+        const response = await apiFetch(`/api/leitores/${id}`, {method: 'DELETE'});
+        if (!response.ok) return showToast((await response.json()).erro || 'Não foi possível arquivar.', 'error');
+        showToast("Leitor arquivado; histórico preservado.", "success");
         carregarLeitores();
     });
 }

@@ -10,8 +10,8 @@ def json_response(result):
     return jsonify(result)
 
 def register_blueprints(app):
-    from routes import pages, admin, livros, leitores, emprestimos, agendamentos, configuracoes
-    for module in (pages, admin, configuracoes, livros, leitores, emprestimos, agendamentos):
+    from routes import pages, admin, livros, leitores, emprestimos, agendamentos, configuracoes, contas, perfil, gestao
+    for module in (pages, admin, configuracoes, livros, leitores, emprestimos, agendamentos, contas, perfil, gestao):
         app.register_blueprint(module.bp)
 
 
@@ -23,7 +23,7 @@ def register_error_handlers(app):
         messages = {400: 'Dados da solicitação inválidos.', 403: 'Acesso negado.',
                     404: 'Recurso não encontrado.', 413: 'Arquivo maior que o limite permitido.',
                     415: 'Envie os dados no formato JSON.'}
-        return jsonify(erro=messages.get(error.code, error.description)), error.code
+        return jsonify(erro=error.description or messages.get(error.code)), error.code
 
     @app.errorhandler(sqlite3.IntegrityError)
     def integrity_error(error):

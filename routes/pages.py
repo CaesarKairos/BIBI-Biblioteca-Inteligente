@@ -12,6 +12,14 @@ import os
 bp = Blueprint('pages', __name__)
 
 
+@bp.get('/instituicao')
+def instituicao():
+    from database.database import db_manager
+    with db_manager.connection() as conn:
+        textos=dict(conn.execute("SELECT chave,valor FROM Configuracoes WHERE chave IN ('biblioteca_nome','termos_uso','aviso_privacidade')"))
+    return render_template('instituicao.html',textos=textos)
+
+
 @bp.route('/', methods=['GET'])
 def landing():
     return render_template('index.html')

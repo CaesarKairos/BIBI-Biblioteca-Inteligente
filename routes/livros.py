@@ -16,7 +16,16 @@ bp = Blueprint('livros', __name__)
 
 @bp.route('/api/livros', methods=['GET', 'POST'])
 def api_livros():
+    if request.method=='GET' and request.args.get('paginado')=='1':
+        from services.catalogo_service import search
+        return json_response(search(request.args))
     return json_response(livros_service.api_livros(admin=is_admin(), data=request.json if request.method == 'POST' and is_admin() else None, method=request.method))
+
+
+@bp.get('/api/livros/<int:id>')
+def detalhe_livro(id):
+    from services.catalogo_service import detail
+    return json_response(detail(id))
 
 
 @bp.route('/api/upload', methods=['POST'])
@@ -28,7 +37,7 @@ def upload_imagem():
 @bp.route('/uploadedcovers/<filename>', methods=['GET'])
 def uploaded_file(filename):
     return send_from_directory(
-        UPLOAD_FOLDER,
+        current_app.config['UPLOAD_FOLDER'],
         filename
     )
 
@@ -36,7 +45,7 @@ def uploaded_file(filename):
 @bp.route('/externalcovers/<filename>', methods=['GET'])
 def external_file(filename):
     return send_from_directory(
-        EXTERNAL_FOLDER,
+        __import__('os').path.join(current_app.config['DATA_DIR'], 'externalcovers'),
         filename
     )
 

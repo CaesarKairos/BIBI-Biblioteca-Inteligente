@@ -1,5 +1,4 @@
-from config import EMAIL_PASSWORD
-from config import EMAIL_USER
+from flask import current_app
 from database.database import db_manager
 import hashlib
 
@@ -49,13 +48,8 @@ def get_email_credenciais():
         cursor = conn.cursor()
         cursor.execute("SELECT valor FROM Configuracoes WHERE chave = 'email_organizacao'")
         email_row = cursor.fetchone()
-        cursor.execute("SELECT valor FROM Configuracoes WHERE chave = 'email_app_password'")
-        pass_row = cursor.fetchone()
         email = email_row[0] if email_row else ''
-        password = pass_row[0] if pass_row else ''
-        if email and password:
-            return email, password
-        return EMAIL_USER, EMAIL_PASSWORD
+        return email, current_app.extensions['secrets'].get('smtp_password', '')
 
 
 def get_quantidade_aulas():
@@ -216,12 +210,15 @@ def config_email_status():
         cursor = conn.cursor()
         cursor.execute("SELECT valor FROM Configuracoes WHERE chave='email_organizacao'")
         row = cursor.fetchone()
-        return {"email": row[0] if row and row[0] else ''}
+        return {"email": row[0] if row and row[0] else '', 'credencial_salva':bool(current_app.extensions['secrets'].get('smtp_password'))}
 
 
 def set_config_email(data):
     data = data or {}
     email = (data.get('email_organizacao') or '').strip()
+    if email:
+        from services.contas_service import email_normalizado
+        email=email_normalizado(email)
     senha_app = (data.get('email_app_password') or '').strip()
     with db_manager.connection() as conn:
         cursor = conn.cursor()
@@ -229,6 +226,9 @@ def set_config_email(data):
         # A senha de app só é sobrescrita se um novo valor for enviado, para não apagar a existente
         # quando o campo é deixado em branco na interface (ela nunca é reexibida por segurança).
         if senha_app:
-            cursor.execute("INSERT OR REPLACE INTO Configuracoes (chave, valor) VALUES ('email_app_password', ?)", (senha_app,))
+            current_app.extensions['secrets'].set('smtp_password',senha_app)
+        if data.get('remover_credencial') is True:
+            current_app.extensions['secrets'].set('smtp_password',None)
+        cursor.execute("UPDATE Configuracoes SET valor='' WHERE chave='email_app_password'")
         conn.commit()
         return {"status": "ok"}

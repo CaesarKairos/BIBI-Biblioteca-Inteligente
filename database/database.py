@@ -4,6 +4,11 @@ import logging
 from contextlib import contextmanager
 from pathlib import Path
 from config import DB_NAME
+from flask import current_app, has_app_context
+from datetime import datetime
+import threading
+
+operation_lock = threading.RLock()
 
 class DatabaseManager:
     def __init__(self, db_name=DB_NAME, initialize=True):
@@ -12,10 +17,22 @@ class DatabaseManager:
             self.init_database()
 
     def init_database(self):
+        Path(self.db_name).parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(self.db_name)
         try:
             cursor = conn.cursor()
-
+            # Backup online consistente (inclui páginas no WAL), antes de qualquer migração.
+            versions = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            applied = {r[0] for r in conn.execute('SELECT versao FROM Migracoes')} if 'Migracoes' in versions else set()
+            scripts = sorted(Path(__file__).with_name('migrations').glob('*.sql'))
+            if 'Livros' in versions and any(p.stem not in applied for p in scripts):
+                backup = Path(self.db_name).parent / 'backups'
+                backup.mkdir(exist_ok=True)
+                target = sqlite3.connect(backup / ('antes-migracao-' + datetime.now().strftime('%Y%m%d-%H%M%S-%f') + '.db'))
+                try:
+                    conn.backup(target)
+                finally:
+                    target.close()
             cursor.executescript(Path(__file__).with_name('schema.sql').read_text(encoding='utf-8'))
 
             conn.execute("BEGIN IMMEDIATE")
@@ -43,8 +60,23 @@ class DatabaseManager:
             cursor.execute("INSERT OR IGNORE INTO Configuracoes (chave, valor) VALUES ('quantidade_aulas', '6')")
             cursor.execute("INSERT OR IGNORE INTO Configuracoes (chave, valor) VALUES ('email_organizacao', '')")
             cursor.execute("INSERT OR IGNORE INTO Configuracoes (chave, valor) VALUES ('email_app_password', '')")
-
+            cursor.execute('CREATE TABLE IF NOT EXISTS Migracoes (versao TEXT PRIMARY KEY, aplicada_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)')
+            for script in scripts:
+                if cursor.execute('SELECT 1 FROM Migracoes WHERE versao=?',(script.stem,)).fetchone():
+                    continue
+                # Não usar executescript: ele faria commit implícito antes do SQL.
+                for statement in script.read_text(encoding='utf-8').split(';'):
+                    if statement.strip():
+                        cursor.execute(statement)
+                cursor.execute('INSERT INTO Migracoes(versao) VALUES (?)', (script.stem,))
+            # Não apagar órfãos legados. Bloquear migração e orientar correção explícita.
+            violations = conn.execute('PRAGMA foreign_key_check').fetchall()
+            if violations:
+                raise RuntimeError('Integridade legada pendente: corrija referências órfãs antes de iniciar. Backup preservado.')
             conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
         finally:
             conn.close()
 
@@ -52,6 +84,8 @@ class DatabaseManager:
         conn = sqlite3.connect(self.db_name)
         try:
             conn.execute("PRAGMA journal_mode=WAL;")
+            conn.execute('PRAGMA foreign_keys=ON')
+            conn.execute('PRAGMA busy_timeout=10000')
             return conn
         except Exception:
             conn.close()
@@ -59,14 +93,32 @@ class DatabaseManager:
 
     @contextmanager
     def connection(self):
-        conn = self.get_connection()
-        try:
-            yield conn
-        finally:
-            conn.close()
+        with operation_lock:
+            conn = self.get_connection()
+            try:
+                yield conn
+            finally:
+                conn.close()
 
 # Inicializado explicitamente por app.py, antes do registro das rotas.
-db_manager = DatabaseManager(initialize=False)
+class DatabaseProxy:
+    """Services existentes usam o gerenciador da aplicação/contexto atual."""
+    def __init__(self):
+        self.fallback = DatabaseManager(initialize=False)
+
+    def __getattr__(self, name):
+        manager = current_app.extensions['database'] if has_app_context() else self.fallback
+        return getattr(manager, name)
+
+    @property
+    def db_name(self):
+        return self.__getattr__('db_name')
+
+    @db_name.setter
+    def db_name(self, value):
+        self.fallback.db_name = value
+
+db_manager = DatabaseProxy()
 
 def initialize_database():
     db_manager.init_database()

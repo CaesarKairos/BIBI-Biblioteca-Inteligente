@@ -6,19 +6,14 @@ import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
 
-from test_regression import modular, ROOT, TEMP
+from tests.support import AppTest, ROOT, TEMP
 from database.database import DatabaseManager, db_manager
 from services import livros_service as books
 
 
-class PageTests(unittest.TestCase):
+class PageTests(AppTest):
     def setUp(self):
-        self.stack = contextlib.ExitStack()
-        self.addCleanup(self.stack.close)
-        self.directory = Path(self.stack.enter_context(tempfile.TemporaryDirectory(dir=TEMP.name)))
-        self.stack.enter_context(patch.object(db_manager, 'db_name', str(self.directory / 'pages.db')))
-        db_manager.init_database()
-        self.client = modular.app.test_client()
+        super().setUp()
         self.http = self.stack.enter_context(patch('requests.get', side_effect=AssertionError('Live HTTP forbidden')))
 
     def payload(self, **extra):
@@ -33,7 +28,7 @@ class PageTests(unittest.TestCase):
         response = self.client.post('/api/livros', json=self.payload())
         self.assertEqual(response.status_code, 201)
         self.assertIsNone(response.json['numero_paginas'])
-        public = self.client.get('/api/livros', environ_overrides={'REMOTE_ADDR': '10.0.0.1'})
+        public = self.client.get('/api/livros', environ_overrides={'REMOTE_ADDR': '127.0.0.1'})
         self.assertEqual(public.status_code, 200)
         self.assertEqual(len(public.json), 6)
         self.assertEqual(public.json[3]['numero_paginas'], 240)
@@ -60,8 +55,10 @@ class PageTests(unittest.TestCase):
         self.assertEqual(current['capa'], book['capa'])
 
     def test_non_admin_cannot_mutate_pages(self):
+        guest = self.app.test_client()
+        guest.get('/api/acesso/csrf')
         for method, url in [('POST', '/api/livros'), ('PUT', '/api/livros/1'), ('DELETE', '/api/livros/1')]:
-            self.assertEqual(self.client.open(url, method=method, json=self.payload(numero_paginas=200), environ_overrides={'REMOTE_ADDR': '10.0.0.1'}).status_code, 403)
+            self.assertEqual(guest.open(url, method=method, json=self.payload(numero_paginas=200)).status_code, 401)
 
     def test_old_database_migration_idempotent_preserves_data(self):
         # Schema anterior literal: a coluna nova realmente não existe.

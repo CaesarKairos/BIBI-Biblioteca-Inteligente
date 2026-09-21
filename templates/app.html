@@ -5,8 +5,10 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
         <title>BIBI - Sistema</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <meta name="csrf-token" content="{{ csrf_token }}">
+        <link rel="stylesheet" href="/static/css/contas.css">
+        <link rel="stylesheet" href="/static/vendor/flatpickr.min.css">
+        <script src="/static/vendor/chart.umd.js"></script>
         <link rel="stylesheet" href="/static/css/app.css">
     </head>
     <body data-admin="{{ admin | tojson }}" data-quantidade-aulas="{{ quantidade_aulas }}">
@@ -28,7 +30,7 @@
                         <span class="shortcut">Ctrl+1</span>
                     </li>
                     {% if admin %}<li data-bibi-onclick="h5" id="m-emp"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list-check" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0"/></svg><span>Empréstimos</span><span class="shortcut">Ctrl+3</span></li>{% endif %}
-                    <li data-bibi-onclick="h6" id="m-age">
+                    <li data-bibi-onclick="h6" id="m-age" {% if not admin %}hidden{% endif %}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-check" viewBox="0 0 16 16">
                             <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
                             <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
@@ -38,6 +40,7 @@
                     </li>
                     {% if admin %}<li data-bibi-onclick="h7" id="m-lei"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/></svg><span>Leitores</span><span class="shortcut">Ctrl+5</span></li>{% endif %}
                 </ul>
+                <div class="account-links"><a href="/perfil">Minha conta</a>{% if admin %}<a href="/gestao">Gestão</a>{% endif %}<button type="button" id="account-logout">Sair</button></div>
                 <div class="sidebar-buttons">
                     <div class="theme-item" id="theme-toggle-btn" data-bibi-onclick="h8" title="Alternar tema">
                         <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon-stars" viewBox="0 0 16 16">
@@ -105,16 +108,20 @@
                         {% if admin %}<button class="btn-primary" data-bibi-style="s3" data-bibi-onclick="h13">+ Adicionar Livro</button>{% endif %}
                     </div>
                     <div class="search-box">
-                        <input type="search" id="busca-acervo" aria-label="Buscar no acervo por título ou ISBN" placeholder="Buscar por título ou ISBN..." data-bibi-oninput="h14">
+                        <input type="search" id="busca-acervo" aria-label="Buscar por título, autor, ISBN, categoria, temas ou localização" placeholder="Título, autor, ISBN, temas ou localização..." data-bibi-oninput="h14">
+                        <select id="catalog-category" aria-label="Categoria"><option value="">Todas as categorias</option><option>Ficção</option><option>Não-ficção</option><option>Poesia</option><option>Quadrinhos</option></select>
+                        <select id="catalog-availability" aria-label="Disponibilidade"><option value="">Qualquer disponibilidade</option><option value="disponivel">Disponíveis</option><option value="indisponivel">Indisponíveis</option></select>
+                        <button type="button" id="catalog-clear" class="btn-cancel">Limpar filtros</button>
                     </div>
                     <div id="acervo-prateleiras"></div>
+                    <p id="catalog-count" role="status"></p><button type="button" id="catalog-more" class="btn-primary" hidden>Carregar mais livros</button>
                 </div>
 
                 <div id="emp" class="section">
                     <h2>Empréstimos</h2>
                     <div class="emprestimos-busca">
-                        <label for="busca-emprestimos">Buscar pelo nome do leitor</label>
-                        <input type="search" id="busca-emprestimos" placeholder="Digite o nome de quem pegou o livro..." autocomplete="off" aria-describedby="resultado-busca-emprestimos">
+                        <label for="busca-emprestimos">Buscar empréstimos</label>
+                        <input type="search" id="busca-emprestimos" placeholder="Nome do leitor, livro, turma ou status..." autocomplete="off" aria-describedby="resultado-busca-emprestimos">
                         <p id="resultado-busca-emprestimos" role="status" aria-live="polite"></p>
                     </div>
                     <div data-bibi-style="s4">
@@ -181,7 +188,7 @@
                     <p class="availability"><span id="det-estoque"></span> exemplares disponíveis</p>
                     <div class="book-metadata"><p id="det-ano"></p><p id="det-paginas" hidden></p><p id="det-isbn" hidden></p><p id="det-localizacao" hidden></p><div id="det-temas"></div></div>
                     <div id="det-desc"></div>
-                    {% if admin %}<button class="btn-primary" id="btn-emprestar" data-bibi-style="s20" data-bibi-onclick="h22">Emprestar este</button><button class="btn-primary" data-bibi-style="s20" data-bibi-onclick="h23">Editar</button><button class="btn-primary" id="btn-excluir-livro" data-bibi-style="s5" data-bibi-onclick="h24">Excluir Livro</button>{% endif %}
+                    {% if admin %}<button class="btn-primary" id="btn-emprestar" data-bibi-style="s20" data-bibi-onclick="h22">Emprestar este</button><button class="btn-primary" data-bibi-style="s20" data-bibi-onclick="h23">Editar</button><button class="btn-primary" id="btn-excluir-livro" data-bibi-style="s5" data-bibi-onclick="h24">Arquivar Livro</button>{% endif %}
                 </div>
             </aside>
         </div>
@@ -245,7 +252,7 @@
                         <input type="text" id="edit-localizacao" placeholder="Ex: Prateleira A, Corredor 3">
                     </div>
                     <label>Estoque Total</label><input type="number" id="edit-estoque">
-                    <label>Disponível</label><input type="number" id="edit-disponivel">
+                    <label>Disponível</label><p id="stock-help">Disponibilidade calculada automaticamente pela circulação.</p><input type="number" id="edit-disponivel" readonly aria-describedby="stock-help">
                     <label>Nova Capa (opcional - arraste ou cole)</label>
                     <input type="file" id="edit-capa-file" accept="image/*" data-bibi-onchange="h31">
                     <div class="capa-preview" id="edit-capa-preview"><div class="preview-text">Arraste ou cole imagem aqui</div></div>
@@ -411,8 +418,8 @@
             </div>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-        <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
+        <script src="/static/vendor/flatpickr.min.js"></script>
+        <script src="/static/vendor/flatpickr-pt.js"></script>
         <script src="/static/js/template.js"></script>
         <script src="/static/js/ui.js"></script>
         <script src="/static/js/configuracoes.js"></script>
@@ -423,5 +430,6 @@
         <script src="/static/js/agenda.js"></script>
         <script src="/static/js/layout.js"></script>
         <script src="/static/js/app.js"></script>
+        <script src="/static/js/conta_acervo.js"></script>
     </body>
     </html>

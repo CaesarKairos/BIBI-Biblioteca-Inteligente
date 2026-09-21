@@ -2,6 +2,7 @@ from flask import Blueprint
 from flask import request
 from routes import json_response
 from services import emprestimos_service
+from services import circulacao_service
 from utils.auth import admin_required
 
 
@@ -11,7 +12,7 @@ bp = Blueprint('emprestimos', __name__)
 @bp.route('/api/emprestimos', methods=['POST'])
 @admin_required
 def realizar_emprestimo():
-    return json_response(emprestimos_service.realizar_emprestimo(data=request.json))
+    return json_response(circulacao_service.emprestar(data=request.json))
 
 
 @bp.route('/api/emprestimos/ativos/count', methods=['GET'])
@@ -53,13 +54,13 @@ def listar_atrasos():
 @bp.route('/api/emprestimos/<int:id>/devolver', methods=['POST'])
 @admin_required
 def devolver_emprestimo(id):
-    return json_response(emprestimos_service.devolver_emprestimo(id=id))
+    return json_response(circulacao_service.devolver(id))
 
 
 @bp.route('/api/emprestimos/<int:id>/renovar', methods=['POST'])
 @admin_required
 def renovar_emprestimo(id):
-    return json_response(emprestimos_service.renovar_emprestimo(id=id))
+    return json_response(circulacao_service.renovar(id))
 
 
 @bp.route('/api/emprestimos/mais-emprestados', methods=['GET'])

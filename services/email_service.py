@@ -230,43 +230,36 @@ def enviar_email_notificacao(destinatario, nome_usuario, titulo_livro, data_devo
 
 def atualizar_atrasos():
     with db_manager.connection() as conn:
-        conn.execute("UPDATE Emprestimo SET status = 'Atrasado' WHERE status = 'Aprovado' AND data_devolucao IS NULL AND date(data_vencimento) < ?", (get_brasilia_today().isoformat(),))
+        conn.execute("UPDATE Emprestimo SET status = 'Atrasado' WHERE status = 'Aprovado' AND data_devolucao IS NULL AND encerramento IS NULL AND date(data_vencimento) < ?", (get_brasilia_today().isoformat(),))
         conn.commit()
 
 
 def verificar_e_enviar_notificacoes():
+    """Uma rotina única: eventos internos persistentes e envio só a e-mails verificados."""
     if not _notification_lock.acquire(blocking=False):
         return
     try:
-        atualizar_atrasos()
-        if is_email_blocked():
+        from services.contas_service import configurado
+        if not configurado():
             return
-        hoje = get_brasilia_today()
+        from services.circulacao_service import processar_expiracoes,notificar
+        from services.mensagens_service import processar_fila
+        processar_expiracoes()
+        atualizar_atrasos()
         with db_manager.connection() as conn:
-            emprestimos = conn.execute("""
-                SELECT e.id, e.data_vencimento, e.notificacao_3dias, e.notificacao_hoje,
-                       u.nome, u.email, l.nome, l.capa_url
-                FROM Emprestimo e
-                JOIN Usuarios u ON e.usuarios_id = u.id
-                JOIN Livros l ON e.livros_id = l.id
-                WHERE e.status IN ('Aprovado', 'Atrasado') AND e.data_devolucao IS NULL
-            """).fetchall()
-        for emp_id, vencimento, notif_3, notif_hoje, nome, email, titulo, capa in emprestimos:
-            try:
-                data_venc = datetime.strptime(vencimento, '%Y-%m-%d').date()
-                dias = (data_venc - hoje).days
-                flag = 'notificacao_3dias' if dias == 3 and not notif_3 else 'notificacao_hoje' if dias == 0 and not notif_hoje else None
-                if flag and enviar_email_notificacao(email, nome, titulo, data_venc.strftime('%d/%m/%Y'), dias, capa):
-                    with db_manager.connection() as conn:
-                        conn.execute(f"UPDATE Emprestimo SET {flag} = 1 WHERE id = ? AND data_vencimento = ? AND data_devolucao IS NULL AND status IN ('Aprovado', 'Atrasado')", (emp_id, vencimento))
-                        conn.commit()
-            except Exception:
-                logger.exception('Falha ao processar notificação do empréstimo %s', emp_id)
+            for id,leitor,prazo,nome in conn.execute("SELECT e.id,e.usuarios_id,e.data_vencimento,l.nome FROM Emprestimo e JOIN Livros l ON l.id=e.livros_id WHERE e.status IN ('Aprovado','Atrasado') AND e.encerramento IS NULL").fetchall():
+                dias=(datetime.strptime(prazo,'%Y-%m-%d').date()-get_brasilia_today()).days
+                if dias in (0,3) or dias<0:
+                    notificar(conn,leitor,f'prazo:{id}:{prazo}:{"atraso" if dias<0 else dias}',f'{nome}: devolução prevista para {prazo}.')
+            conn.commit()
+        processar_fila()
     finally:
         _notification_lock.release()
 
 
 def iniciar_verificacao_notificacoes(app):
+    if app.extensions.get('notification_worker'):
+        return app.extensions['notification_worker']
     def _executar_periodicamente():
         while True:
             try:
@@ -277,4 +270,6 @@ def iniciar_verificacao_notificacoes(app):
             time.sleep(1800)
 
     thread = threading.Thread(target=_executar_periodicamente, daemon=True)
+    app.extensions['notification_worker'] = thread
     thread.start()
+    return thread

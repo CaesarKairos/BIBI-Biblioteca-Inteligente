@@ -11,6 +11,7 @@ __pycache__/
 build/
 dist/
 *.spec
+!packaging/BIBI.spec
 version_info.txt
 
 # Instalador

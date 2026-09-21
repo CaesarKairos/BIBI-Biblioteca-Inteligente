@@ -1,58 +1,63 @@
-"""Inicializacao e orquestracao da Biblioteca Inteligente."""
-import os
-import logging
-import threading
-import time
-import webview
+"""Fabrica Flask sem efeitos de importacao."""
+from datetime import timedelta
+from pathlib import Path
 from flask import Flask
-from config import STATIC_DIR, TEMPLATE_DIR, UPLOAD_FOLDER, initialize_directories
-from database.database import initialize_database
+from config import STATIC_DIR,TEMPLATE_DIR,DATA_DIR
+from database.database import DatabaseManager
+from utils.secrets_store import SecretStore
+from flask.sessions import SecureCookieSessionInterface
+from flask import request
 
-initialize_directories()
-db_manager = initialize_database()
 
-# Os services sao importados somente depois da inicializacao do banco.
-from routes import register_blueprints, register_error_handlers
-from services.email_service import iniciar_verificacao_notificacoes
+class InstallationSessionInterface(SecureCookieSessionInterface):
+    def get_cookie_secure(self,app):
+        # HTTPS de rede recebe Secure; a janela local usa HTTP em loopback.
+        return request.is_secure or app.config['SESSION_COOKIE_SECURE']
 
-app = Flask(__name__, static_folder=STATIC_DIR, template_folder=TEMPLATE_DIR)
-app.secret_key = os.getenv('SECRET_KEY', 'sua-chave-secreta-padrao')
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-register_blueprints(app)
-register_error_handlers(app)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+
+def create_app(test_config=None):
+    app = Flask(__name__,static_folder=STATIC_DIR,template_folder=TEMPLATE_DIR)
+    app.config.update(DATA_DIR=DATA_DIR,MAX_CONTENT_LENGTH=512*1024*1024,
+        SESSION_COOKIE_HTTPONLY=True,SESSION_COOKIE_SAMESITE='Lax',
+        PERMANENT_SESSION_LIFETIME=timedelta(hours=8),
+        ALLOWED_HOSTS=['127.0.0.1','::1','localhost'],SESSION_COOKIE_SECURE=False)
+    if test_config:
+        app.config.update(test_config)
+    app.session_interface=InstallationSessionInterface()
+    directory = Path(app.config['DATA_DIR'])
+    directory.mkdir(parents=True,exist_ok=True)
+    for name in ('uploadedcovers','externalcovers','avatars','backups'):
+        (directory/name).mkdir(exist_ok=True)
+    app.config.setdefault('DATABASE',str(directory/'Biblioteca.db'))
+    app.config.setdefault('UPLOAD_FOLDER',str(directory/'uploadedcovers'))
+    app.config.setdefault('EXTERNAL_FOLDER',str(directory/'externalcovers'))
+    app.extensions['database'] = DatabaseManager(app.config['DATABASE'])
+    store = SecretStore(directory)
+    app.extensions['secrets'] = store
+    app.secret_key = store.session_key()
+    from werkzeug.security import generate_password_hash
+    import secrets
+    app.extensions['dummy_password_hash']=generate_password_hash(secrets.token_urlsafe(24),method='scrypt')
+    # Migra apenas a configuração já existente no banco, nunca lê .env.
+    with app.extensions['database'].connection() as conn:
+        legacy = conn.execute("SELECT valor FROM Configuracoes WHERE chave='email_app_password'").fetchone()
+        if legacy and legacy[0]:
+            if not store.get('smtp_password'):
+                store.set('smtp_password',legacy[0])
+            conn.execute("UPDATE Configuracoes SET valor='' WHERE chave='email_app_password'")
+            conn.commit()
+    from routes import register_blueprints,register_error_handlers
+    from utils.auth import install_security
+    install_security(app)
+    register_blueprints(app)
+    register_error_handlers(app)
+    return app
+
+
+def main():
+    from desktop import run_desktop
+    run_desktop(create_app())
+
 
 if __name__ == '__main__':
-
-    iniciar_verificacao_notificacoes(app)
-
-    # Lê as variáveis do ambiente com fallbacks
-    ENV_PORT = int(os.getenv('PORT', 5000))
-    ENV_DEBUG = os.getenv('FLASK_DEBUG', 'False').lower() in ('true', '1', 't')
-
-    def start_flask():
-        app.run(
-            host='0.0.0.0',
-            port=ENV_PORT,
-            debug=ENV_DEBUG,
-            use_reloader=False
-        )
-
-    flask_thread = threading.Thread(
-        target=start_flask,
-        daemon=True
-    )
-    flask_thread.start()
-
-    time.sleep(2)
-
-    webview.create_window(
-        title='Sistema de Biblioteca - BIBI',
-        url=f'http://127.0.0.1:{ENV_PORT}',
-        width=1200,
-        height=700,
-        resizable=True,
-    )
-
-    webview.start()
+    main()

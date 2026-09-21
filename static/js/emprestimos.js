@@ -1,3 +1,5 @@
+let leitorSelecionadoEmprestimo = null;
+document.getElementById('rapido-nome-prof')?.addEventListener('input',()=>{leitorSelecionadoEmprestimo=null;});
 async function verificarExigirSenhaEmprestimo() {
     const res = await apiFetch('/api/config/exigir_senha_emprestimo/status');
     const data = await res.json();
@@ -36,10 +38,8 @@ async function verificarExigirSenhaEmprestimo() {
 function emprestarSelecionado() {
     if (!isAdminGlobal) return;
     if(!livroSelecionado) return;
-    if(livroSelecionado.disponivel <= 0) {
-        showToast("Não há exemplares disponíveis para este livro no momento.", "warning");
-        return;
-    }
+    if(livroSelecionado.disponivel <= 0) showToast("Sem exemplares livres. Só será possível confirmar se houver exemplar separado para o leitor selecionado.", "warning");
+    leitorSelecionadoEmprestimo = null;
     verificarExigirSenhaEmprestimo().then(senha => {
         if (senha === null && (document.getElementById('modalSenhaConfig').style.display === 'flex')) return;
         window.senhaEmprestimoGlobal = senha;
@@ -78,7 +78,7 @@ async function confirmarEmprestimoRapido() {
             payload.prazo = document.getElementById('rapido-prazo').value;
             const telefone = document.getElementById('rapido-telefone').value;
             if (telefone) payload.telefone = telefone;
-            if (!payload.nome || !payload.sala || !payload.periodo || !payload.email) {
+            if (!leitorSelecionadoEmprestimo && (!payload.nome || !payload.sala || !payload.periodo)) {
                 return showToast("Preencha todos os campos do estudante.", "warning");
             }
             const config = carregarConfig();
@@ -94,6 +94,7 @@ async function confirmarEmprestimoRapido() {
             payload.prazo = 0;
         }
 
+        if (leitorSelecionadoEmprestimo) payload.leitor_id = leitorSelecionadoEmprestimo;
         if (window.senhaEmprestimoGlobal) {
             payload.senha = window.senhaEmprestimoGlobal;
             window.senhaEmprestimoGlobal = null;
@@ -111,6 +112,7 @@ async function confirmarEmprestimoRapido() {
                 showToast("E-mail de confirmação enviado com sucesso.", "success");
             }
             closeModal('modalEmprestimoRapido');
+            if (data.leitor_id) oferecerAcessoLeitor(data.leitor_id);
             carregarAcervo();
             if (isAdminGlobal) carregarDashboard();
             if (document.getElementById('emp').classList.contains('active')) {
@@ -168,7 +170,7 @@ function renderizarEmprestimos() {
     if (!isAdminGlobal) return;
     const filtro = filtroEmprestimosAtual;
     const termos = normalizarNomeEmprestimo(document.getElementById('busca-emprestimos').value).trim().split(/\s+/).filter(Boolean);
-    const dados = emprestimosDoFiltro.filter(e => termos.every(termo => normalizarNomeEmprestimo(e.leitor).includes(termo)));
+    const dados = emprestimosDoFiltro.filter(e => termos.every(termo => normalizarNomeEmprestimo([e.leitor,e.livro,e.serie,e.status].join(' ')).includes(termo)));
     document.getElementById('resultado-busca-emprestimos').textContent = `${dados.length} ${dados.length === 1 ? 'empréstimo encontrado' : 'empréstimos encontrados'} no filtro selecionado.`;
     const div = document.getElementById('lista-ativos');
 
@@ -197,7 +199,8 @@ function renderizarEmprestimos() {
         const actionCell = document.createElement('td');
         const actions = textElement('div', '', 'acoes-botoes');
         actionCell.appendChild(actions);
-        if (filtro === 'devolvidos') actions.appendChild(textElement('span', `Devolvido em ${e.data_devolucao}`));
+        if (e.status === 'Devolvido' || filtro === 'devolvidos') actions.appendChild(textElement('span', e.data_devolucao ? `Devolvido em ${e.data_devolucao}` : 'Devolvido'));
+        else if (e.encerramento || e.status === 'Perdido') actions.appendChild(textElement('span',e.encerramento || e.status));
         else if (isAdminGlobal) {
             const devolver = textElement('button', 'Devolver', 'btn-primary btn-small');
             devolver.onclick = () => devolverEmprestimo(e.id);

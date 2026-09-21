@@ -1,0 +1,17 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="csrf-token" content="{{ csrf_token }}"><title>Minha conta — BIBI</title><link rel="stylesheet" href="/static/css/app.css"><link rel="stylesheet" href="/static/css/contas.css"></head>
+<body class="account-page"><main class="account-card profile-card">
+<nav class="account-links"><a href="/app">← Voltar ao acervo</a>{% if conta.papel=='bibliotecario' %}<a href="/gestao">Gestão da biblioteca</a>{% endif %}<button id="account-logout">Sair</button></nav>
+<h1>Minha conta</h1><p id="profile-info"></p><p id="account-status" role="status" aria-live="polite"></p>
+<section><h2>Meu avatar</h2><img id="saved-avatar" width="120" height="120" alt="Meu avatar"><button id="edit-avatar" class="btn-primary">Editar avatar</button>
+<div id="avatar-editor" hidden><img id="preview-avatar" width="160" height="160" alt="Prévia do avatar"><div id="avatar-options"></div><button id="random-avatar" class="btn-primary">Aleatorizar</button> <button id="save-avatar" class="btn-primary">Salvar</button> <button id="cancel-avatar">Cancelar</button></div>
+<p class="attribution">Adventurer Neutral por <a href="https://www.instagram.com/lischi_art/" rel="noreferrer">Lisa Wischofsky</a>, via DiceBear. <a href="https://creativecommons.org/licenses/by/4.0/" rel="noreferrer">CC BY 4.0</a>. Avatar personalizado localmente.</p></section>
+{% if conta.leitor_id %}
+<section><h2>Meus empréstimos e histórico</h2><p>O histórico registra empréstimos físicos, não confirma leitura concluída.</p><div id="profile-loans"></div></section>
+<section><h2>Quero ler</h2><p>Sua lista não separa exemplares nem cria reservas automaticamente.</p><div id="profile-wishes"></div></section>
+<section><h2>Minhas reservas</h2><div id="profile-reservations"></div></section>
+<section><h2>Notificações</h2><div id="profile-notifications"></div></section>
+<section><h2>Minhas avaliações e comentários</h2><div id="profile-reviews"></div></section>
+{% endif %}
+<section><h2>Alterar senha</h2><form id="password-form"><label>Senha atual<input type="password" name="senha_atual" autocomplete="current-password" required></label><label>Nova senha<input type="password" name="senha" autocomplete="new-password" minlength="12" maxlength="128" required></label><label>Confirmar nova senha<input type="password" name="confirmacao" autocomplete="new-password" required></label><button class="btn-primary">Alterar senha e encerrar sessões</button></form></section>
+<section id="email-section"><h2>E-mail de acesso</h2><p id="email-state"></p><form id="verify-email-form"><label>E-mail a verificar (atual ou novo)<input type="email" name="email" value="{{ conta.email }}" required></label><label>Senha atual<input type="password" name="senha_atual" autocomplete="current-password" required></label><button class="btn-primary">Enviar código de verificação</button></form><form id="confirm-email-form"><label>Código recebido<input name="codigo" autocomplete="off" required></label><label>E-mail do código<input type="email" name="email" required></label><button class="btn-primary">Confirmar e-mail</button></form></section>
+</main><script src="/static/js/conta_comum.js"></script><script src="/static/js/perfil.js"></script></body></html>

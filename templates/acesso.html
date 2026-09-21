@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="csrf-token" content="{{ csrf_token }}"><title>Acesso — BIBI</title>
+<link rel="stylesheet" href="/static/css/app.css"><link rel="stylesheet" href="/static/css/contas.css"></head>
+<body class="account-page" data-mode="{{ modo }}">
+<main class="account-card">
+<a href="/" class="account-brand"><img src="/static/images/icon.png" alt=""> BIBI</a>
+{% if modo == 'setup' %}<h1>Vamos preparar sua biblioteca</h1><p>Cadastre o primeiro bibliotecário. Seus livros e históricos existentes serão preservados. Não é necessário configurar e-mail agora.</p>
+{% elif modo == 'offline' %}<h1>Recuperação local</h1><p>Use o código offline guardado na configuração inicial. Ao concluir, você receberá um novo código.</p>
+{% else %}<h1>Bem-vindo à biblioteca</h1><nav class="access-tabs" aria-label="Opções de acesso"><button type="button" data-mode="login">Entrar</button><button type="button" data-mode="ativar">Ativar convite</button><button type="button" data-mode="redefinir">Esqueci minha senha</button></nav><p id="access-help">Entre com seu e-mail e senha.</p>{% endif %}
+<form id="access-form">
+{% if modo == 'setup' %}<label>Biblioteca ou escola<input name="biblioteca" required maxlength="180" autocomplete="organization"></label><label>Nome do bibliotecário<input name="nome" required maxlength="180" autocomplete="name"></label>{% endif %}
+<label>E-mail de acesso<input type="email" name="email" required maxlength="254" autocomplete="username"></label>
+<label id="code-label" {% if modo != 'offline' %}hidden{% endif %}>Código recebido<input name="codigo" autocomplete="off" spellcheck="false"></label>
+<label>Senha<input type="password" name="senha" required maxlength="128" {% if modo != 'login' %}minlength="12"{% endif %} autocomplete="{% if modo == 'login' %}current-password{% else %}new-password{% endif %}"></label>
+<label id="confirm-label" {% if modo == 'login' %}hidden{% endif %}>Confirme sua senha<input type="password" name="confirmacao" maxlength="128" autocomplete="new-password"></label>
+<p id="password-help" {% if modo == 'login' %}hidden{% endif %}>Use de 12 a 128 caracteres.</p>
+<button class="btn-primary" id="access-submit">{% if modo == 'setup' %}Criar biblioteca{% elif modo == 'offline' %}Redefinir senha{% else %}Entrar{% endif %}</button>
+</form>
+<p id="access-status" role="status" aria-live="polite"></p>
+{% if modo == 'login' %}<button type="button" id="request-recovery" hidden>Enviar código de recuperação por e-mail</button>{% endif %}
+<section id="offline-result" hidden><h2>Guarde seu código de recuperação</h2><p>Este código substitui o anterior. Guarde em local seguro, fora deste computador. Ele não é um convite para leitores.</p><code id="offline-code"></code><label><input type="checkbox" id="saved-code"> Guardei o código em local seguro</label><button id="continue-access" class="btn-primary" disabled>Continuar</button></section>
+{% if modo == 'login' %}<a href="/recuperacao-local">Recuperação offline do bibliotecário (no servidor)</a>{% endif %}
+<p><a href="/instituicao">Termos de uso e privacidade da instituição</a></p>
+</main><script src="/static/js/acesso.js"></script></body></html>

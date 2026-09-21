@@ -31,7 +31,7 @@ document.addEventListener('keydown', (e) => {
             if (e.key === '1') {
                 tab('acervo');
             } else if (e.key === '2') {
-                tab('age');
+                location.assign('/perfil');
             }
             return;
         }
@@ -79,19 +79,19 @@ window.onload = () => {
     else toggleTheme(false);
     initCustomSelects();
     carregarConfigAgenda();
-    initFlatpickr();
+    if (isAdminGlobal) initFlatpickr();
     carregarAcervo();
     if (isAdminGlobal) {
         carregarDashboard();
         carregarLeitores();
     }
-    carregarAgenda();
+    if (isAdminGlobal) carregarAgenda();
     aplicarVisibilidadeCamposLivro(true);
     aplicarVisibilidadeCamposLivro(false);
     aplicarVisibilidadeCamposEmprestimo();
     setupDragAndDrop('manual-capa-preview', 'manual-capa-url');
     setupDragAndDrop('edit-capa-preview', 'edit-capa-url');
-    verificarObrigarLocalizacao();
+    if (isAdminGlobal) verificarObrigarLocalizacao();
     setInterval(async () => { if (isAdminGlobal) await apiFetch('/api/emprestimos/ativos'); }, 30 * 60 * 1000);
 };
 

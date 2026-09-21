@@ -30,11 +30,7 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName}
 
 [Files]
-Source: "dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "static\images\hero\*"; DestDir: "{app}\static\images\hero"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "static\images\*.png"; DestDir: "{app}\static\images"; Flags: ignoreversion
-Source: "static\images\*.ico"; DestDir: "{app}\static\images"; Flags: ignoreversion
-Source: "static\images\*.webm"; DestDir: "{app}\static\images"; Flags: ignoreversion
+Source: "dist\BIBI\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

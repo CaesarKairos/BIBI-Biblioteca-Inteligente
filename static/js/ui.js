@@ -228,6 +228,7 @@ function initCustomSelects() {
             {value: 'professor', text: 'Professor'}
         ], (val) => {
             document.getElementById('rapido-tipo').value = val;
+            leitorSelecionadoEmprestimo = null;
             document.getElementById('rapido-aluno').style.display = val === 'estudante' ? 'block' : 'none';
             document.getElementById('rapido-professor').style.display = val === 'professor' ? 'block' : 'none';
             aplicarVisibilidadeCamposEmprestimo();
@@ -290,7 +291,7 @@ function triggerModalAction(modalId) {
 
 
 function tab(id) {
-    if (!isAdminGlobal && !['acervo', 'age'].includes(id)) return;
+    if (!isAdminGlobal && id !== 'acervo') return;
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-menu li').forEach(l => l.classList.remove('active'));
     document.getElementById(id).classList.add('active');
@@ -321,6 +322,8 @@ function tab(id) {
 class ApiError extends Error {}
 
 async function apiFetch(url, options) {
+    options = {...options, headers: new Headers(options?.headers || {})};
+    options.headers.set('X-CSRF-Token', document.querySelector('meta[name=csrf-token]')?.content || '');
     try {
         const response = await window.fetch(url, options);
         let payload;

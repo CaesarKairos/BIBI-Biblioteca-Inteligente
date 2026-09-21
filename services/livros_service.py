@@ -8,6 +8,24 @@ from utils.datetime import get_brasilia_today
 import re
 import requests
 import uuid
+from functools import wraps
+from flask import current_app,has_app_context
+from datetime import datetime,timezone
+
+
+def observar_fonte(nome):
+    """Registra apenas o resultado observado, sem ISBN ou dados pessoais."""
+    def decorate(function):
+        @wraps(function)
+        def call(*args,**kwargs):
+            result=function(*args,**kwargs)
+            if has_app_context():
+                current_app.extensions.setdefault('metadata_health',{})[nome]={
+                    'ultima_consulta':datetime.now(timezone.utc).isoformat(),
+                    'resultado':'metadados recebidos' if result else 'sem metadados (ausência ou indisponibilidade da fonte)'}
+            return result
+        return call
+    return decorate
 
 
 def validar_numero_paginas(valor):
@@ -29,6 +47,7 @@ def paginas_da_fonte(valor):
         return None
 
 
+@observar_fonte('Open Library')
 def buscar_open_library(isbn):
     """API #1 - Open Library"""
     try:
@@ -77,6 +96,7 @@ def buscar_open_library(isbn):
     return None
 
 
+@observar_fonte('BrasilAPI')
 def buscar_brasil_api(isbn):
     """API #2 - BrasilAPI (ISBN)"""
     try:
@@ -124,6 +144,7 @@ def buscar_brasil_api(isbn):
     return None
 
 
+@observar_fonte('Google Books ISBN')
 def buscar_google_books_por_isbn(isbn):
     """API #3 - Google Books (por ISBN primeiro)"""
     try:
@@ -139,6 +160,7 @@ def buscar_google_books_por_isbn(isbn):
     return None
 
 
+@observar_fonte('Google Books título')
 def buscar_google_books_por_titulo(titulo):
     """API #3 - Google Books (fallback por título)"""
     try:
@@ -263,6 +285,14 @@ def api_livros(admin, data, method):
             if not isinstance(data, dict):
                 return {"erro": "Envie os dados do livro em um objeto JSON."}, 400
             try:
+                quantidade = int(data.get('quantidade',0))
+            except (ValueError,TypeError):
+                return {'erro':'Quantidade inválida.'},400
+            if isinstance(data.get('quantidade'),bool) or str(data.get('quantidade'))!=str(quantidade) or not 1<=quantidade<=10000:
+                return {'erro':'Quantidade deve ser um inteiro positivo até 10000.'},400
+            if data.get('manual') and (not str(data.get('titulo','')).strip() or not str(data.get('autor','')).strip()):
+                return {'erro':'Título e autor obrigatórios.'},400
+            try:
                 numero_paginas = validar_numero_paginas(data.get('numero_paginas'))
             except ValueError as error:
                 return {"erro": str(error)}, 400
@@ -303,8 +333,10 @@ def api_livros(admin, data, method):
                 INSERT INTO Livros (isbn, nome, autor, ano_publicacao, capa_url, descricao, temas, categoria, estoque, quantidade_disponivel, data_cadastro, localizacao, numero_paginas)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (isbn, titulo, autor, ano, capa, descricao, temas, categoria, quantidade, quantidade, hoje, localizacao, numero_paginas))
-            conn.commit()
             livro_id = cursor.lastrowid
+            from services.contas_service import auditar
+            auditar(conn,'criar_livro',livro_id)
+            conn.commit()
             return {
                 "id": livro_id, "isbn": isbn, "titulo": titulo, "autor": autor,
                 "ano": ano, "capa": capa, "descricao": descricao, "temas": temas,
@@ -315,7 +347,7 @@ def api_livros(admin, data, method):
         else:
             cursor.execute('''
                 SELECT id, isbn, nome, autor, ano_publicacao, capa_url, descricao, temas, categoria, estoque, quantidade_disponivel, data_cadastro, localizacao, numero_paginas
-                FROM Livros
+                FROM Livros WHERE arquivado=0 ORDER BY nome,id
             ''')
             livros = []
             for row in cursor.fetchall():
@@ -338,6 +370,16 @@ def editar_livro(id, data):
     with db_manager.connection() as conn:
         cursor = conn.cursor()
         # Clientes anteriores que não enviam o novo campo preservam seu valor.
+        conn.execute('BEGIN IMMEDIATE')
+        old=conn.execute('SELECT estoque,quantidade_disponivel FROM Livros WHERE id=? AND arquivado=0',(id,)).fetchone()
+        if not old:
+            return {'erro':'Livro não encontrado.'},404
+        stock=data.get('estoque',old[0])
+        if type(stock) is not int or stock<0 or stock>10000:
+            return {'erro':'Estoque inválido.'},400
+        available=old[1]+stock-old[0]
+        if available<0 or ('disponivel' in data and data['disponivel']!=available):
+            return {'erro':'Disponibilidade é calculada pelos empréstimos, reservas e ocorrências. Não pode ser alterada livremente.'},400
         if 'numero_paginas' in data:
             cursor.execute('UPDATE Livros SET numero_paginas = ? WHERE id = ?', (numero_paginas, id))
         capa_url = data.get('capa')
@@ -349,16 +391,15 @@ def editar_livro(id, data):
             WHERE id = ?
         ''', (
             data.get('titulo'), data.get('autor'), data.get('ano'),
-            data.get('descricao'), data.get('temas'), data.get('estoque'), data.get('disponivel'),
+            data.get('descricao'), data.get('temas'), stock, available,
             data.get('categoria'), data.get('localizacao', ''), id
         ))
+        from services.contas_service import auditar
+        auditar(conn,'editar_livro',id,motivo=f'estoque {old[0]} → {stock}')
         conn.commit()
         return {"status": "ok"}
 
 
 def excluir_livro(id):
-    with db_manager.connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('DELETE FROM Livros WHERE id = ?', (id,))
-        conn.commit()
-        return {"status": "ok"}
+    from services.circulacao_service import arquivar
+    return arquivar('Livros',id)

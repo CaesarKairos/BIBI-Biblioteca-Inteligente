@@ -15,6 +15,8 @@ from io import BytesIO
 from pathlib import Path
 from urllib.parse import urlsplit
 import warnings
+import ipaddress
+import socket
 from PIL import Image, UnidentifiedImageError
 
 
@@ -27,9 +29,16 @@ def allowed_file(filename):
 
 def download_image_from_url(url, timeout=10):
     try:
-        if urlsplit(url).scheme not in ('http', 'https'):
+        parsed=urlsplit(url)
+        # Fontes oficiais de capas. Upload local atende imagens de outras origens.
+        trusted={'covers.openlibrary.org','books.google.com','books.google.com.br','books.googleusercontent.com','images-na.ssl-images-amazon.com','m.media-amazon.com'}
+        if parsed.scheme != 'https' or parsed.hostname not in trusted or parsed.username or parsed.password or parsed.port not in (None,443):
             return None, None
-        with requests.get(url, timeout=timeout, stream=True) as response:
+        if any(not ipaddress.ip_address(item[4][0]).is_global for item in socket.getaddrinfo(parsed.hostname,443,type=socket.SOCK_STREAM)):
+            return None,None
+        with requests.get(url, timeout=timeout, stream=True,allow_redirects=False) as response:
+            if response.is_redirect:
+                return None,None
             response.raise_for_status()
             data = bytearray()
             for chunk in response.iter_content(65536):
@@ -38,7 +47,7 @@ def download_image_from_url(url, timeout=10):
                     raise ValueError('Imagem externa excede 16 MB.')
             content = bytes(data)
             return content, validate_image(content)
-    except (requests.RequestException, ValueError):
+    except (requests.RequestException, ValueError, OSError):
         logger.warning('Não foi possível obter uma capa externa válida', exc_info=True)
         return None, None
 
@@ -48,7 +57,10 @@ def get_book_cover_image_bytes(cover_url):
         return None, None
     if cover_url.startswith(('http://', 'https://')):
         return download_image_from_url(cover_url)
-    roots = {'/uploadedcovers/': UPLOAD_FOLDER, '/externalcovers/': EXTERNAL_FOLDER, '/static/': STATIC_DIR}
+    from flask import has_app_context,current_app
+    upload=current_app.config['UPLOAD_FOLDER'] if has_app_context() else UPLOAD_FOLDER
+    external=current_app.config['EXTERNAL_FOLDER'] if has_app_context() else EXTERNAL_FOLDER
+    roots = {'/uploadedcovers/': upload, '/externalcovers/': external, '/static/': STATIC_DIR}
     for prefix, directory in roots.items():
         if cover_url.startswith(prefix):
             root = Path(directory).resolve()

@@ -1,0 +1,40 @@
+.account-page { overflow: auto; min-height: 100dvh; height: auto; display: block; padding: 32px 16px; background: var(--main); color: var(--text); }
+[hidden] { display: none !important; }
+#acervo .search-box { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto; gap: 10px; margin-bottom: 24px; }
+#acervo .search-box input { grid-column: 1 / -1; }
+#acervo .search-box input,#acervo .search-box select,#acervo .search-box button { margin: 0; min-width: 0; }
+@media (max-width:900px) { #acervo .search-box { grid-template-columns: minmax(0,1fr); } }
+.account-card { width: min(100%, 540px); margin: auto; padding: clamp(20px,4vw,40px); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.account-card h1 { margin: 22px 0 12px; font-size: 26px; }
+.account-card p { margin: 12px 0; line-height: 1.6; color: var(--light); }
+.account-card label { display: block; font-weight: 700; font-size: 14px; margin: 16px 0; }
+.account-card label input:not([type=checkbox]) { display: block; width: 100%; margin: 8px 0 0; }
+.account-card input[type=checkbox] { width: auto; margin-right: 8px; }
+.account-card [hidden] { display: none !important; }
+.account-card a { color: var(--accent-strong); }
+.account-brand { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: 800; text-decoration: none; }
+.account-brand img { width: 36px; height: 36px; object-fit: contain; }
+.access-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 24px 0; }
+.access-tabs button { padding: 9px; border: 1px solid var(--border); border-radius: 8px; color: var(--text); background: var(--main); cursor: pointer; }
+.access-tabs button[aria-current=true] { background: var(--accent-soft); border-color: var(--accent-strong); }
+#offline-code { display: block; overflow-wrap: anywhere; padding: 16px; border: 1px solid var(--border); font-size: 18px; user-select: all; }
+.account-links { display: flex; gap: 14px; flex-wrap: wrap; margin: 14px 0; }
+.account-links a, .account-links button { color: var(--text); font: inherit; font-size: 12px; background: transparent; border: 0; cursor: pointer; }
+.profile-card { width: min(100%,1000px); }
+.profile-card section { border-top: 1px solid var(--border); margin-top: 28px; padding-top: 24px; }
+.profile-row { padding: 16px 0; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.profile-row button,.profile-row a { margin: 6px 10px 6px 0; }
+.attribution { font-size: 11px; }
+#avatar-options { display: grid; grid-template-columns: repeat(auto-fit,minmax(145px,1fr)); gap: 12px; }
+#avatar-options select { width: 100%; }
+.reader-book-actions { margin-top: 24px; border-top: 1px solid var(--border); padding-top: 16px; }
+.reader-book-actions button { margin: 5px 5px 5px 0; }
+.reader-book-actions textarea,.reader-book-actions select { width: 100%; margin: 10px 0; }
+.profile-card textarea,.profile-card select { width: 100%; margin: 8px 0; }
+.profile-card textarea { min-height: 90px; }
+.profile-card pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+#invite-code { display: block; font-size: 24px; padding: 12px 0; user-select: all; }
+#csv-preview { max-height: 350px; overflow: auto; }
+.avatar-choices { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 5px; max-height: 230px; overflow: auto; }
+.avatar-choices button { padding: 5px; font-size: 10px; }
+.avatar-choices img { display: block; margin: auto; }
