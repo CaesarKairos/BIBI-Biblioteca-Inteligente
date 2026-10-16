@@ -50,6 +50,19 @@ def main():
                         window.native.Opacity=0
                         window.native.ShowInTaskbar=False
                     window.native.Invoke(Action(keep_invisible))
+                    from System.Windows.Forms import MenuStrip
+                    native_menu=next(control for control in window.native.Controls if isinstance(control,MenuStrip))
+                    assert not native_menu.Visible
+                    # Show the test form at opacity zero to check child visibility.
+                    window.native.Invoke(Action(lambda:window.native.Show()))
+                    assert not native_menu.Visible
+                    for visible in (True,False):
+                        window.evaluate_js("for(const type of ['keydown','keyup'])document.dispatchEvent(new KeyboardEvent(type,{key:'Alt',altKey:type==='keydown',bubbles:true,cancelable:true}));")
+                        deadline=time.monotonic()+5
+                        while bool(native_menu.Visible)!=visible and time.monotonic()<deadline:
+                            time.sleep(.05)
+                        assert bool(native_menu.Visible)==visible
+                    print('PASS: menu oculto por padrão; Alt mostra e oculta a barra nativa.',flush=True)
                     original_size=(window.native.Width,window.native.Height)
                     def press_f11(expected):
                         window.evaluate_js("document.dispatchEvent(new KeyboardEvent('keydown',{key:'F11',bubbles:true,cancelable:true}));")

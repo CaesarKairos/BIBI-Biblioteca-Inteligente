@@ -27,6 +27,7 @@
         accountForm('password-form',async data=>{await accountApi('/api/minha-conta/senha','POST',data);location.assign('/acesso');});
         accountForm('verify-email-form',async(data,form)=>{const r=await accountApi('/api/minha-conta/email/enviar','POST',data);form.elements.senha_atual.value='';accountStatus(r.mensagem,form);});
         accountForm('confirm-email-form',async data=>{await accountApi('/api/minha-conta/email/confirmar','POST',data);location.assign('/acesso');});
+        await script('/static/js/settings_help.js');
         await script('/static/js/preferencias.js');
         await window.settingsPreferencesReady;
         if(document.body.dataset.admin==='true'){
@@ -36,6 +37,7 @@
         content.querySelectorAll('.settings-panels > section').forEach(panel=>panel.classList.add('config-panel'));
         const note=accountText('p','As opções de exibição e os switches são salvos imediatamente.');
         document.getElementById('cadastro')?.prepend(note);
+        window.descreverConfiguracoes(content);
         snapshot();
     }
     window.abrirConfiguracoesCompartilhadas=async(key='minha-conta')=>{

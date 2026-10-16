@@ -1,9 +1,5 @@
 function carregarConfig() {
-    const str = localStorage.getItem(CONFIG_STORAGE_KEY);
-    if (str) {
-        try { return JSON.parse(str); } catch(e) {}
-    }
-    return {
+    const defaults = {
         darkMode: false,
         mostrarColunaAula: true,
         campoDescricaoVisivel: true,
@@ -13,6 +9,13 @@ function carregarConfig() {
         campoNumeroUsuario: false,
         bloquearExcluirLivro: false
     };
+    try {
+        const saved = JSON.parse(localStorage.getItem(CONFIG_STORAGE_KEY) || 'null');
+        if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
+            return {...defaults, ...saved};
+        }
+    } catch(e) {}
+    return defaults;
 }
 
 function salvarConfig(config) {

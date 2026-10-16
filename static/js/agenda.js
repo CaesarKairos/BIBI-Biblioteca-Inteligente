@@ -9,7 +9,7 @@ async function carregarAgenda() {
     const tabela = document.getElementById('tabela-agenda');
     tabela.innerHTML = '';
     const config = carregarConfig();
-    const mostrarColunaAula = config.mostrarColunaAula;
+    const mostrarColunaAula = config.mostrarColunaAula !== false;
     const qtdAulas = configAgenda.aulas;
     const head = document.createElement('thead');
     const header = document.createElement('tr');

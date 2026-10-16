@@ -109,9 +109,12 @@ class CustomSelect {
         const control=document.createElement('button');control.type='button';control.className='select-selected';
         control.setAttribute('role','combobox');control.setAttribute('aria-haspopup','listbox');control.setAttribute('aria-expanded','false');
         control.setAttribute('aria-label',this.container.dataset.label || this.container.previousElementSibling?.textContent || 'Selecionar opção');
+        if(this.container.dataset.descriptionId)control.setAttribute('aria-describedby',this.container.dataset.descriptionId);
         const label=document.createElement('span');control.append(label);
         const list=document.createElement('div');list.className='select-items';list.role='listbox';list.id='bibi-options-'+crypto.getRandomValues(new Uint32Array(1))[0];control.setAttribute('aria-controls',list.id);
         this.options.forEach((opt,index)=>{const item=document.createElement('div');item.textContent=opt.text;item.dataset.value=String(opt.value);item.role='option';item.id=list.id+'-'+index;
+            // Keep focus on the combobox until click commits the option.
+            item.addEventListener('mousedown',event=>event.preventDefault());
             item.addEventListener('click',()=>{if(opt.disabled)return;this.setValue(opt.value);this.close();control.focus();});list.append(item);});
         control.addEventListener('click',()=>this.toggle());
         control.addEventListener('keydown',event=>{
@@ -141,6 +144,7 @@ function enhanceNativeSelects(){
  document.querySelectorAll('select:not([multiple])').forEach(select=>{
   if(select.dataset.enhanced)return;
   const wrapper=document.createElement('div');wrapper.dataset.label=select.getAttribute('aria-label') || Array.from(select.labels?.[0]?.childNodes||[]).filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim() || 'Selecionar opção';select.after(wrapper);
+  wrapper.dataset.descriptionId=select.getAttribute('aria-describedby')||'';
   const options=()=>Array.from(select.options,o=>({value:o.value,text:o.text,disabled:o.disabled}));
   const component=new CustomSelect(wrapper,options(),value=>{if(select.disabled)return;select.value=value;select.dispatchEvent(new Event('change',{bubbles:true}));},select.value);
   wrapper.querySelector('button').disabled=select.disabled;

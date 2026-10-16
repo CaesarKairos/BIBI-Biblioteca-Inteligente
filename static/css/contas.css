@@ -118,6 +118,10 @@
 .settings-panels pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; }
 .settings-panels .config-toggle-row { flex-direction:row; align-items:center; justify-content:space-between; gap:20px; padding:12px 0; border-bottom:1px solid var(--border); font-weight:500; }
 .config-toggle-row .switch { flex-shrink:0; order:2; }
+.config-toggle-copy { flex:1; min-width:0; }
+.settings-panels .settings-help { display:block; margin-top:6px; color:var(--light); font-size:12px; font-weight:400; line-height:1.5; }
+.settings-panels .config-toggle-copy .settings-help { margin-top:5px; max-width:62ch; }
+.settings-panels .settings-form-help { font-size:12px; margin:12px 0 0; }
 .health-summary { display:grid; grid-template-columns:minmax(100px,1fr) minmax(0,2fr); gap:14px; font-size:14px; }
 .health-summary dd { margin:0; overflow-wrap:anywhere; }
 .health-summary dt { font-weight:600; }
@@ -169,7 +173,7 @@
 @media(min-width:1000px){.avatar-preview-column { position:sticky; top:0; }.avatar-preview { position:static; }.avatar-actions { flex-direction:column; }#avatar-options { grid-row:auto; }}
 @media(max-width:600px){.avatar-preview img { width:170px; height:170px; }.avatar-actions .btn-primary { flex-basis:100%; }.avatar-choices { grid-template-columns:repeat(auto-fill,minmax(76px,1fr)); }}
 
-.sidebar-buttons .icon-item { background:transparent; color:var(--light); border:1px solid var(--border); border-radius:10px; }
+.sidebar-buttons .icon-item { background:transparent; color:var(--light); border:0; border-radius:10px; }
 .sidebar-buttons .icon-item:hover { background:var(--accent-soft); color:var(--accent-strong); }
 .sidebar-buttons .icon-item svg { width:22px; height:22px; }
 .settings-panels .custom-select { margin-top:7px; width:100%; }

@@ -17,7 +17,7 @@ python app.py
 
 Não copie nem configure `.env`: a aplicação não o utiliza. `app.py` cria a aplicação explicitamente; importar o módulo não abre janela, banco ou worker. `desktop.py` inicia Waitress em loopback, o worker periódico e a janela PyWebView. Não execute duas instâncias para a mesma biblioteca.
 
-Na janela desktop, **F11** alterna entre tela cheia e o tamanho anterior, em qualquer tela. A opção também está em **Exibir → Tela cheia (F11)**. No navegador, use o F11 nativo do próprio navegador.
+Na janela desktop, **F11** alterna entre tela cheia e o tamanho anterior, em qualquer tela. O menu superior fica oculto para liberar espaço; **Alt** mostra ou oculta as opções Conta e Exibir. No navegador, use o F11 nativo do próprio navegador.
 
 Na primeira abertura, informe biblioteca/escola, nome, e-mail e senha do primeiro bibliotecário. Leia os Termos de Uso e o Aviso de Privacidade na própria tela e registre o aceite. A sessão começa e abre a personalização local do avatar; salve ou use o avatar sugerido para entrar. SMTP é opcional. Não há código manual novo para guardar, senha padrão ou promoção automática de leitores legados.
 
@@ -42,7 +42,7 @@ Bibliotecários navegam por Dashboard, Acervo, Empréstimos, Agenda, Leitores e 
 
 Configurações reúne Minha conta, Aparência, Biblioteca, Acervo e agenda, Circulação, Contas e acesso, E-mail, Dados, Moderação, Sistema e segurança e Sobre. Importações, convites, recuperação assistida, reservas administrativas, renovações e ocorrências funcionam dentro do modal. Leitores acessam somente sua conta, aparência, textos institucionais e Sobre. O PIN legado foi descontinuado; operações sensíveis confirmam a senha real da conta.
 
-Para recuperar uma conta bibliotecária no servidor, use **Conta → Recuperar conta bibliotecária neste computador** no menu nativo da janela BIBI. Informe o e-mail e defina/confirme a nova senha. A autorização combina loopback, sessão aberta pelo desktop e token aleatório de uso único em memória, válido por três minutos. Um navegador local ou remoto não pode iniciar esse fluxo por HTTP.
+Para recuperar uma conta bibliotecária no servidor, pressione **Alt** e use **Conta → Recuperar conta bibliotecária neste computador** no menu nativo da janela BIBI. Informe o e-mail e defina/confirme a nova senha. A autorização combina loopback, sessão aberta pelo desktop e token aleatório de uso único em memória, válido por três minutos. Um navegador local ou remoto não pode iniciar esse fluxo por HTTP.
 
 A pessoa com acesso à sessão Windows usada pela instalação já possui acesso operacional ao servidor e seus arquivos. DPAPI vincula o segredo a esse usuário Windows; esse modelo não protege contra alguém que controla essa sessão. Códigos antigos já existentes continuam aceitos uma única vez na transição e não são substituídos por novos códigos.
 

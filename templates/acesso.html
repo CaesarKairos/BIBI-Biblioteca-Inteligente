@@ -6,7 +6,7 @@
 <main class="account-card">
 <a href="/" class="account-brand"><img src="/static/images/icon.png" alt=""> BIBI</a>
 {% if modo == 'setup' %}<h1>Vamos preparar sua biblioteca</h1><p>Cadastre o primeiro bibliotecário. Seus livros e históricos existentes serão preservados. Não é necessário configurar e-mail agora.</p>
-{% elif modo == 'offline' %}<h1>Recuperação local</h1><p>No servidor, use Conta → Recuperar conta na janela desktop. {% if legado %}Um código legado desta instalação ainda pode ser usado uma única vez.{% else %}A recuperação será aberta pelo menu nativo; não há código manual para guardar.{% endif %}</p>
+{% elif modo == 'offline' %}<h1>Recuperação local</h1><p>No servidor, pressione Alt e use Conta → Recuperar conta na janela desktop. {% if legado %}Um código legado desta instalação ainda pode ser usado uma única vez.{% else %}A recuperação será aberta pelo menu nativo; não há código manual para guardar.{% endif %}</p>
 {% else %}<h1 id="access-title">Entrar na biblioteca</h1><button type="button" id="back-login" hidden>Voltar para entrar</button><p id="access-help" hidden></p>{% endif %}
 <form id="access-form" method="post">
 {% if modo == 'setup' %}<label>Biblioteca ou escola<input name="biblioteca" required maxlength="180" autocomplete="organization"></label><label>Nome do bibliotecário<input name="nome" required maxlength="180" autocomplete="name"></label>{% endif %}
