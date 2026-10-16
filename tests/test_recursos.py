@@ -102,7 +102,7 @@ class ResourceTests(AppTest):
             self.assertIn('manifesto.json',archive.namelist())
             self.assertNotIn('segredos.dpapi',archive.namelist())
         self.sql("UPDATE Livros SET nome='Alterado'")
-        response=self.client.post('/api/gestao/restaurar',data={'arquivo':(io.BytesIO(raw),'backup.zip'),'confirmado':'true'})
+        response=self.client.post('/api/gestao/restaurar',data={'arquivo':(io.BytesIO(raw),'backup.zip'),'confirmado':'true','senha_atual':'senha forte de teste'})
         self.assertEqual(response.status_code,200,response.json)
         self.assertEqual(self.sql('SELECT nome FROM Livros'),[('Livro',)])
         self.assertEqual(client.get('/api/minha-conta').status_code,401)
@@ -110,7 +110,7 @@ class ResourceTests(AppTest):
         invalid=io.BytesIO()
         with zipfile.ZipFile(invalid,'w') as archive:
             archive.writestr('../escape','bad')
-        response=self.client.post('/api/gestao/restaurar',data={'arquivo':(io.BytesIO(invalid.getvalue()),'bad.zip'),'confirmado':'true'})
+        response=self.client.post('/api/gestao/restaurar',data={'arquivo':(io.BytesIO(invalid.getvalue()),'bad.zip'),'confirmado':'true','senha_atual':'senha forte de teste'})
         self.assertEqual(response.status_code,400)
 
     def test_email_verified_only_persistent_queue_and_retry(self):

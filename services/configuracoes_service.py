@@ -1,6 +1,5 @@
 from flask import current_app
 from database.database import db_manager
-import hashlib
 
 
 def is_email_blocked():
@@ -70,40 +69,16 @@ def set_quantidade_aulas(qtd):
 
 
 def senha_status():
-    with db_manager.connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT valor FROM Configuracoes WHERE chave='senha_hash'")
-        row = cursor.fetchone()
-        return {"set": row is not None}
+    return {'set':True,'tipo':'conta'}
 
 
 def definir_senha(data):
-    senha = data.get('senha')
-    if not senha or len(senha) != 4:
-        return {"erro": "Senha deve ter 4 caracteres"}, 400
-    with db_manager.connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT valor FROM Configuracoes WHERE chave='senha_hash'")
-        if cursor.fetchone():
-            return {"erro": "Senha já existe"}, 400
-        senha_hash = hashlib.sha256(senha.encode()).hexdigest()
-        cursor.execute("INSERT INTO Configuracoes (chave, valor) VALUES ('senha_hash', ?)", (senha_hash,))
-        conn.commit()
-        return {"status": "ok"}
+    return {'erro':'O PIN foi descontinuado. Altere sua senha no Perfil.'},410
 
 
 def verificar_senha(data):
-    senha = data.get('senha')
-    if not senha:
-        return {"valido": False}
-    with db_manager.connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT valor FROM Configuracoes WHERE chave='senha_hash'")
-        row = cursor.fetchone()
-        if not row:
-            return {"valido": False}
-        senha_hash = hashlib.sha256(senha.encode()).hexdigest()
-        return {"valido": senha_hash == row[0]}
+    from utils.auth import verificar_senha_admin
+    return {'valido':verificar_senha_admin(data.get('senha'))}
 
 
 def bloquear_email_status():
@@ -215,6 +190,16 @@ def config_email_status():
 
 def set_config_email(data):
     data = data or {}
+    from werkzeug.exceptions import BadRequest,Forbidden
+    from utils.auth import verificar_senha_admin
+    if data.get('remover_credencial') is True and not verificar_senha_admin(data.get('senha_atual')):
+        raise Forbidden('Confirme a senha atual para remover a credencial.')
+    host=data.get('smtp_host')
+    port=data.get('smtp_port')
+    if host is not None and (not isinstance(host,str) or not host or len(host)>254 or '/' in host or any(c.isspace() for c in host)):
+        raise BadRequest('Servidor SMTP inválido.')
+    if port is not None and port not in ('465','587'):
+        raise BadRequest('Use a porta 465 ou 587.')
     email = (data.get('email_organizacao') or '').strip()
     if email:
         from services.contas_service import email_normalizado
@@ -223,6 +208,9 @@ def set_config_email(data):
     with db_manager.connection() as conn:
         cursor = conn.cursor()
         cursor.execute("INSERT OR REPLACE INTO Configuracoes (chave, valor) VALUES ('email_organizacao', ?)", (email,))
+        for key,value in [('smtp_host',host),('smtp_port',port)]:
+            if value is not None:
+                cursor.execute('INSERT OR REPLACE INTO Configuracoes VALUES (?,?)',(key,value))
         # A senha de app só é sobrescrita se um novo valor for enviado, para não apagar a existente
         # quando o campo é deixado em branco na interface (ela nunca é reexibida por segurança).
         if senha_app:

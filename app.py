@@ -35,6 +35,7 @@ def create_app(test_config=None):
     store = SecretStore(directory)
     app.extensions['secrets'] = store
     app.secret_key = store.session_key()
+    store.recovery_key()
     from werkzeug.security import generate_password_hash
     import secrets
     app.extensions['dummy_password_hash']=generate_password_hash(secrets.token_urlsafe(24),method='scrypt')

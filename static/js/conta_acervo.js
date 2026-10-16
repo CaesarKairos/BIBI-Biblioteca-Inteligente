@@ -2,7 +2,7 @@ document.getElementById('account-logout')?.addEventListener('click',async()=>{aw
 window.addEventListener('load',async()=>{const id=new URLSearchParams(location.search).get('livro');if(id&&/^\d+$/.test(id)){const r=await apiFetch('/api/livros/'+id);verDetalhes(await r.json());}});
 function oferecerAcessoLeitor(id) {
     const toast=textElement('div','','toast');toast.append(textElement('p','Empréstimo registrado. O leitor pode ativar uma conta quando desejar.'));
-    const link=textElement('a','Gerenciar convite');link.href='/gestao?leitor='+id;toast.append(link);document.getElementById('toast-container').append(toast);setTimeout(()=>toast.remove(),15000);
+    const link=textElement('a','Gerenciar convite');link.href='/leitores/contas?leitor='+id;toast.append(link);document.getElementById('toast-container').append(toast);setTimeout(()=>toast.remove(),15000);
 }
 const originalDetalhes=verDetalhes;
 verDetalhes=function(livro) {
@@ -27,3 +27,5 @@ verDetalhes=function(livro) {
     const reviews=textElement('div','Carregando opiniões…');area.append(reviews);document.getElementById('info-livro').append(area);
     apiFetch('/api/minha-conta/avaliacoes/'+livro.id).then(r=>r.json()).then(rows=>{reviews.replaceChildren(textElement('h3','Opiniões sobre a obra'));if(!rows.length)reviews.append(textElement('p','Ainda não há opiniões publicadas.'));rows.forEach(r=>reviews.append(textElement('p',`${r.estrelas}/5 — ${r.comentario}`)));});
 };
+
+window.addEventListener('load',()=>{const section=location.hash.slice(1);if(['dash','acervo','emp','age','lei'].includes(section))tab(section);});

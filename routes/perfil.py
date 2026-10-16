@@ -11,6 +11,41 @@ from services.circulacao_service import reservar,cancelar_reserva,notificar
 bp=Blueprint('perfil',__name__)
 
 
+@bp.route('/api/minha-conta/favoritos',methods=['GET','PUT'])
+def favorites():
+    from werkzeug.exceptions import Forbidden
+    if g.conta['papel'] != 'leitor':
+        raise Forbidden('Favoritos pertencem ao perfil de leitor.')
+    with db_manager.connection() as conn:
+        if request.method == 'PUT':
+            ids=request.get_json().get('livros')
+            if not isinstance(ids,list) or len(ids)>4 or any(type(i) is not int for i in ids) or len(set(ids))!=len(ids):
+                raise BadRequest('Escolha até quatro livros diferentes.')
+            conn.execute('BEGIN IMMEDIATE')
+            previous={r[0] for r in conn.execute('SELECT livro_id FROM Favoritos WHERE conta_id=?',(g.conta['id'],))}
+            for book in ids:
+                row=conn.execute('SELECT arquivado FROM Livros WHERE id=?',(book,)).fetchone()
+                if not row or (row[0] and book not in previous):
+                    raise BadRequest('Selecione um livro ativo do acervo.')
+            conn.execute('DELETE FROM Favoritos WHERE conta_id=?',(g.conta['id'],))
+            conn.executemany('INSERT INTO Favoritos VALUES (?,?,?)',[(g.conta['id'],book,order) for order,book in enumerate(ids)])
+            conn.commit()
+        return jsonify(records(conn,'SELECT l.id,l.nome,l.capa_url,l.arquivado,f.ordem FROM Favoritos f JOIN Livros l ON l.id=f.livro_id WHERE f.conta_id=? ORDER BY f.ordem',(g.conta['id'],)))
+
+
+@bp.route('/api/minha-conta/preferencias',methods=['GET','PUT'])
+def preferences():
+    with db_manager.connection() as conn:
+        if request.method=='PUT':
+            tema=request.get_json().get('tema')
+            if tema not in ('claro','escuro'):
+                raise BadRequest('Tema inválido.')
+            conn.execute('INSERT INTO Preferencias VALUES (?,?) ON CONFLICT(conta_id) DO UPDATE SET tema=excluded.tema',(g.conta['id'],tema))
+            conn.commit()
+        row=conn.execute('SELECT tema FROM Preferencias WHERE conta_id=?',(g.conta['id'],)).fetchone()
+        return jsonify(tema=row[0] if row else 'claro')
+
+
 @bp.post('/api/minha-conta/email/enviar')
 def email_send():
     from services.mensagens_service import pedir_verificacao
@@ -44,7 +79,7 @@ def avatar_save():
     config=avatars.validate(request.get_json())
     image=avatars.render(config)
     with db_manager.connection() as conn:
-        conn.execute('UPDATE Contas SET avatar=? WHERE id=?',(json.dumps(config),g.conta['id']))
+        conn.execute('UPDATE Contas SET avatar=?,onboarding_concluido_em=COALESCE(onboarding_concluido_em,CURRENT_TIMESTAMP) WHERE id=?',(json.dumps(config),g.conta['id']))
         conn.commit()
     return jsonify(imagem=image)
 
@@ -62,7 +97,15 @@ def records(conn,sql,params=()):
 
 @bp.get('/perfil')
 def page():
-    return render_template('perfil.html')
+    return render_template('perfil.html',ativo='perfil')
+
+
+@bp.get('/boas-vindas')
+def welcome():
+    from flask import redirect
+    if g.conta['onboarding_concluido_em']:
+        return redirect('/app')
+    return render_template('perfil.html',ativo='perfil',onboarding=True)
 
 
 @bp.get('/api/minha-conta')

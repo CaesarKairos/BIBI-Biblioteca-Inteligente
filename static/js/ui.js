@@ -98,82 +98,65 @@ function toggleTheme(ativar) {
 
 class CustomSelect {
     constructor(container, options, onChange, defaultValue = null) {
-        this.container = container;
-        this.options = options;
-        this.onChange = onChange;
-        this.selectedValue = defaultValue || (options.length > 0 ? options[0].value : '');
+        this.container=container;this.options=options;this.onChange=onChange;
+        this.selectedValue=defaultValue ?? options[0]?.value ?? '';
         this.render();
     }
-    render() {
-        this.container.innerHTML = '';
-        this.container.className = 'custom-select';
-        const selectedDiv = document.createElement('div');
-        selectedDiv.className = 'select-selected';
-        selectedDiv.tabIndex = 0;
-        selectedDiv.setAttribute('role', 'button');
-        selectedDiv.setAttribute('aria-expanded', 'false');
-        selectedDiv.setAttribute('aria-label', this.container.previousElementSibling?.textContent || this.container.parentElement.querySelector('label')?.textContent || 'Selecionar opção');
-        selectedDiv.addEventListener('keydown', event => {
-            if (['Enter', ' '].includes(event.key)) {
-                event.preventDefault(); event.stopPropagation(); this.toggle();
-            } else if (['ArrowDown', 'ArrowUp'].includes(event.key)) {
-                event.preventDefault();
-                const index = this.options.findIndex(opt => opt.value == this.selectedValue);
-                this.setValue(this.options[(index + (event.key === 'ArrowDown' ? 1 : -1) + this.options.length) % this.options.length].value);
-            } else if (event.key === 'Escape') this.close();
+    render(){
+        this.container.replaceChildren();this.container.className='custom-select';
+        const control=document.createElement('button');control.type='button';control.className='select-selected';
+        control.setAttribute('role','combobox');control.setAttribute('aria-haspopup','listbox');control.setAttribute('aria-expanded','false');
+        control.setAttribute('aria-label',this.container.dataset.label || this.container.previousElementSibling?.textContent || 'Selecionar opção');
+        const label=document.createElement('span');control.append(label);
+        const list=document.createElement('div');list.className='select-items';list.role='listbox';list.id='bibi-options-'+crypto.getRandomValues(new Uint32Array(1))[0];control.setAttribute('aria-controls',list.id);
+        this.options.forEach((opt,index)=>{const item=document.createElement('div');item.textContent=opt.text;item.dataset.value=String(opt.value);item.role='option';item.id=list.id+'-'+index;
+            item.addEventListener('click',()=>{if(opt.disabled)return;this.setValue(opt.value);this.close();control.focus();});list.append(item);});
+        control.addEventListener('click',()=>this.toggle());
+        control.addEventListener('keydown',event=>{
+            if(['ArrowDown','ArrowUp','Home','End'].includes(event.key)){
+                event.preventDefault();event.stopPropagation();const enabled=this.options.filter(o=>!o.disabled);if(!enabled.length)return;
+                let index=enabled.findIndex(o=>String(o.value)===String(this.selectedValue));
+                index=event.key==='Home'?0:event.key==='End'?enabled.length-1:(index+(event.key==='ArrowDown'?1:-1)+enabled.length)%enabled.length;
+                this.setValue(enabled[index].value);
+            }else if(event.key==='Escape'){event.preventDefault();this.close();}
         });
-        const selectedOption = this.options.find(opt => opt.value == this.selectedValue) || this.options[0];
-        selectedDiv.appendChild(textElement('span', selectedOption ? selectedOption.text : ''));
-        this.container.appendChild(selectedDiv);
-
-        const itemsDiv = document.createElement('div');
-        itemsDiv.className = 'select-items';
-        this.options.forEach(opt => {
-            const optDiv = document.createElement('div');
-            optDiv.textContent = opt.text;
-            if (opt.value == this.selectedValue) {
-                optDiv.classList.add('same-as-selected');
-            }
-            optDiv.addEventListener('click', () => {
-                this.setValue(opt.value);
-                this.close();
-            });
-            itemsDiv.appendChild(optDiv);
-        });
-        this.container.appendChild(itemsDiv);
-
-        selectedDiv.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.toggle();
-        });
-        document.addEventListener('click', () => this.close());
+        this.container.append(control,list);this.sync();
+        if(!this.outside){this.outside=event=>{if(!this.container.contains(event.target))this.close();};document.addEventListener('click',this.outside);}
+        this.container.addEventListener('focusout',event=>{if(!this.container.contains(event.relatedTarget))this.close();});
     }
-    toggle() {
-        const items = this.container.querySelector('.select-items');
-        items.style.display = items.style.display === 'block' ? 'none' : 'block';
-        this.container.querySelector('.select-selected').setAttribute('aria-expanded', String(items.style.display === 'block'));
+    toggle(){const list=this.container.querySelector('.select-items');const opened=list.style.display!=='block';list.style.display=opened?'block':'none';this.container.querySelector('.select-selected').setAttribute('aria-expanded',String(opened));}
+    close(){this.container.querySelector('.select-items').style.display='none';this.container.querySelector('.select-selected').setAttribute('aria-expanded','false');}
+    sync(){
+        const selected=this.options.find(o=>String(o.value)===String(this.selectedValue));const control=this.container.querySelector('.select-selected');control.querySelector('span').textContent=selected?.text ?? '';
+        this.container.querySelectorAll('[role=option]').forEach(item=>{const active=item.dataset.value===String(this.selectedValue);item.classList.toggle('same-as-selected',active);item.setAttribute('aria-selected',String(active));if(active)control.setAttribute('aria-activedescendant',item.id);});
     }
-    close() {
-        const items = this.container.querySelector('.select-items');
-        if (items) items.style.display = 'none';
-        this.container.querySelector('.select-selected')?.setAttribute('aria-expanded', 'false');
-    }
-    setValue(value) {
-        this.selectedValue = value;
-        const selectedOption = this.options.find(opt => opt.value == value);
-        this.container.querySelector('.select-selected span').textContent = selectedOption ? selectedOption.text : '';
-        this.container.querySelectorAll('.select-items div').forEach(div => {
-            div.classList.remove('same-as-selected');
-            if (div.textContent === (selectedOption ? selectedOption.text : '')) {
-                div.classList.add('same-as-selected');
-            }
-        });
-        if (this.onChange) this.onChange(value);
-    }
-    getValue() {
-        return this.selectedValue;
-    }
+    setValue(value){this.selectedValue=value;this.sync();if(this.onChange)this.onChange(value);}
+    getValue(){return this.selectedValue;}
 }
+
+// Native controls remain the source of truth and the no-JavaScript fallback.
+function enhanceNativeSelects(){
+ document.querySelectorAll('select:not([multiple])').forEach(select=>{
+  if(select.dataset.enhanced)return;
+  const wrapper=document.createElement('div');wrapper.dataset.label=select.getAttribute('aria-label') || select.labels?.[0]?.textContent.trim() || 'Selecionar opção';select.after(wrapper);
+  const options=()=>Array.from(select.options,o=>({value:o.value,text:o.text,disabled:o.disabled}));
+  const component=new CustomSelect(wrapper,options(),value=>{select.value=value;select.dispatchEvent(new Event('change',{bubbles:true}));},select.value);
+  select.dataset.enhanced='true';select.hidden=true;
+  for(const property of ['value','selectedIndex']){
+   const descriptor=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,property);
+   Object.defineProperty(select,property,{configurable:true,get(){return descriptor.get.call(this);},set(value){descriptor.set.call(this,value);component.selectedValue=this.value;component.sync();}});
+  }
+
+  select.addEventListener('change',()=>{component.selectedValue=select.value;component.sync();});
+  select.addEventListener('invalid',()=>wrapper.querySelector('button').focus());
+  new MutationObserver(()=>{component.options=options();component.selectedValue=select.value;component.render();}).observe(select,{childList:true,subtree:true,attributes:true,attributeFilter:['disabled','selected']});
+  select.form?.addEventListener('reset',()=>setTimeout(()=>{component.selectedValue=select.value;component.sync();}));
+ });
+}
+document.addEventListener('DOMContentLoaded',()=>{
+ enhanceNativeSelects();
+ new MutationObserver(records=>{if(records.some(r=>Array.from(r.addedNodes).some(n=>n.nodeType===1&&(n.matches('select')||n.querySelector('select')))))enhanceNativeSelects();}).observe(document.body,{childList:true,subtree:true});
+});
 
 
 function initCustomSelects() {

@@ -182,7 +182,6 @@ def restore(upload):
     root=Path(current_app.config['DATA_DIR'])
     import secrets
     from services.contas_service import digest
-    recovery=secrets.token_urlsafe(32)
     with archive, tempfile.TemporaryDirectory(dir=root) as work:
         stage=Path(work)
         for name in manifest['arquivos']:
@@ -193,8 +192,22 @@ def restore(upload):
                 raise BadRequest('Banco do backup não passou na verificação de integridade.')
             with db_manager.connection() as conn:
                 expected={r[0] for r in conn.execute('SELECT versao FROM Migracoes')}
-            if {r[0] for r in source.execute('SELECT versao FROM Migracoes')}!=expected:
-                raise BadRequest('Versão do backup incompatível com esta instalação.')
+            applied={r[0] for r in source.execute('SELECT versao FROM Migracoes')}
+            if not applied.issubset(expected):
+                raise BadRequest('Versão do backup mais recente ou incompatível com esta instalação.')
+            if applied != expected:
+                # Preserva a cópia recebida antes de migrar o banco isolado.
+                original=root/'backups'/('antes-restauracao-migracao-'+str(time.time_ns())+'.db')
+                original.parent.mkdir(exist_ok=True)
+                saved=sqlite3.connect(original)
+                try:
+                    source.backup(saved)
+                finally:
+                    saved.close()
+                source.close()
+                from database.database import DatabaseManager
+                DatabaseManager(stage/'Biblioteca.db')
+                source=sqlite3.connect(stage/'Biblioteca.db')
             admin=source.execute("SELECT id,email FROM Contas WHERE papel='bibliotecario' AND ativa=1 ORDER BY id LIMIT 1").fetchone()
             if not admin:
                 raise BadRequest('O backup precisa conter pelo menos um bibliotecário ativo.')
@@ -205,7 +218,7 @@ def restore(upload):
                 with db_manager.connection() as target:
                     target.backup(rollback)
                     source.execute('DELETE FROM Sessoes');source.execute('UPDATE Codigos SET consumido=1');source.execute('UPDATE Contas SET versao_sessao=versao_sessao+1,recuperacao_hash=NULL')
-                    source.execute('UPDATE Contas SET recuperacao_hash=? WHERE id=?',(digest(recovery),admin[0]));source.commit()
+                    source.commit()
                     try:
                         # Arquivos entram antes do banco. Sobras não são servidas por nomes publicados até commit.
                         for name in manifest['arquivos']:
@@ -231,4 +244,7 @@ def restore(upload):
         finally:
             source.close()
     current_app.extensions['secrets'].set('smtp_password',None)
-    return {'mensagem':'Restauração concluída. Sessões e códigos foram invalidados. Entre novamente; reconfigure a credencial SMTP e revise a rede. Guarde o novo código offline exibido abaixo.','backup_seguranca':safety.name,'recuperacao_offline':recovery,'bibliotecario':admin[1]}
+    current_app.extensions['secrets'].recovery_key(rotate=True)
+    if current_app.extensions.get('desktop_recovery'):
+        current_app.extensions['desktop_recovery'].pending=None
+    return {'mensagem':'Restauração concluída. Sessões e códigos foram invalidados. Entre novamente ou use o menu de recuperação desktop. Reconfigure a credencial SMTP da instalação anterior e revise a rede.','backup_seguranca':safety.name}

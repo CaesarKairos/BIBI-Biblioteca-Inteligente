@@ -114,11 +114,11 @@ def emprestar(data):
     with db_manager.connection() as conn:
         conn.execute('BEGIN IMMEDIATE')
         leitor=data.get('leitor_id')
-        pin=conn.execute("SELECT valor FROM Configuracoes WHERE chave='exigir_senha_emprestimo'").fetchone()
-        if pin and pin[0] in ('true','1'):
+        confirmation=conn.execute("SELECT valor FROM Configuracoes WHERE chave='exigir_senha_emprestimo'").fetchone()
+        if confirmation and confirmation[0] in ('true','1'):
             from utils.auth import verificar_senha_admin
             if not verificar_senha_admin(data.get('senha')):
-                raise BadRequest('Confirme o PIN configurado para registrar o empréstimo.')
+                raise BadRequest('Confirme a senha atual da sua conta para registrar o empréstimo.')
         if leitor is not None:
             row=conn.execute('SELECT nome,tipo,email FROM Usuarios WHERE id=? AND arquivado=0',(leitor,)).fetchone()
             if not row:

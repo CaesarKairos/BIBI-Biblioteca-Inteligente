@@ -67,7 +67,7 @@ def conta_atual():
     if not isinstance(token, str):
         return None
     with db_manager.connection() as conn:
-        cursor = conn.execute('''SELECT c.id,c.leitor_id,c.nome,c.email,c.papel,c.email_verificado,c.ativacao
+        cursor = conn.execute('''SELECT c.id,c.leitor_id,c.nome,c.email,c.papel,c.email_verificado,c.ativacao,c.onboarding_concluido_em,c.criada_em
             FROM Sessoes s JOIN Contas c ON c.id=s.conta_id
             LEFT JOIN Usuarios u ON u.id=c.leitor_id
             WHERE s.hash=? AND s.expira>? AND c.ativa=1 AND c.versao_sessao=s.versao''', (digest(token), int(time.time())))
@@ -95,18 +95,26 @@ def configurar(data):
     nome, biblioteca = str(data.get('nome', '')).strip(), str(data.get('biblioteca', '')).strip()
     if not nome or not biblioteca or max(len(nome), len(biblioteca)) > 180:
         raise BadRequest('Informe o nome da biblioteca e do bibliotecário (até 180 caracteres).')
-    offline = secrets.token_urlsafe(32)
+    from services.termos_service import VERSAO, TERMOS, PRIVACIDADE
+    if data.get('aceite') not in (True, 'on') or data.get('termos_versao') != VERSAO:
+        raise BadRequest('Leia e aceite os Termos de Uso e o Aviso de Privacidade disponíveis nesta tela.')
     with db_manager.connection() as conn:
         conn.execute('BEGIN IMMEDIATE')
         if conn.execute('SELECT 1 FROM Contas LIMIT 1').fetchone():
             raise Forbidden('A configuração inicial já foi concluída.')
-        cur = conn.execute("INSERT INTO Contas(nome,email,senha_hash,papel,ativacao,recuperacao_hash) VALUES (?,?,?,'bibliotecario','inicial',?)", (nome,email,senha,digest(offline)))
+        cur = conn.execute("INSERT INTO Contas(nome,email,senha_hash,papel,ativacao,recuperacao_hash) VALUES (?,?,?,'bibliotecario','inicial',?)", (nome,email,senha,None))
         conn.execute("INSERT OR REPLACE INTO Configuracoes VALUES ('biblioteca_nome',?)", (biblioteca,))
+        conn.execute('INSERT INTO AceitesTermos(conta_id,versao) VALUES (?,?)',(cur.lastrowid,VERSAO))
+        for key,value in [('termos_uso',TERMOS),('aviso_privacidade',PRIVACIDADE)]:
+            conn.execute('INSERT OR IGNORE INTO Configuracoes VALUES (?,?)',(key,value))
+        conn.execute("INSERT OR IGNORE INTO Configuracoes VALUES ('instalacao_criada_em',CURRENT_TIMESTAMP)")
+        conn.execute("INSERT OR IGNORE INTO Configuracoes VALUES ('instalacao_data_estimada','false')")
         auditar(conn,'configuracao_inicial',cur.lastrowid,ator=cur.lastrowid)
         conn.commit()
         conta_id = cur.lastrowid
     iniciar_sessao(conta_id)
-    return {'recuperacao_offline': offline, 'mensagem': 'Guarde este código offline. Ele será exibido somente agora.'}
+    current_app.extensions['secrets'].recovery_key(rotate=True)
+    return {'destino':'/boas-vindas'}
 
 
 def login(data):
@@ -123,7 +131,7 @@ def login(data):
             conn.commit()
             raise Forbidden('E-mail ou senha inválidos, ou conta indisponível.')
     iniciar_sessao(row[0])
-    return {'status':'ok'}
+    return {'status':'ok','destino':'/app'}
 
 
 def emitir_codigo(leitor_id, finalidade='ativacao', entrega='presencial'):
@@ -180,6 +188,9 @@ def consumir_codigo(data, finalidade):
         conn.execute('UPDATE Codigos SET consumido=1 WHERE id=?', (row[0],))
         auditar(conn,finalidade,account_id,ator=account_id)
         conn.commit()
+    if finalidade == 'ativacao':
+        iniciar_sessao(account_id)
+        return {'status':'ok','destino':'/boas-vindas'}
     return {'status':'ok','mensagem':'Senha definida. Entre com seu e-mail e senha.'}
 
 
@@ -187,17 +198,18 @@ def recuperar_offline(data):
     email = email_normalizado(data.get('email'))
     limitar('offline',email,limite=5,janela=3600)
     password = senha_validada(data)
-    replacement = secrets.token_urlsafe(32)
     with db_manager.connection() as conn:
         conn.execute('BEGIN IMMEDIATE')
         row = conn.execute("SELECT id,recuperacao_hash FROM Contas WHERE email=? AND papel='bibliotecario' AND ativa=1", (email,)).fetchone()
         if not row or not row[1] or not secrets.compare_digest(row[1],digest(str(data.get('codigo','')))):
             raise BadRequest('Dados de recuperação inválidos.')
-        conn.execute('UPDATE Contas SET senha_hash=?,recuperacao_hash=?,versao_sessao=versao_sessao+1 WHERE id=?', (password,digest(replacement),row[0]))
+        conn.execute('UPDATE Contas SET senha_hash=?,recuperacao_hash=?,versao_sessao=versao_sessao+1 WHERE id=?', (password,None,row[0]))
         conn.execute('UPDATE Codigos SET consumido=1 WHERE conta_id=?', (row[0],))
+        conn.execute('DELETE FROM Sessoes WHERE conta_id=?',(row[0],))
         auditar(conn,'recuperacao_offline',row[0],ator=row[0])
         conn.commit()
-    return {'recuperacao_offline':replacement,'mensagem':'Código anterior invalidado. Guarde o novo código e entre novamente.'}
+    current_app.extensions['secrets'].recovery_key(rotate=True)
+    return {'mensagem':'Código legado consumido. Use a recuperação pelo menu desktop nas próximas vezes. Entre novamente.'}
 
 
 def alterar_acesso(conta_id,data):

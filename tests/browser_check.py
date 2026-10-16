@@ -7,7 +7,7 @@ from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from app import create_app
 from waitress import create_server
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 
 work=tempfile.TemporaryDirectory(prefix='bibi-browser-')
 screens=Path(tempfile.gettempdir())/'bibi-contas-review';screens.mkdir(exist_ok=True)
@@ -33,8 +33,22 @@ with patch('smtplib.SMTP',side_effect=AssertionError('SMTP real proibido')),sync
     page.goto(base+'/app');page.wait_for_url('**/configuracao-inicial')
     page.locator('[name=biblioteca]').fill('Biblioteca de teste');page.locator('[name=nome]').fill('Bibliotecária de teste')
     page.locator('[name=email]').fill('admin@example.test');page.locator('[name=senha]').fill('senha forte de teste');page.locator('[name=confirmacao]').fill('senha forte de teste')
-    page.locator('#access-submit').click();page.locator('#offline-code').wait_for(state='visible');assert len(page.locator('#offline-code').inner_text())>30
-    page.locator('#saved-code').check();page.locator('#continue-access').click();page.wait_for_url('**/app');page.wait_for_load_state('networkidle')
+    for width,height in [(1366,768),(1920,1080),(390,844),(800,420)]:
+        page.set_viewport_size({'width':width,'height':height})
+        box=page.locator('.account-card').bounding_box()
+        assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+        if height>box['height']+48: assert abs(box['y']+box['height']/2-height/2)<3,(width,height,box)
+        else: assert box['y']>=0
+        page.screenshot(path=str(screens/f'setup-{width}-{height}.png'),full_page=True)
+    page.set_viewport_size({'width':1366,'height':768})
+    page.get_by_role('link',name='Termos de Uso',exact=True).click()
+    assert page.locator('#legal-dialog').is_visible()
+    page.keyboard.press('Escape');assert not page.locator('#legal-dialog').is_visible()
+    assert page.locator('[name=biblioteca]').input_value()=='Biblioteca de teste'
+    assert page.get_by_role('link',name='Termos de Uso',exact=True).evaluate('e=>e===document.activeElement')
+    page.locator('[name=aceite]').check();page.locator('#access-submit').click();page.wait_for_url('**/boas-vindas');page.wait_for_load_state('networkidle')
+    assert page.locator('#offline-code').count()==0
+    page.locator('#suggested-avatar').click();page.wait_for_url('**/app');page.wait_for_load_state('networkidle')
     books=[]
     for name,qty,category in [('Livro de teste',2,'Ficção'),('Memórias com um título longo para conferir a tabela e a busca',1,'Poesia'),('Quadrinhos',1,'Comics & Graphic Novels')]:
         books.append(api(page,'/api/livros','POST',{'manual':True,'titulo':name,'autor':'Autora de teste','quantidade':qty,'categoria':category,'numero_paginas':240}))
@@ -54,8 +68,8 @@ with patch('smtplib.SMTP',side_effect=AssertionError('SMTP real proibido')),sync
     page.locator('#m-emp').click();page.wait_for_load_state('networkidle');page.locator('#busca-emprestimos').fill('JOAO')
     page.wait_for_function("document.querySelectorAll('.tabela-emprestimos tbody tr').length === 1")
     assert page.locator('.tabela-emprestimos tbody td').evaluate_all('cells=>cells.every(c=>Math.abs(c.getBoundingClientRect().height-cells[0].getBoundingClientRect().height)<1)')
-    page.goto(base+'/gestao?leitor='+str(reader));page.wait_for_load_state('networkidle');assert page.locator('#invite-state').inner_text()
-    assert page.locator('#health-result').inner_text()
+    page.goto(base+'/leitores/contas?leitor='+str(reader));page.wait_for_load_state('networkidle');assert page.locator('#invite-state').inner_text()
+    page.goto(base+'/configuracoes');page.wait_for_load_state('networkidle');assert page.locator('#health-result').inner_text()
     page.screenshot(path=str(screens/'gestao-desktop.png'))
     page.set_viewport_size({'width':390,'height':844});assert page.evaluate('document.documentElement.scrollWidth<=innerWidth');page.screenshot(path=str(screens/'gestao-mobile.png'));page.set_viewport_size({'width':1366,'height':768})
     page.goto(base+'/perfil');page.wait_for_load_state('networkidle');assert page.locator('#saved-avatar').get_attribute('src').startswith('data:')
@@ -64,15 +78,15 @@ with patch('smtplib.SMTP',side_effect=AssertionError('SMTP real proibido')),sync
     reader_page=guest.new_page();reader_errors=[];reader_page.on('pageerror',lambda error:reader_errors.append(str(error)))
     reader_page.goto(base+'/acesso');reader_page.get_by_role('button',name='Ativar convite',exact=True).click()
     reader_page.locator('[name=email]').fill('joao@example.test');reader_page.locator('[name=codigo]').fill(invite);reader_page.locator('[name=senha]').fill('senha forte do leitor');reader_page.locator('[name=confirmacao]').fill('senha forte do leitor');reader_page.locator('#access-submit').click()
-    reader_page.wait_for_function("document.querySelector('#access-status').textContent.includes('Senha definida')")
-    reader_page.get_by_role('button',name='Entrar',exact=True).first.click();reader_page.locator('[name=email]').fill('joao@example.test');reader_page.locator('[name=senha]').fill('senha forte do leitor');reader_page.locator('#access-submit').click();reader_page.wait_for_url('**/app');reader_page.wait_for_load_state('networkidle')
+    reader_page.wait_for_url('**/boas-vindas');reader_page.wait_for_load_state('networkidle');reader_page.locator('#suggested-avatar').click();reader_page.wait_for_url('**/app');reader_page.wait_for_load_state('networkidle')
     assert reader_page.locator('#m-dash').count()==0
     assert not reader_page.locator('#m-age').is_visible()
     assert reader_page.evaluate("fetch('/api/leitores').then(r=>r.status)")==403
     reader_page.locator('.book').first.click();reader_page.get_by_role('button',name='Quero ler',exact=True).click();reader_page.wait_for_load_state('networkidle')
-    reader_page.goto(base+'/perfil');reader_page.wait_for_load_state('networkidle');assert 'não verificado' in reader_page.locator('#email-state').inner_text();assert reader_page.locator('#profile-wishes .profile-row').count()==1
+    reader_page.goto(base+'/perfil');reader_page.wait_for_load_state('networkidle');assert 'não verificado' in reader_page.locator('#email-state').inner_text(),(reader_errors,reader_page.locator('#account-status').inner_text(),reader_page.locator('#profile-info').inner_text());assert reader_page.locator('#profile-wishes .profile-row').count()==1
+    reader_page.locator('#favorite-book').select_option(str(books[0]['id']),force=True);reader_page.locator('#favorite-form button').last.click();reader_page.wait_for_load_state('networkidle');expect(reader_page.locator('#profile-favorites article')).to_have_count(1)
     reader_page.locator('#edit-avatar').click();reader_page.wait_for_load_state('networkidle')
-    reader_page.locator('[data-avatar-option=eyesVariant]').select_option('variant02');reader_page.wait_for_load_state('networkidle')
+    reader_page.locator('[data-avatar-option=eyesVariant]').select_option('variant02',force=True);reader_page.wait_for_load_state('networkidle')
     reader_page.locator('#save-avatar').click();reader_page.wait_for_load_state('networkidle');reader_page.reload();reader_page.wait_for_load_state('networkidle')
     reader_page.locator('#edit-avatar').click();reader_page.wait_for_load_state('networkidle');assert reader_page.locator('[data-avatar-option=eyesVariant]').input_value()=='variant02'
     reader_page.screenshot(path=str(screens/'perfil-avatar.png'));reader_page.locator('#cancel-avatar').click()
@@ -90,6 +104,22 @@ with patch('smtplib.SMTP',side_effect=AssertionError('SMTP real proibido')),sync
                 handle=tab.locator('#resize-sidebar');box=handle.bounding_box();tab.mouse.move(box['x']+box['width']/2,box['y']+30);tab.mouse.down();tab.mouse.move(box['x']+35,box['y']+30);tab.mouse.up()
                 assert tab.locator('.content-area').bounding_box()['width']>=317
                 assert tab.evaluate('document.documentElement.scrollWidth<=innerWidth')
+    for role,tab in [('admin',page),('leitor',reader_page)]:
+        for route in ['/perfil','/configuracoes']:
+            for width,height in [(1366,768),(1920,1080),(390,844),(800,420)]:
+                tab.set_viewport_size({'width':width,'height':height});tab.goto(base+route);tab.wait_for_load_state('networkidle')
+                for dark in [False,True]:
+                    tab.evaluate('(dark)=>document.body.classList.toggle("dark-mode",dark)',dark)
+                    assert tab.evaluate('document.documentElement.scrollWidth<=innerWidth'),(role,route,width)
+                    assert tab.locator('.right-bar').inner_text().strip()==''
+                    tab.screenshot(path=str(screens/f'{role}-{route[1:]}-{width}-{dark}.png'),full_page=True)
+                if role=='leitor':assert tab.locator('#smtp-form').count()==0
+    page.goto(base+'/app');page.wait_for_load_state('networkidle')
+    category=page.locator('#catalog-category + .custom-select button')
+    category.focus();page.keyboard.press('ArrowDown');page.keyboard.press('Space');assert category.get_attribute('aria-expanded')=='true'
+    page.keyboard.press('Escape');assert category.get_attribute('aria-expanded')=='false'
+    assert page.locator('#catalog-category').input_value()!=''
+    page.emulate_media(reduced_motion='reduce');page.reload();page.wait_for_load_state('networkidle');assert page.locator('.cat-waving').evaluate('e=>e.paused')
     assert not errors,errors
     assert not reader_errors,reader_errors
     guest.close();admin.close();browser.close()

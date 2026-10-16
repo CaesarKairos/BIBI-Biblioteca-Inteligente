@@ -17,6 +17,9 @@ def instituicao():
     from database.database import db_manager
     with db_manager.connection() as conn:
         textos=dict(conn.execute("SELECT chave,valor FROM Configuracoes WHERE chave IN ('biblioteca_nome','termos_uso','aviso_privacidade')"))
+    from services.termos_service import TERMOS, PRIVACIDADE
+    textos.setdefault('termos_uso',TERMOS)
+    textos.setdefault('aviso_privacidade',PRIVACIDADE)
     return render_template('instituicao.html',textos=textos)
 
 
@@ -41,3 +44,21 @@ def serve_images(filename):
 @bp.route('/api/hero-image', methods=['GET'])
 def hero_image():
     return json_response(image_service.hero_image())
+
+
+@bp.get('/configuracoes')
+def settings_page():
+    from database.database import db_manager
+    sobre={'versao':'2.0-dev'}
+    if is_admin():
+        with db_manager.connection() as conn:
+            values=dict(conn.execute('SELECT chave,valor FROM Configuracoes'))
+            schema=conn.execute('SELECT MAX(versao) FROM Migracoes').fetchone()[0]
+            sobre['migracoes']=[r[0] for r in conn.execute('SELECT versao FROM Migracoes ORDER BY versao')]
+            sobre['integridade']=conn.execute('PRAGMA quick_check').fetchone()[0]
+        from pathlib import Path
+        from flask import current_app
+        backups=list((Path(current_app.config['DATA_DIR'])/'backups').glob('*.zip'))
+        sobre['ultimo_backup']=max(backups,key=lambda p:p.stat().st_mtime).name if backups else None
+        sobre.update(nome=values.get('biblioteca_nome','BIBI'),criada=values.get('instalacao_criada_em'),estimada=values.get('instalacao_data_estimada')=='true',schema=schema)
+    return render_template('configuracoes.html',ativo='configuracoes',sobre=sobre)

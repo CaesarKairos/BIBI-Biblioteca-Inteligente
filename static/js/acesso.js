@@ -1,3 +1,5 @@
+let recoveryToken = location.hash.slice(1);
+if (document.body.dataset.mode === 'offline') history.replaceState(null,'',location.pathname);
 (() => {
     try { if (JSON.parse(localStorage.getItem('bibiConfig') || '{}').darkMode) document.body.classList.add('dark-mode'); } catch {}
     let mode = document.body.dataset.mode;
@@ -24,25 +26,33 @@
         event.preventDefault(); submit.disabled = true; status.textContent = 'Aguarde...';
         const paths = {setup:'configurar',login:'entrar',ativar:'ativar',redefinir:'redefinir',offline:'recuperacao-local'};
         try {
-            const response = await fetch('/api/acesso/' + paths[mode], {method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':document.querySelector('meta[name=csrf-token]').content},body:JSON.stringify(Object.fromEntries(new FormData(form)))});
+            const response = await fetch('/api/acesso/' + paths[mode], {method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':document.querySelector('meta[name=csrf-token]').content},body:JSON.stringify({...Object.fromEntries(new FormData(form)),token:recoveryToken})});
             const data = await response.json();
             if (!response.ok) throw new Error(data.erro || 'Não foi possível concluir.');
-            if (data.recuperacao_offline) {
-                form.hidden = true;
-                document.getElementById('offline-result').hidden = false;
-                document.getElementById('offline-code').textContent = data.recuperacao_offline;
-                status.textContent = '';
-            } else if (mode === 'login') location.assign('/app');
+            if (data.destino) location.assign(data.destino);
             else { status.textContent = data.mensagem; form.reset(); }
         } catch (error) { status.textContent = error.message; }
         finally { submit.disabled = false; }
     });
-    document.getElementById('saved-code').addEventListener('change', event => { document.getElementById('continue-access').disabled = !event.target.checked; });
     document.getElementById('request-recovery')?.addEventListener('click',async event=>{
         const button=event.target;button.disabled=true;
         try { const response=await fetch('/api/acesso/recuperacao-email',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':document.querySelector('meta[name=csrf-token]').content},body:JSON.stringify({email:form.elements.email.value})});const result=await response.json();status.textContent=result.mensagem || result.erro; }
         catch { status.textContent='Falha de conexão. Procure o bibliotecário.'; }
         finally { button.disabled=false; }
     });
-    document.getElementById('continue-access').addEventListener('click', () => location.assign(mode === 'setup' ? '/app' : '/acesso'));
 })();
+const legalDialog=document.getElementById('legal-dialog');
+let legalOpener;
+document.querySelectorAll('[data-legal]').forEach(link=>link.addEventListener('click',event=>{
+ event.preventDefault();legalOpener=link;legalDialog.showModal();document.getElementById(link.dataset.legal).scrollIntoView();
+}));
+legalDialog?.addEventListener('close',()=>legalOpener?.focus());
+document.getElementById('close-legal')?.addEventListener('click',()=>legalDialog.close());
+if(document.body.dataset.mode==='offline' && !recoveryToken && document.body.dataset.legacy!=='true')document.getElementById('access-form').hidden=true;
+if(recoveryToken && document.body.dataset.mode==='offline') {
+ const button=document.getElementById('access-submit');button.disabled=true;
+ document.getElementById('code-label').hidden=true;
+ fetch('/api/acesso/recuperacao-desktop/sessao',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':document.querySelector('meta[name=csrf-token]').content},body:JSON.stringify({token:recoveryToken})})
+ .then(async response=>{const data=await response.json();if(!response.ok)throw new Error(data.erro);button.disabled=false;})
+ .catch(error=>{recoveryToken='';document.getElementById('access-status').textContent=error.message;});
+}

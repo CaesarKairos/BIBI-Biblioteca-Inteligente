@@ -24,7 +24,8 @@ def setup():
     local_only()
     if service.configurado():
         return redirect('/acesso')
-    return render_template('acesso.html',modo='setup')
+    from services.termos_service import VERSAO, TERMOS, PRIVACIDADE
+    return render_template('acesso.html',modo='setup',termos_versao=VERSAO,termos=TERMOS,privacidade=PRIVACIDADE)
 
 
 @bp.post('/api/acesso/configurar')
@@ -84,13 +85,17 @@ def redefinir():
 @bp.get('/recuperacao-local')
 def offline_page():
     local_only()
-    return render_template('acesso.html',modo='offline')
+    with db_manager.connection() as conn:
+        legado=conn.execute('SELECT 1 FROM Contas WHERE recuperacao_hash IS NOT NULL LIMIT 1').fetchone() is not None
+    return render_template('acesso.html',modo='offline',legado=legado)
 
 
 @bp.post('/api/acesso/recuperacao-local')
 def offline():
     local_only()
-    return jsonify(service.recuperar_offline(data()))
+    from services.recuperacao_local import recuperar
+    payload = data()
+    return jsonify(service.recuperar_offline(payload) if payload.get('codigo') else recuperar(payload))
 
 
 @bp.post('/api/contas/leitores/<int:leitor_id>/codigo')
@@ -139,3 +144,16 @@ def contas():
 def alterar(conta_id):
     service.limitar('privilegios',str(g.conta['id']))
     return jsonify(service.alterar_acesso(conta_id,data()))
+
+
+@bp.post('/api/acesso/recuperacao-desktop/sessao')
+def desktop_session():
+    from flask import current_app
+    local_only()
+    service.limitar('desktop-bind',limite=8)
+    manager=current_app.extensions.get('desktop_recovery')
+    if manager is None:
+        raise Forbidden('Abra a recuperação pelo menu da janela desktop.')
+    with manager.lock:
+        manager.validar(data().get('token'),bind=True)
+    return jsonify(status='ok')

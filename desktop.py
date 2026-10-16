@@ -13,7 +13,14 @@ def run_desktop(app):
     threading.Thread(target=server.run,daemon=True).start()
     try:
         iniciar_verificacao_notificacoes(app)
-        webview.create_window('BIBI — Biblioteca Inteligente','http://127.0.0.1:5000',width=1366,height=768,resizable=True)
-        webview.start()
+        from services.recuperacao_local import RecuperacaoDesktop
+        from webview.menu import Menu, MenuAction
+        recovery = RecuperacaoDesktop(app.extensions['secrets'])
+        app.extensions['desktop_recovery'] = recovery
+        window = webview.create_window('BIBI — Biblioteca Inteligente','http://127.0.0.1:5000',width=1366,height=768,resizable=True)
+        def recover():
+            token = recovery.abrir()
+            window.load_url('http://127.0.0.1:5000/recuperacao-local#' + token)
+        webview.start(menu=[Menu('Conta', [MenuAction('Recuperar conta bibliotecária neste computador', recover)])])
     finally:
         server.close()

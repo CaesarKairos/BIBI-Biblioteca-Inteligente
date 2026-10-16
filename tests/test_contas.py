@@ -25,9 +25,11 @@ class ContaTests(unittest.TestCase):
         return client.post(path,json=data,headers={'X-CSRF-Token':csrf},**kwargs)
 
     def setup_library(self):
-        response = self.post('/api/acesso/configurar',dict(nome='Bibliotecária',biblioteca='Escola',email='admin@example.test',senha='senha forte de teste',confirmacao='senha forte de teste'))
+        response = self.post('/api/acesso/configurar',dict(aceite=True,termos_versao='bibi-inicial-2026-09-21',nome='Bibliotecária',biblioteca='Escola',email='admin@example.test',senha='senha forte de teste',confirmacao='senha forte de teste'))
         self.assertEqual(response.status_code,200,response.json)
-        return response.json['recuperacao_offline']
+        self.assertNotIn('recuperacao_offline',response.json)
+        self.assertEqual(response.json['destino'],'/boas-vindas')
+        return None
 
     def reader(self):
         with self.db.connection() as conn:
@@ -42,7 +44,10 @@ class ContaTests(unittest.TestCase):
         self.assertEqual(self.client.get('/configuracao-inicial',environ_overrides={'REMOTE_ADDR':'10.0.0.2'}).status_code,403)
         self.assertEqual(self.post('/api/leitores',{}).status_code,503)
         self.assertEqual(self.client.post('/api/acesso/configurar',json={}).status_code,403)
-        code=self.setup_library()
+        self.setup_library()
+        code='codigo-legado-teste'
+        with self.db.connection() as conn:
+            conn.execute('UPDATE Contas SET recuperacao_hash=?',(digest(code),));conn.commit()
         self.assertEqual(self.post('/api/acesso/configurar',{}).status_code,403)
         anonymous=self.app.test_client()
         self.assertEqual(anonymous.get('/api/leitores').status_code,401)
@@ -51,7 +56,7 @@ class ContaTests(unittest.TestCase):
         payload=dict(email='admin@example.test',codigo=code,senha='outra senha de teste',confirmacao='outra senha de teste')
         result=self.post('/api/acesso/recuperacao-local',payload)
         self.assertEqual(result.status_code,200,result.json)
-        self.assertNotEqual(code,result.json['recuperacao_offline'])
+        self.assertNotIn('recuperacao_offline',result.json)
         self.assertEqual(self.client.get('/api/leitores').status_code,401)
         self.assertEqual(self.post('/api/acesso/recuperacao-local',payload).status_code,400)
 
@@ -83,11 +88,23 @@ class ContaTests(unittest.TestCase):
     def test_atomic_setup(self):
         def attempt(_):
             client=self.app.test_client()
-            return self.post('/api/acesso/configurar',dict(nome='Admin',biblioteca='Escola',email='admin@example.test',senha='senha forte de teste',confirmacao='senha forte de teste'),client).status_code
+            return self.post('/api/acesso/configurar',dict(aceite=True,termos_versao='bibi-inicial-2026-09-21',nome='Admin',biblioteca='Escola',email='admin@example.test',senha='senha forte de teste',confirmacao='senha forte de teste'),client).status_code
         with ThreadPoolExecutor(max_workers=2) as pool:
             self.assertEqual(sorted(pool.map(attempt,range(2))),[200,403])
         with self.db.connection() as conn:
             self.assertEqual(conn.execute('SELECT COUNT(*) FROM Contas').fetchone()[0],1)
+
+    def test_initial_terms_required_available_and_recorded(self):
+        self.assertEqual(self.client.get('/instituicao').status_code,200)
+        payload=dict(nome='Admin',biblioteca='Escola',email='admin@example.test',senha='senha forte de teste',confirmacao='senha forte de teste')
+        self.assertEqual(self.post('/api/acesso/configurar',payload).status_code,400)
+        self.setup_library()
+        with self.db.connection() as conn:
+            self.assertEqual(conn.execute('SELECT conta_id,versao FROM AceitesTermos').fetchone(),(1,'bibi-inicial-2026-09-21'))
+            self.assertTrue(conn.execute('SELECT aceito_em FROM AceitesTermos').fetchone()[0])
+            self.assertIsNone(conn.execute('SELECT recuperacao_hash FROM Contas').fetchone()[0])
+            self.assertTrue(conn.execute("SELECT valor FROM Configuracoes WHERE chave='instalacao_criada_em'").fetchone()[0])
+            self.assertEqual(conn.execute("SELECT valor FROM Configuracoes WHERE chave='instalacao_data_estimada'").fetchone()[0],'false')
 
     def test_csrf_origin_logout_and_rate(self):
         self.setup_library()

@@ -1,6 +1,11 @@
-<!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Informações da instituição — BIBI</title><link rel="stylesheet" href="/static/css/app.css"><link rel="stylesheet" href="/static/css/contas.css"></head>
-<body class="account-page"><main class="account-card"><a href="/acesso">Voltar ao acesso</a><h1>{{ textos.get('biblioteca_nome','BIBI') }}</h1>
-<h2>Termos de uso</h2><p style="white-space:pre-wrap;overflow-wrap:anywhere">{{ textos.get('termos_uso') or 'A instituição ainda precisa publicar seus termos de uso.' }}</p>
-<h2>Aviso de privacidade</h2><p style="white-space:pre-wrap;overflow-wrap:anywhere">{{ textos.get('aviso_privacidade') or 'A instituição ainda precisa informar responsável, contato, finalidades e retenção de dados.' }}</p>
-</main><script>try{if(JSON.parse(localStorage.getItem('bibiConfig')||'{}').darkMode)document.body.classList.add('dark-mode');}catch{}</script></body></html>
+{% extends 'shell.html' if conta else 'publico.html' %}
+{% block content %}
+<div class="{{ 'account-card shell-card' if conta else '' }}">
+  <a href="{{ '/configuracoes' if conta else '/acesso' }}">Voltar</a>
+  <h1>{{ textos.get('biblioteca_nome','BIBI') }}</h1>
+  <h2 id="termos">Termos de Uso</h2>
+  <p class="institution-text">{{ textos.get('termos_uso') }}</p>
+  <h2 id="privacidade">Aviso de Privacidade</h2>
+  <p class="institution-text">{{ textos.get('aviso_privacidade') }}</p>
+</div>
+{% endblock %}

@@ -4,7 +4,7 @@ import shutil
 import time
 from pathlib import Path
 from urllib.parse import urlsplit
-from flask import Blueprint,request,jsonify,current_app,render_template,g,send_file,Response
+from flask import Blueprint,request,jsonify,current_app,render_template,g,send_file,Response,redirect
 from werkzeug.exceptions import BadRequest,NotFound
 from database.database import db_manager
 from services.contas_service import auditar,limitar
@@ -58,6 +58,10 @@ def restore_backup():
     if request.form.get('confirmado')!='true':
         archive,manifest=validate_backup(upload.stream);archive.close()
         return jsonify(mensagem='Formato e hashes válidos. A confirmação substituirá os dados atuais e encerrará sessões.',arquivos=len(manifest['arquivos']))
+    from utils.auth import verificar_senha_admin
+    if not verificar_senha_admin(request.form.get('senha_atual')):
+        from werkzeug.exceptions import Forbidden
+        raise Forbidden('Confirme a senha atual da sua conta bibliotecária.')
     return jsonify(restore(upload.stream))
 
 
@@ -69,7 +73,7 @@ def protect():
 
 @bp.get('/gestao')
 def page():
-    return render_template('gestao.html')
+    return redirect('/configuracoes#gestao-config')
 
 
 @bp.route('/api/gestao/configuracao',methods=['GET','PUT'])
@@ -80,6 +84,15 @@ def settings():
             values=dict(conn.execute('SELECT chave,valor FROM Configuracoes'))
             return jsonify({key:values.get(key,'') for key in keys} | {'circulacao':regras(conn)})
         data=request.get_json()
+        if 'smtp_host' in data or 'smtp_port' in data:
+            raise BadRequest('Salve o remetente pelo formulário de E-mail em Configurações.')
+        if 'endereco_rede' in data:
+            previous=conn.execute("SELECT valor FROM Configuracoes WHERE chave='endereco_rede'").fetchone()
+            if data['endereco_rede'] != (previous[0] if previous else ''):
+                from utils.auth import verificar_senha_admin
+                from werkzeug.exceptions import Forbidden
+                if not verificar_senha_admin(data.get('senha_atual')):
+                    raise Forbidden('Confirme sua senha atual para alterar a origem de acesso na rede.')
         for key in keys:
             if key not in data:
                 continue
@@ -233,3 +246,20 @@ def health():
 def audit():
     with db_manager.connection() as conn:
         return jsonify(records(conn,'SELECT id,conta_id,quando,acao,recurso,resultado,motivo FROM Auditoria ORDER BY id DESC LIMIT 200'))
+
+
+@bp.get('/leitores/contas')
+def reader_accounts():
+    return render_template('leitores_contas.html',ativo='lei')
+
+
+@bp.get('/emprestimos/circulacao')
+def circulation_page():
+    return render_template('circulacao.html',ativo='emp')
+
+
+@bp.get('/acervo/importacao')
+@bp.get('/leitores/importacao')
+def import_page():
+    kind='leitores' if request.path.startswith('/leitores') else 'livros'
+    return render_template('importacao.html',ativo='lei' if kind=='leitores' else 'acervo',import_kind=kind)

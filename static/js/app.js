@@ -70,11 +70,12 @@ let filtroEmprestimosAtual = 'todos';
 let senhaEmprestimoGlobal = null;
 let senhaAgendamentoGlobal = null;
 
-window.onload = () => {
+window.onload = async () => {
     iniciarRedimensionamentoPaineis();
     prepararAcessibilidade();
     verificarAdmin();
     const config = carregarConfig();
+    if(isAdminGlobal){try{Object.assign(config,await (await apiFetch('/api/config/cadastro')).json());salvarConfig(config);}catch{}}
     if (config.darkMode) toggleTheme(true);
     else toggleTheme(false);
     initCustomSelects();
@@ -97,6 +98,7 @@ window.onload = () => {
 
 function prepararAcessibilidade() {
     document.querySelectorAll('.nav-menu li, .logo, .theme-item, .config-item, .card[data-bibi-onclick]').forEach(element => {
+        if(element.querySelector('a,button'))return;
         element.tabIndex = 0;
         element.setAttribute('role', 'button');
         if (element.title) element.setAttribute('aria-label', element.title);

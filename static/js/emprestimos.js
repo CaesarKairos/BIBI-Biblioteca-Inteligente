@@ -7,7 +7,7 @@ async function verificarExigirSenhaEmprestimo() {
 
     return new Promise((resolve) => {
         const modal = document.getElementById('modalSenhaConfig');
-        document.getElementById('senha-titulo').innerText = 'Senha de Administrador';
+        document.getElementById('senha-titulo').innerText = 'Senha da conta bibliotecária';
         document.getElementById('senha-mensagem').innerHTML = 'Digite a senha para realizar o empréstimo:';
         document.getElementById('senha-confirm').style.display = 'none';
         document.getElementById('senha-input').value = '';

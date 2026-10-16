@@ -851,3 +851,8 @@ tbody tr:hover { background: var(--main); }
 [data-bibi-style="s28"] { margin:20px 0; }
 [data-bibi-style="s29"] { display:flex; gap:10px; justify-content:center; }
 [data-bibi-style="s30"] { background:var(--danger-bg); color:var(--on-status); margin-bottom:10px; display:none; }
+
+/* A mesma base visual serve aos controles da Agenda e aos selects nativos aprimorados. */
+.custom-select > button.select-selected { width:100%; text-align:left; font:inherit; min-height:44px; margin:0; }
+.custom-select [role=option][aria-selected=true] { background:var(--accent-soft); }
+.custom-select { min-width:0; }

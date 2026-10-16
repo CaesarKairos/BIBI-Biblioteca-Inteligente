@@ -45,7 +45,7 @@ class AppTest(unittest.TestCase):
         self.stack.enter_context(self.app.app_context())
         self.db=self.app.extensions['database']
         with self.db.connection() as conn:
-            conn.execute("INSERT INTO Contas(id,nome,email,senha_hash,papel,ativacao) VALUES (1,'Admin','admin@example.test',?,'bibliotecario','inicial')",(HASH,));conn.commit()
+            conn.execute("INSERT INTO Contas(id,nome,email,senha_hash,papel,ativacao) VALUES (1,'Admin','admin@example.test',?,'bibliotecario','inicial')",(HASH,));conn.execute('UPDATE Contas SET onboarding_concluido_em=CURRENT_TIMESTAMP WHERE id=1');conn.commit()
         self.client=authenticate(self.app,self.app.test_client())
 
     def sql(self,query,params=()):

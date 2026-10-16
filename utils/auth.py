@@ -21,13 +21,13 @@ def admin_required(f):
 
 
 def verificar_senha_admin(senha):
-    # PIN legado é confirmação adicional, nunca login.
-    import hashlib
-    if not is_admin() or not senha:
+    from werkzeug.security import check_password_hash
+    from services.contas_service import limitar
+    if not is_admin() or not isinstance(senha,str) or len(senha)>128:
         return False
     with db_manager.connection() as conn:
-        row = conn.execute("SELECT valor FROM Configuracoes WHERE chave='senha_hash'").fetchone()
-        return bool(row and secrets.compare_digest(row[0],hashlib.sha256(senha.encode()).hexdigest()))
+        row=conn.execute('SELECT senha_hash FROM Contas WHERE id=?',(g.conta['id'],)).fetchone()
+        return bool(row and check_password_hash(row[0],senha))
 
 
 def local_only():
@@ -78,7 +78,7 @@ def install_security(app):
             if static:
                 return
             local_only()
-            if request.endpoint not in ('contas.setup','contas.setup_api','contas.csrf'):
+            if request.endpoint not in ('contas.setup','contas.setup_api','contas.csrf','pages.instituicao'):
                 if request.path.startswith('/api/'):
                     return jsonify(erro='Conclua a configuração inicial no computador da biblioteca.'),503
                 return redirect('/configuracao-inicial')
@@ -89,7 +89,14 @@ def install_security(app):
             if request.path.startswith('/api/'):
                 return jsonify(erro='Entre na sua conta para continuar.'),401
             return redirect('/acesso')
-        reader_allowed = request.path.startswith('/api/minha-conta') or request.path == '/perfil'
+        if request.method not in ('GET','HEAD','OPTIONS') and is_admin():
+            payload=request.get_json(silent=True) or request.form
+            if payload.get('senha') or payload.get('senha_atual'):
+                from services.contas_service import limitar
+                limitar('confirmar-senha',str(g.conta['id']),limite=12)
+        if request.method == 'GET' and request.path in ('/app','/perfil','/configuracoes') and not g.conta['onboarding_concluido_em']:
+            return redirect('/boas-vindas')
+        reader_allowed = request.path.startswith('/api/minha-conta') or request.path in ('/perfil','/boas-vindas','/configuracoes')
         reader_allowed |= request.method == 'GET' and request.path in ('/app','/api/livros','/api/admin/status','/api/config/quantidade_aulas/status')
         reader_allowed |= request.method == 'GET' and request.endpoint=='livros.detalhe_livro'
         reader_allowed |= request.method == 'GET' and request.path.startswith(('/uploadedcovers/','/externalcovers/'))

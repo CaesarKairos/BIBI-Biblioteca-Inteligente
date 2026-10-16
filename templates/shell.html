@@ -1,0 +1,27 @@
+{% set admin = conta and conta.papel == 'bibliotecario' %}
+
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+        <title>{% block title %}BIBI — Biblioteca Inteligente{% endblock %}</title>
+        <meta name="csrf-token" content="{{ csrf_token }}">
+        <link rel="stylesheet" href="/static/vendor/flatpickr.min.css">
+        <script src="/static/vendor/chart.umd.js"></script>
+        <link rel="stylesheet" href="/static/css/app.css">
+        <link rel="stylesheet" href="/static/css/contas.css">
+    </head>
+    <body data-import-kind="{{ import_kind or '' }}" data-page="{{ ativo or 'app' }}" data-admin="{{ admin | tojson }}" data-quantidade-aulas="{{ quantidade_aulas }}">
+        <div class="toast-container" id="toast-container" role="status" aria-live="polite"></div>
+        <div class="app-container">
+{% include 'sidebar.html' %}
+            <main class="content-area">
+{% block content %}{% endblock %}</main>
+            <div class="panel-resizer" id="resize-details" role="separator" aria-orientation="vertical" aria-label="Redimensionar painel de detalhes" tabindex="0" title="Arraste para ajustar. Use as setas ou dê dois cliques para restaurar."></div>
+            <aside class="right-bar" id="painel-detalhes" aria-label="Detalhes do livro">{% block details %}{% endblock %}</aside>
+</div>
+{% block overlays %}{% endblock %}
+<script src="/static/js/ui.js"></script><script src="/static/js/layout.js"></script>
+{% block scripts %}<script src="/static/js/conta_comum.js"></script><script src="/static/js/shell.js"></script>{% endblock %}
+</body></html>

@@ -130,7 +130,7 @@ function exibirListaLeitores(leitores) {
             remove.style.color = 'var(--on-status)';
             remove.onclick = () => excluirLeitor(l.id);
             const convite = textElement('button', 'Acesso / convite', 'btn-primary btn-small');
-            convite.onclick = () => location.assign('/gestao?leitor=' + l.id);
+            convite.onclick = () => location.assign('/leitores/contas?leitor=' + l.id);
             actions.append(edit, remove, convite);
         }
         item.append(info, actions);

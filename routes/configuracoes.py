@@ -8,6 +8,36 @@ from utils.auth import admin_required
 bp = Blueprint('configuracoes', __name__)
 
 
+@bp.before_request
+def confirm_security_change():
+    if request.path in ('/api/config/exigir_senha_emprestimo/set','/api/config/exigir_senha_agendamento/set'):
+        from utils.auth import verificar_senha_admin
+        from werkzeug.exceptions import Forbidden
+        if not verificar_senha_admin(request.get_json().get('senha_atual')):
+            raise Forbidden('Confirme sua senha atual para modificar a segurança.')
+
+
+@bp.route('/api/config/cadastro', methods=['GET','PUT'])
+@admin_required
+def cadastro():
+    import json
+    from database.database import db_manager
+    from flask import jsonify
+    from werkzeug.exceptions import BadRequest
+    from services.contas_service import auditar
+    keys={'campoDescricaoVisivel','campoTemasVisivel','campoAnoVisivel','campoCategoriaVisivel',
+          'bloquearExcluirLivro','campoNumeroUsuario','mostrarColunaAula'}
+    with db_manager.connection() as conn:
+        if request.method=='PUT':
+            data=request.get_json()
+            if set(data)-keys or any(type(v) is not bool for v in data.values()):
+                raise BadRequest('Preferências de cadastro inválidas.')
+            conn.execute("INSERT OR REPLACE INTO Configuracoes VALUES ('campos_cadastro',?)",(json.dumps(data),))
+            auditar(conn,'campos_cadastro','biblioteca');conn.commit()
+        row=conn.execute("SELECT valor FROM Configuracoes WHERE chave='campos_cadastro'").fetchone()
+        return jsonify(json.loads(row[0]) if row else {})
+
+
 @bp.route('/api/config/senha/status', methods=['GET'])
 @admin_required
 def senha_status():

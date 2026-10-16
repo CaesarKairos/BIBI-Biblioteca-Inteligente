@@ -7,6 +7,7 @@ async function accountApi(path,method='GET',data) {
     return result;
 }
 function accountAction(button,action) {
+    if(!button) return;
     button.addEventListener('click',async()=>{
         button.disabled=true;
         try { await action(); } catch(e) { document.getElementById('account-status').textContent=e.message; }
@@ -23,3 +24,20 @@ function accountForm(id,action) {
     });
 }
 document.getElementById('account-logout')?.addEventListener('click',async()=>{await accountApi('/api/acesso/sair','POST',{});location.assign('/acesso');});
+
+function confirmarSenhaConta() {
+    return new Promise(resolve=>{
+        const previous=document.activeElement;
+        const dialog=document.createElement('dialog');dialog.className='password-confirm-dialog';
+        const form=document.createElement('form');form.method='dialog';
+        const title=accountText('h2','Confirmar alteração de segurança');title.id='password-confirm-title';dialog.setAttribute('aria-labelledby',title.id);
+        const label=accountText('label','Senha atual da sua conta');const input=document.createElement('input');input.type='password';input.autocomplete='current-password';input.maxLength=128;input.required=true;label.append(input);
+        const submit=accountText('button','Confirmar','btn-primary');submit.type='submit';
+        const cancel=accountText('button','Cancelar');cancel.type='button';cancel.onclick=()=>dialog.close();
+        let password=null;
+        form.addEventListener('submit',()=>{password=input.value;});
+        form.append(title,label,submit,cancel);dialog.append(form);document.body.append(dialog);
+        dialog.addEventListener('close',()=>{input.value='';dialog.remove();previous?.focus();resolve(password);},{once:true});
+        dialog.showModal();input.focus();
+    });
+}

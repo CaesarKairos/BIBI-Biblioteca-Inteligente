@@ -124,10 +124,14 @@ function openModalManual() {
 
 
 let catalogPage=1,catalogRequest=0,catalogTimer;
+const catalogFilterFields={q:'busca-acervo',categoria:'catalog-category',disponibilidade:'catalog-availability'};
+try{const saved=JSON.parse(sessionStorage.getItem('bibiCatalogFilters')||'{}');for(const [key,id] of Object.entries(catalogFilterFields)){if(typeof saved[key]==='string')document.getElementById(id).value=saved[key];}}catch{}
+
 async function carregarAcervo(append=false) {
     if(!append) catalogPage=1;
     const sequence=++catalogRequest;
     const params=new URLSearchParams({paginado:'1',pagina:catalogPage,q:document.getElementById('busca-acervo').value,categoria:document.getElementById('catalog-category').value,disponibilidade:document.getElementById('catalog-availability').value});
+    try{sessionStorage.setItem('bibiCatalogFilters',JSON.stringify(Object.fromEntries(Object.keys(catalogFilterFields).map(key=>[key,params.get(key)]))));}catch{}
     const res = await apiFetch('/api/livros?'+params);
     const result=await res.json();if(sequence!==catalogRequest)return;
     todosLivros = append?[...todosLivros,...result.livros]:result.livros;

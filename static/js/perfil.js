@@ -1,3 +1,4 @@
+const onboarding=document.getElementById('profile-content').dataset.onboarding==='true';
 let savedAvatar, draftAvatar, avatarFields, previewSequence=0;
 async function previewAvatar() {
     const sequence=++previewSequence;
@@ -6,11 +7,14 @@ async function previewAvatar() {
 }
 async function loadProfile() {
     const profile=await accountApi('/api/minha-conta');
-    document.getElementById('profile-info').textContent=`${profile.nome} · ${profile.email} · ${profile.papel}${profile.tipo?' · '+profile.tipo:''}`;
-    document.getElementById('email-state').textContent=profile.email_verificado?'E-mail verificado.':'E-mail não verificado. Sua conta está ativa; a recuperação de senha pode ser feita presencialmente na biblioteca.';
+    document.getElementById('profile-info').textContent=`${profile.papel==='bibliotecario'?'Bibliotecário · '+profile.email:(profile.tipo || 'Leitor')+(profile.sala?' · Turma '+profile.sala:'')}`;
+    if(document.getElementById('email-state')) document.getElementById('email-state').textContent=profile.email_verificado?'E-mail verificado.':'E-mail não verificado. Sua conta está ativa; a recuperação de senha pode ser feita presencialmente na biblioteca.';
     const avatar=await accountApi('/api/minha-conta/avatar'); savedAvatar=avatar.config; avatarFields=avatar.opcoes;
     document.getElementById('saved-avatar').src=avatar.imagem;
-    if(!profile.leitor_id) return;
+    if(onboarding){document.getElementById('edit-avatar').click();return;}
+    if(profile.papel!=='leitor'||!profile.leitor_id) return;
+    await loadFavorites();
+    document.getElementById('profile-history').replaceChildren();
     const sections=[['emprestimos','profile-loans'],['quero-ler','profile-wishes'],['reservas','profile-reservations'],['notificacoes','profile-notifications'],['avaliacoes','profile-reviews']];
     for(const [path,id] of sections) {
         const rows=await accountApi('/api/minha-conta/'+path), container=document.getElementById(id); container.replaceChildren();
@@ -36,7 +40,8 @@ async function loadProfile() {
                 const link=accountText('a','Editar no livro');link.href='/app?livro='+row.livro_id;card.append(link);
                 card.append(accountButton('Remover avaliação',async()=>{await accountApi('/api/minha-conta/avaliacoes/'+row.livro_id,'DELETE');await loadProfile();}));
             }
-            container.append(card);
+            if(path==='emprestimos' && (row.encerramento || row.status==='Devolvido')) document.getElementById('profile-history').append(card);
+            else container.append(card);
         }
     }
 }
@@ -76,9 +81,26 @@ accountAction(document.getElementById('edit-avatar'),async()=>{
     document.getElementById('avatar-editor').hidden=false;await previewAvatar();
 });
 accountAction(document.getElementById('random-avatar'),async()=>{draftAvatar.seed=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');draftAvatar.opcoes={};document.querySelectorAll('[data-avatar-option]').forEach(control=>{control.value=control.tagName==='SELECT'?'':control.type==='color'?'#c6a47c':0;});document.querySelectorAll('#avatar-options details').forEach(d=>{d.open=false;delete d.dataset.loaded;d.querySelector('.avatar-choices')?.remove();});await previewAvatar();});
-accountAction(document.getElementById('save-avatar'),async()=>{const r=await accountApi('/api/minha-conta/avatar','PUT',draftAvatar);savedAvatar=structuredClone(draftAvatar);document.getElementById('saved-avatar').src=r.imagem;document.getElementById('avatar-editor').hidden=true;});
+accountAction(document.getElementById('save-avatar'),async()=>{const r=await accountApi('/api/minha-conta/avatar','PUT',draftAvatar);savedAvatar=structuredClone(draftAvatar);document.getElementById('saved-avatar').src=r.imagem;document.getElementById('avatar-editor').hidden=true;if(onboarding)location.assign('/app');});
 accountAction(document.getElementById('cancel-avatar'),async()=>{++previewSequence;draftAvatar=null;document.getElementById('avatar-editor').hidden=true;});
 accountForm('password-form',async data=>{await accountApi('/api/minha-conta/senha','POST',data);location.assign('/acesso');});
 accountForm('verify-email-form',async data=>{const r=await accountApi('/api/minha-conta/email/enviar','POST',data);document.getElementById('account-status').textContent=r.mensagem;});
 accountForm('confirm-email-form',async data=>{await accountApi('/api/minha-conta/email/confirmar','POST',data);location.assign('/acesso');});
 loadProfile().catch(e=>document.getElementById('account-status').textContent=e.message);
+
+accountAction(document.getElementById('suggested-avatar'),async()=>{await accountApi('/api/minha-conta/avatar','PUT',savedAvatar);location.assign('/app');});
+let favorites=[];
+async function loadFavorites(){
+ favorites=await accountApi('/api/minha-conta/favoritos');
+ const list=document.getElementById('profile-favorites');list.replaceChildren();
+ const save=async ids=>{await accountApi('/api/minha-conta/favoritos','PUT',{livros:ids});await loadFavorites();};
+ favorites.forEach((book,index)=>{const card=accountText('article','','profile-row');const link=accountText('a',book.nome+(book.arquivado?' · Arquivado':''));link.href='/app?livro='+book.id;const image=document.createElement('img');image.src=book.capa_url || '/static/images/placeholder.png';image.alt='';image.className='favorite-cover';link.prepend(image);card.append(link);
+ card.append(accountButton('Remover',()=>save(favorites.filter(b=>b.id!==book.id).map(b=>b.id))));
+ if(index>0)card.append(accountButton('Mover para antes',()=>{const ids=favorites.map(b=>b.id);[ids[index-1],ids[index]]=[ids[index],ids[index-1]];return save(ids);}));list.append(card);});
+ const books=await accountApi('/api/livros');const select=document.getElementById('favorite-book');select.replaceChildren();books.filter(b=>!b.arquivado&&!favorites.some(f=>f.id===b.id)).forEach(b=>{const o=accountText('option',b.titulo);o.value=b.id;select.append(o);});
+}
+accountForm('favorite-form',async()=>{const id=Number(document.getElementById('favorite-book').value);await accountApi('/api/minha-conta/favoritos','PUT',{livros:[...favorites.map(b=>b.id),id]});await loadFavorites();});
+
+function openProfileEdit(){const details=document.getElementById('edit-profile');if(details){details.open=true;details.scrollIntoView();}}
+document.getElementById('edit-profile-link')?.addEventListener('click',openProfileEdit);
+if(location.hash==='#edit-profile')openProfileEdit();

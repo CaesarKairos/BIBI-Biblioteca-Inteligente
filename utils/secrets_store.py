@@ -106,3 +106,12 @@ class SecretStore:
                 key = secrets.token_hex(32)
                 self.set('session_key', key)
             return key
+
+    def recovery_key(self, rotate=False):
+        """Vínculo da recuperação com esta instalação/usuário, sem senha de conta."""
+        with self.locked():
+            key = self.get('recovery_installation')
+            if rotate or not key:
+                key = secrets.token_urlsafe(32)
+                self.set('recovery_installation', key)
+            return key

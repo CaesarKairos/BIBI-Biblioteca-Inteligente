@@ -52,26 +52,26 @@ class IntegrationTests(AppTest):
         self.assertIn(b'&lt;script&gt;',response.data)
         self.assertEqual(guest.get('/api/leitores').status_code,401)
 
-    def test_optional_pin_enforced_server_side(self):
+    def test_real_password_enforced_server_side(self):
         book=self.book();reader=self.reader()
         self.sql("INSERT OR REPLACE INTO Configuracoes VALUES ('exigir_senha_emprestimo','true')")
         self.sql("INSERT OR REPLACE INTO Configuracoes VALUES ('senha_hash',?)",(hashlib.sha256(b'123456').hexdigest(),))
         payload={'leitor_id':reader,'livros':[{'id':book}]}
         self.assertEqual(self.client.post('/api/emprestimos',json=payload).status_code,400)
         self.assertEqual(self.sql('SELECT quantidade_disponivel FROM Livros'),[(1,)])
-        payload['senha']='123456'
+        payload['senha']='senha forte de teste'
         self.assertEqual(self.client.post('/api/emprestimos',json=payload).status_code,200)
 
-    def test_restore_invalidates_codes_and_rotates_offline(self):
+    def test_restore_invalidates_codes_without_new_manual_code(self):
         reader=self.reader()
         self.client.post(f'/api/contas/leitores/{reader}/codigo',json={})
         self.sql('UPDATE Contas SET recuperacao_hash=? WHERE id=1',(digest('old-code'),))
         response=self.client.post('/api/gestao/backup');raw=response.data;response.close()
         self.app.extensions['secrets'].set('smtp_password','old credential')
-        result=self.client.post('/api/gestao/restaurar',data={'arquivo':(io.BytesIO(raw),'backup.zip'),'confirmado':'true'})
+        result=self.client.post('/api/gestao/restaurar',data={'arquivo':(io.BytesIO(raw),'backup.zip'),'confirmado':'true','senha_atual':'senha forte de teste'})
         self.assertEqual(result.status_code,200,result.json)
         self.assertEqual(self.sql('SELECT DISTINCT consumido FROM Codigos'),[(1,)])
-        self.assertEqual(self.sql('SELECT recuperacao_hash FROM Contas WHERE id=1'),[(digest(result.json['recuperacao_offline']),)])
+        self.assertEqual(self.sql('SELECT recuperacao_hash FROM Contas WHERE id=1'),[(None,)])
         self.assertEqual(self.sql('SELECT COUNT(*) FROM Sessoes'),[(0,)])
         self.assertIsNone(self.app.extensions['secrets'].get('smtp_password'))
 
@@ -86,7 +86,7 @@ class IntegrationTests(AppTest):
                 raise RuntimeError('Falha simulada')
             return actual(conn,action,*args,**kwargs)
         with patch('services.dados_service.auditar',side_effect=fail):
-            result=self.client.post('/api/gestao/restaurar',data={'arquivo':(io.BytesIO(raw),'backup.zip'),'confirmado':'true'})
+            result=self.client.post('/api/gestao/restaurar',data={'arquivo':(io.BytesIO(raw),'backup.zip'),'confirmado':'true','senha_atual':'senha forte de teste'})
         self.assertEqual(result.status_code,500)
         self.assertEqual(self.sql('SELECT nome FROM Livros'),[('Estado atual',)])
         self.assertEqual(self.client.get('/api/leitores').status_code,200)
@@ -94,7 +94,7 @@ class IntegrationTests(AppTest):
     def test_desktop_explicit_start_and_close(self):
         import desktop
         server=Mock();window=Mock()
-        with patch.dict('sys.modules',{'webview':window}),patch.object(desktop,'create_server',return_value=server),patch('services.email_service.iniciar_verificacao_notificacoes') as worker,patch.object(desktop.threading,'Thread'):
+        with patch.dict('sys.modules',{'webview':window,'webview.menu':Mock()}),patch.object(desktop,'create_server',return_value=server),patch('services.email_service.iniciar_verificacao_notificacoes') as worker,patch.object(desktop.threading,'Thread'):
             desktop.run_desktop(self.app)
         worker.assert_called_once_with(self.app)
         window.create_window.assert_called_once()
