@@ -17,6 +17,8 @@ python app.py
 
 Não copie nem configure `.env`: a aplicação não o utiliza. `app.py` cria a aplicação explicitamente; importar o módulo não abre janela, banco ou worker. `desktop.py` inicia Waitress em loopback, o worker periódico e a janela PyWebView. Não execute duas instâncias para a mesma biblioteca.
 
+Na janela desktop, **F11** alterna entre tela cheia e o tamanho anterior, em qualquer tela. A opção também está em **Exibir → Tela cheia (F11)**. No navegador, use o F11 nativo do próprio navegador.
+
 Na primeira abertura, informe biblioteca/escola, nome, e-mail e senha do primeiro bibliotecário. Leia os Termos de Uso e o Aviso de Privacidade na própria tela e registre o aceite. A sessão começa e abre a personalização local do avatar; salve ou use o avatar sugerido para entrar. SMTP é opcional. Não há código manual novo para guardar, senha padrão ou promoção automática de leitores legados.
 
 **Instalação antiga:** mantenha `%LOCALAPPDATA%\BIBI` intacto e execute sob o mesmo usuário Windows. A migração preserva acervo e histórico, cria backup SQLite antes das alterações e exige o assistente somente se ainda não houver contas. Contas antigas com avatar já estão concluídas; as demais personalizam o avatar uma vez no próximo acesso. Referências órfãs interrompem a migração: devem ser corrigidas explicitamente, sem apagar registros. Não substitua o banco antigo por um vazio.

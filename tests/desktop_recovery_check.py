@@ -45,6 +45,27 @@ def main():
                 window=context['window']
                 try:
                     window.events.loaded.wait(20)
+                    from System import Action
+                    def keep_invisible():
+                        window.native.Opacity=0
+                        window.native.ShowInTaskbar=False
+                    window.native.Invoke(Action(keep_invisible))
+                    original_size=(window.native.Width,window.native.Height)
+                    def press_f11(expected):
+                        window.evaluate_js("document.dispatchEvent(new KeyboardEvent('keydown',{key:'F11',bubbles:true,cancelable:true}));")
+                        deadline=time.monotonic()+5
+                        while time.monotonic()<deadline:
+                            if bool(window.native.is_fullscreen)==expected:
+                                break
+                            time.sleep(.05)
+                        else:
+                            raise AssertionError('F11 não alternou o estado da janela.')
+                        # Wait for the bridge promise before pressing F11 again.
+                        window.evaluate_js("new Promise(resolve=>setTimeout(resolve,100))")
+                    press_f11(True)
+                    press_f11(False)
+                    assert (window.native.Width,window.native.Height)==original_size
+                    print('PASS: F11 entra e sai da tela cheia nativa e restaura o tamanho da janela.',flush=True)
                     menu[0].items[0].function()
                     deadline=time.monotonic()+25
                     while time.monotonic()<deadline:
@@ -54,6 +75,8 @@ def main():
                         time.sleep(.1)
                     else:
                         raise AssertionError('O formulário desktop não ficou pronto.')
+                    press_f11(True)
+                    press_f11(False)
                     window.evaluate_js("""const f=document.getElementById('access-form'); f.elements.email.value='native@example.test';f.elements.senha.value='nova senha nativa sintetica';f.elements.confirmacao.value='nova senha nativa sintetica';f.requestSubmit();""")
                     while time.monotonic()<deadline:
                         with app.extensions['database'].connection() as conn:
