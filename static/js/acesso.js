@@ -6,40 +6,44 @@ if (document.body.dataset.mode === 'offline') history.replaceState(null,'',locat
     const form = document.getElementById('access-form');
     const status = document.getElementById('access-status');
     const submit = document.getElementById('access-submit');
-    document.querySelectorAll('[data-mode]').forEach(button => {
-        if (button.tagName !== 'BUTTON') return;
-        button.addEventListener('click', () => {
-            mode = button.dataset.mode;
-            document.querySelectorAll('.access-tabs button').forEach(b => b.setAttribute('aria-current',String(b === button)));
-            document.getElementById('code-label').hidden = mode === 'login';
-            document.getElementById('confirm-label').hidden = mode === 'login';
-            document.getElementById('password-help').hidden = mode === 'login';
-            document.getElementById('request-recovery').hidden = mode !== 'redefinir';
-            form.elements.senha.autocomplete = mode === 'login' ? 'current-password' : 'new-password';
-            form.elements.senha.minLength = mode === 'login' ? 1 : 12;
-            submit.textContent = mode === 'login' ? 'Entrar' : mode === 'ativar' ? 'Ativar minha conta' : 'Redefinir senha';
-            document.getElementById('access-help').textContent = mode === 'login' ? 'Entre com seu e-mail e senha.' : mode === 'ativar' ? 'Use o e-mail e o código do convite entregue pela biblioteca. Não há cadastro público.' : 'Informe o código de recuperação. Se seu e-mail não foi verificado ou você não recebeu um código, procure o bibliotecário para recuperação presencial.';
-            status.textContent = '';
-        });
-    });
+    function changeMode(next){
+        mode=next;
+        const login=mode==='login',request=mode==='solicitar';
+        document.getElementById('access-title').textContent=login?'Entrar na biblioteca':mode==='ativar'?'Ativar convite':request?'Recuperar senha':'Definir nova senha';
+        document.getElementById('back-login').hidden=login;
+        document.getElementById('login-actions').hidden=!login;
+        document.getElementById('have-code').hidden=!request;
+        document.getElementById('code-label').hidden=login||request;
+        form.elements.codigo.required=!login&&!request;
+        document.getElementById('password-label').hidden=request;
+        form.elements.senha.required=!request;form.elements.senha.disabled=request;
+        document.getElementById('confirm-label').hidden=login||request;
+        form.elements.confirmacao.required=!login&&!request;form.elements.confirmacao.disabled=login||request;
+        document.getElementById('password-help').hidden=login||request;
+        form.elements.senha.autocomplete=login?'current-password':'new-password';
+        form.elements.senha.minLength=login?1:12;
+        submit.textContent=login?'Entrar':mode==='ativar'?'Ativar minha conta':request?'Enviar código':'Redefinir senha';
+        const help=document.getElementById('access-help');help.hidden=login;
+        help.textContent=mode==='ativar'?'Use o convite entregue pela biblioteca.':request?'Informe seu e-mail para solicitar um código.':'Informe o código recebido e escolha uma nova senha. Sem acesso ao e-mail, procure o bibliotecário.';
+        form.elements.senha.value='';form.elements.confirmacao.value='';form.elements.codigo.value='';status.textContent='';
+    }
+    document.querySelectorAll('[data-access-mode]').forEach(button=>button.addEventListener('click',()=>changeMode(button.dataset.accessMode)));
+    document.getElementById('back-login')?.addEventListener('click',()=>changeMode('login'));
+    document.getElementById('have-code')?.addEventListener('click',()=>changeMode('redefinir'));
     form.addEventListener('submit', async event => {
         event.preventDefault(); submit.disabled = true; status.textContent = 'Aguarde...';
-        const paths = {setup:'configurar',login:'entrar',ativar:'ativar',redefinir:'redefinir',offline:'recuperacao-local'};
+        const paths = {setup:'configurar',login:'entrar',ativar:'ativar',redefinir:'redefinir',offline:'recuperacao-local',solicitar:'recuperacao-email'};
         try {
             const response = await fetch('/api/acesso/' + paths[mode], {method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':document.querySelector('meta[name=csrf-token]').content},body:JSON.stringify({...Object.fromEntries(new FormData(form)),token:recoveryToken})});
             const data = await response.json();
             if (!response.ok) throw new Error(data.erro || 'Não foi possível concluir.');
             if (data.destino) location.assign(data.destino);
+            else if(mode==='solicitar'){changeMode('redefinir');status.textContent=data.mensagem;}
             else { status.textContent = data.mensagem; form.reset(); }
         } catch (error) { status.textContent = error.message; }
         finally { submit.disabled = false; }
     });
-    document.getElementById('request-recovery')?.addEventListener('click',async event=>{
-        const button=event.target;button.disabled=true;
-        try { const response=await fetch('/api/acesso/recuperacao-email',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':document.querySelector('meta[name=csrf-token]').content},body:JSON.stringify({email:form.elements.email.value})});const result=await response.json();status.textContent=result.mensagem || result.erro; }
-        catch { status.textContent='Falha de conexão. Procure o bibliotecário.'; }
-        finally { button.disabled=false; }
-    });
+
 })();
 const legalDialog=document.getElementById('legal-dialog');
 let legalOpener;

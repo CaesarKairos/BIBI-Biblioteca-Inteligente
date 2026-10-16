@@ -58,6 +58,7 @@ function closeModal(id) {
 }
 
 document.addEventListener('keydown', event => {
+    if(document.querySelector('dialog[open]'))return;
     const id = modalStack[modalStack.length - 1];
     if (!id) return;
     if (event.key === 'Escape') { event.preventDefault(); closeModal(id); }
@@ -85,6 +86,7 @@ function toggleTheme(ativar) {
         document.body.classList.remove('dark-mode');
         document.getElementById('theme-icon').innerHTML = '<path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278M4.858 1.311A7.27 7.27 0 0 0 1.025 7.71c0 4.02 3.279 7.276 7.319 7.276a7.32 7.32 0 0 0 5.205-2.162q-.506.063-1.029.063c-4.61 0-8.343-3.714-8.343-8.29 0-1.167.242-2.278.681-3.286"/><path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.73 1.73 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.73 1.73 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.73 1.73 0 0 0 1.097-1.097zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z"/>';
     }
+    document.getElementById("theme-toggle-btn").setAttribute("aria-pressed",String(ativar));
     const config = carregarConfig();
     config.darkMode = ativar;
     salvarConfig(config);
@@ -118,11 +120,11 @@ class CustomSelect {
                 let index=enabled.findIndex(o=>String(o.value)===String(this.selectedValue));
                 index=event.key==='Home'?0:event.key==='End'?enabled.length-1:(index+(event.key==='ArrowDown'?1:-1)+enabled.length)%enabled.length;
                 this.setValue(enabled[index].value);
-            }else if(event.key==='Escape'){event.preventDefault();this.close();}
+            }else if(event.key==='Escape'&&list.style.display==='block'){event.preventDefault();event.stopPropagation();this.close();}
         });
         this.container.append(control,list);this.sync();
-        if(!this.outside){this.outside=event=>{if(!this.container.contains(event.target))this.close();};document.addEventListener('click',this.outside);}
-        this.container.addEventListener('focusout',event=>{if(!this.container.contains(event.relatedTarget))this.close();});
+        if(!this.outside){this.outside=event=>{if(!this.container.isConnected){document.removeEventListener('click',this.outside);return;}if(!this.container.contains(event.target))this.close();};document.addEventListener('click',this.outside);}
+        if(!this.focusOut){this.focusOut=event=>{if(!this.container.contains(event.relatedTarget))this.close();};this.container.addEventListener('focusout',this.focusOut);}
     }
     toggle(){const list=this.container.querySelector('.select-items');const opened=list.style.display!=='block';list.style.display=opened?'block':'none';this.container.querySelector('.select-selected').setAttribute('aria-expanded',String(opened));}
     close(){this.container.querySelector('.select-items').style.display='none';this.container.querySelector('.select-selected').setAttribute('aria-expanded','false');}
@@ -138,9 +140,10 @@ class CustomSelect {
 function enhanceNativeSelects(){
  document.querySelectorAll('select:not([multiple])').forEach(select=>{
   if(select.dataset.enhanced)return;
-  const wrapper=document.createElement('div');wrapper.dataset.label=select.getAttribute('aria-label') || select.labels?.[0]?.textContent.trim() || 'Selecionar opção';select.after(wrapper);
+  const wrapper=document.createElement('div');wrapper.dataset.label=select.getAttribute('aria-label') || Array.from(select.labels?.[0]?.childNodes||[]).filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim() || 'Selecionar opção';select.after(wrapper);
   const options=()=>Array.from(select.options,o=>({value:o.value,text:o.text,disabled:o.disabled}));
-  const component=new CustomSelect(wrapper,options(),value=>{select.value=value;select.dispatchEvent(new Event('change',{bubbles:true}));},select.value);
+  const component=new CustomSelect(wrapper,options(),value=>{if(select.disabled)return;select.value=value;select.dispatchEvent(new Event('change',{bubbles:true}));},select.value);
+  wrapper.querySelector('button').disabled=select.disabled;
   select.dataset.enhanced='true';select.hidden=true;
   for(const property of ['value','selectedIndex']){
    const descriptor=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,property);
@@ -149,7 +152,7 @@ function enhanceNativeSelects(){
 
   select.addEventListener('change',()=>{component.selectedValue=select.value;component.sync();});
   select.addEventListener('invalid',()=>wrapper.querySelector('button').focus());
-  new MutationObserver(()=>{component.options=options();component.selectedValue=select.value;component.render();}).observe(select,{childList:true,subtree:true,attributes:true,attributeFilter:['disabled','selected']});
+  new MutationObserver(()=>{component.options=options();component.selectedValue=select.value;component.render();wrapper.querySelector('button').disabled=select.disabled;}).observe(select,{childList:true,subtree:true,attributes:true,attributeFilter:['disabled','selected']});
   select.form?.addEventListener('reset',()=>setTimeout(()=>{component.selectedValue=select.value;component.sync();}));
  });
 }
@@ -244,8 +247,8 @@ function initCustomSelects() {
 function getOpenModalId() {
     if (modalStack.length) return modalStack[modalStack.length - 1];
     const modals = ['modalAddLivro', 'modalManualLivro', 'modalEditarLivro', 'modalAgendamento',
-                   'modalLeitor', 'modalEmprestimoRapido', 'modalConfigAgenda', 'modalConfirmacao',
-                   'modalAtrasos', 'modalDevolucoesHoje', 'modalSenhaConfig', 'modalConfiguracoes', 'modalDetalhesAgendamento'];
+                   'modalLeitor', 'modalEmprestimoRapido', 'modalConfirmacao',
+                   'modalAtrasos', 'modalDevolucoesHoje', 'modalSenhaConfig', 'modalDetalhesAgendamento'];
     for (const id of modals) {
         const el = document.getElementById(id);
         if (el && el.style.display === 'flex') return id;
@@ -264,10 +267,8 @@ function triggerModalAction(modalId) {
             break;
         case 'modalLeitor': document.getElementById('btn-salvar-leitor').click(); break;
         case 'modalEmprestimoRapido': document.getElementById('btn-confirmar-emprestimo').click(); break;
-        case 'modalConfigAgenda': document.getElementById('btn-salvar-config').click(); break;
         case 'modalConfirmacao': document.getElementById('confirm-btn-sim').click(); break;
         case 'modalSenhaConfig': document.getElementById('btn-senha').click(); break;
-        case 'modalConfiguracoes': salvarConfigGerais(); break;
         default: break;
     }
 }

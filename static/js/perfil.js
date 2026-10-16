@@ -1,16 +1,25 @@
 const onboarding=document.getElementById('profile-content').dataset.onboarding==='true';
-let savedAvatar, draftAvatar, avatarFields, previewSequence=0;
+let savedAvatar, savedAvatarImage, draftAvatar, avatarFields, previewSequence=0;
+const avatarCache=new Map();
+const avatarQueue=[];let activePreviews=0;
+function avatarImage(config,priority=false){
+ const key=JSON.stringify(config);
+ if(!avatarCache.has(key))avatarCache.set(key,new Promise((resolve,reject)=>{avatarQueue[priority?'unshift':'push']({config,resolve,reject});pumpAvatars();}).catch(error=>{avatarCache.delete(key);throw error;}));
+ return avatarCache.get(key);
+}
+function pumpAvatars(){while(activePreviews<4&&avatarQueue.length){const job=avatarQueue.shift();activePreviews++;accountApi('/api/minha-conta/avatar/previa','POST',job.config).then(r=>job.resolve(r.imagem),job.reject).finally(()=>{activePreviews--;pumpAvatars();});}}
 async function previewAvatar() {
-    const sequence=++previewSequence;
-    const result=await accountApi('/api/minha-conta/avatar/previa','POST',draftAvatar);
-    if(sequence===previewSequence) document.getElementById('preview-avatar').src=result.imagem;
+ const sequence=++previewSequence, status=document.getElementById('avatar-status');status.textContent='Atualizando prévia…';document.getElementById('save-avatar').disabled=true;
+ try{const image=await avatarImage(structuredClone(draftAvatar),true);if(sequence===previewSequence){document.getElementById('preview-avatar').src=image;status.textContent='';}}
+ catch(error){if(sequence===previewSequence)status.textContent='Não foi possível atualizar a prévia. Tente outra vez.';}
+ finally{if(sequence===previewSequence)document.getElementById('save-avatar').disabled=false;}
 }
 async function loadProfile() {
     const profile=await accountApi('/api/minha-conta');
     document.getElementById('profile-info').textContent=`${profile.papel==='bibliotecario'?'Bibliotecário · '+profile.email:(profile.tipo || 'Leitor')+(profile.sala?' · Turma '+profile.sala:'')}`;
     if(document.getElementById('email-state')) document.getElementById('email-state').textContent=profile.email_verificado?'E-mail verificado.':'E-mail não verificado. Sua conta está ativa; a recuperação de senha pode ser feita presencialmente na biblioteca.';
     const avatar=await accountApi('/api/minha-conta/avatar'); savedAvatar=avatar.config; avatarFields=avatar.opcoes;
-    document.getElementById('saved-avatar').src=avatar.imagem;
+    document.getElementById('saved-avatar').src=savedAvatarImage=avatar.imagem;
     if(onboarding){document.getElementById('edit-avatar').click();return;}
     if(profile.papel!=='leitor'||!profile.leitor_id) return;
     await loadFavorites();
@@ -45,47 +54,62 @@ async function loadProfile() {
         }
     }
 }
-accountAction(document.getElementById('edit-avatar'),async()=>{
-    draftAvatar=structuredClone(savedAvatar); const fields=document.getElementById('avatar-options');fields.replaceChildren();
-    const labels={eyebrowsVariant:'Sobrancelhas',eyesVariant:'Olhos',glassesVariant:'Óculos',mouthVariant:'Boca',backgroundColor:'Fundo',eyesColor:'Cor dos olhos',glassesColor:'Cor dos óculos',inkColor:'Traços',lipsColor:'Lábios',scleraColor:'Esclera',teethColor:'Dentes',throatColor:'Garganta',tongueColor:'Língua',uvulaColor:'Úvula'};
-    for(const [name,descriptor] of Object.entries(avatarFields)) {
-        if(name.endsWith('Probability')&&name!=='glassesProbability') continue;
-        const label=accountText('label',labels[name] || 'Óculos: frequência (%)'); let control;
-        if(descriptor.type==='enum') {
-            control=document.createElement('select');const auto=accountText('option','Aleatório');auto.value='';control.append(auto);
-            descriptor.values.forEach(value=>{const option=accountText('option',value.replace('variant','Opção '));option.value=value;control.append(option);});
-        } else { control=document.createElement('input');control.type=descriptor.type==='color'?'color':'number';control.min=0;control.max=100; }
-        control.value=draftAvatar.opcoes[name] ?? (descriptor.type==='color'?'#c6a47c':descriptor.type==='number'?0:'');
-        control.addEventListener('change',async()=>{if(control.value==='') delete draftAvatar.opcoes[name];else draftAvatar.opcoes[name]=descriptor.type==='number'?Number(control.value):control.value;await previewAvatar();});
-        control.dataset.avatarOption=name;
-        label.append(control);fields.append(label);
-        if(descriptor.type==='enum') {
-            const choices=document.createElement('details');const summary=accountText('summary','Escolher visualmente');choices.append(summary);label.append(choices);
-            choices.addEventListener('toggle',async()=>{
-                if(!choices.open||choices.dataset.loaded)return;choices.dataset.loaded='true';
-                const grid=accountText('div','','avatar-choices');choices.append(grid);
-                for(const value of descriptor.values) {
-                    if(!draftAvatar||!grid.isConnected)break;
-                    const candidate={...draftAvatar,opcoes:{...draftAvatar.opcoes,[name]:value}};
-                    if(name==='glassesVariant')candidate.opcoes.glassesProbability=100;
-                    try {
-                        const r=await accountApi('/api/minha-conta/avatar/previa','POST',candidate);
-                        if(!draftAvatar||!grid.isConnected)break;
-                        const button=accountButton(value.replace('variant','Opção '),async()=>{draftAvatar.opcoes[name]=value;control.value=value;if(name==='glassesVariant'){draftAvatar.opcoes.glassesProbability=100;document.querySelector('[data-avatar-option=glassesProbability]').value=100;}await previewAvatar();});
-                        const img=document.createElement('img');img.src=r.imagem;img.alt='';img.width=56;img.height=56;button.prepend(img);grid.append(button);
-                    }catch(error){document.getElementById('account-status').textContent=error.message;break;}
-                }
-            });
-        }
-    }
-    document.getElementById('avatar-editor').hidden=false;await previewAvatar();
+function markAvatarChoices(){
+ document.querySelectorAll('[data-avatar-value]').forEach(button=>{
+ const name=button.dataset.avatarField,value=button.dataset.avatarValue;
+ const selected=name==='glassesVariant'&&value==='none'?draftAvatar.opcoes.glassesProbability===0:draftAvatar.opcoes[name]===value&&(name!=='glassesVariant'||draftAvatar.opcoes.glassesProbability!==0);
+ button.setAttribute('aria-pressed',String(selected));
+ });
+}
+async function openAvatarEditor(){
+ draftAvatar=structuredClone(savedAvatar);document.getElementById('preview-avatar').src=savedAvatarImage;
+ const initialPreview=previewAvatar();
+ const fields=document.getElementById('avatar-options');fields.replaceChildren();
+ document.querySelector('.profile-hero').hidden=true;document.getElementById('avatar-editor').hidden=false;
+ const comparison={...savedAvatar,opcoes:{...savedAvatar.opcoes,eyesProbability:100,mouthProbability:100,eyebrowsProbability:100,glassesProbability:0}};
+ const labels={eyesVariant:'Olhos',mouthVariant:'Boca',eyebrowsVariant:'Sobrancelhas',glassesVariant:'Óculos',backgroundColor:'Fundo',eyesColor:'Cor dos olhos',glassesColor:'Cor dos óculos',inkColor:'Traços',lipsColor:'Lábios',scleraColor:'Branco dos olhos',teethColor:'Dentes',throatColor:'Interior da boca',tongueColor:'Língua',uvulaColor:'Detalhe da boca'};
+ for(const name of ['eyesVariant','mouthVariant','eyebrowsVariant','glassesVariant']){
+  const group=accountText('section','','avatar-group');const heading=accountText('h3',labels[name]);group.append(heading);const grid=accountText('div','','avatar-choices');grid.setAttribute('role','group');grid.setAttribute('aria-label',labels[name]);group.append(grid);fields.append(group);
+  const values=[...(name==='glassesVariant'?['none']:[]),...avatarFields[name].values];
+  values.forEach((value,index)=>{
+   const label=value==='none'?'Sem óculos':`${labels[name]} ${name==='glassesVariant'?index:index+1}`;
+   const button=accountButton(label,async()=>{
+    if(value==='none')draftAvatar.opcoes.glassesProbability=0;
+    else {draftAvatar.opcoes[name]=value;draftAvatar.opcoes[name.replace('Variant','Probability')]=100;}
+    markAvatarChoices();await previewAvatar();
+   });button.className='avatar-choice';button.dataset.avatarField=name;button.dataset.avatarValue=value;button.setAttribute('aria-label',label);button.setAttribute('aria-busy','true');
+   const img=document.createElement('img');img.alt='';img.width=72;img.height=72;button.prepend(img);grid.append(button);
+   const config=structuredClone(comparison);
+   if(value!=='none'){config.opcoes[name]=value;if(name==='glassesVariant')config.opcoes.glassesProbability=100;}
+   avatarImage(config).then(image=>{if(button.isConnected){img.src=image;button.removeAttribute('aria-busy');}}).catch(()=>{button.removeAttribute('aria-busy');button.title='Prévia indisponível. Clique para experimentar.';});
+  });
+ }
+ const advanced=document.createElement('details');advanced.append(accountText('summary','Cores avançadas'));
+ const colorNames=['Creme','Areia','Marrom','Verde','Azul','Violeta','Terracota','Carvão','Branco'];
+ const palette=['#f2e5cf','#c6a47c','#8c6248','#3d4935','#4c6b88','#7a4667','#bd6754','#202520','#ffffff'];
+ for(const [name,descriptor] of Object.entries(avatarFields)){
+  if(descriptor.type!=='color')continue;
+  const group=accountText('section','','avatar-group');group.append(accountText('h3',labels[name]));const colors=accountText('div','','avatar-colors');colors.setAttribute('role','group');colors.setAttribute('aria-label',labels[name]);group.append(colors);
+  palette.forEach((value,index)=>{const button=accountButton(`${labels[name]}: ${colorNames[index]}`,async()=>{draftAvatar.opcoes[name]=value;markAvatarChoices();await previewAvatar();});button.className='avatar-swatch';button.style.backgroundColor=value;button.dataset.avatarField=name;button.dataset.avatarValue=value;button.title=`${labels[name]}: ${colorNames[index]}`;colors.append(button);});
+  const label=accountText('label','Outra cor');const custom=document.createElement('input');custom.type='color';custom.value=draftAvatar.opcoes[name]||palette[0];custom.addEventListener('input',()=>{draftAvatar.opcoes[name]=custom.value;markAvatarChoices();previewAvatar();});label.append(custom);group.append(label);
+  (['backgroundColor','eyesColor','inkColor','lipsColor','glassesColor'].includes(name)?fields:advanced).append(group);
+ }
+ fields.append(advanced);markAvatarChoices();await initialPreview;
+}
+accountAction(document.getElementById('edit-avatar'),openAvatarEditor);
+accountAction(document.getElementById('random-avatar'),async()=>{draftAvatar.seed=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');draftAvatar.opcoes={};markAvatarChoices();await previewAvatar();});
+accountAction(document.getElementById('save-avatar'),async()=>{
+ const committed=structuredClone(draftAvatar),options=document.getElementById('avatar-options');
+ const controls=[document.getElementById('random-avatar'),document.getElementById('cancel-avatar')].filter(Boolean);
+ options.inert=true;controls.forEach(control=>control.disabled=true);
+ try{
+  const result=await accountApi('/api/minha-conta/avatar','PUT',committed);savedAvatar=committed;
+  document.getElementById('saved-avatar').src=savedAvatarImage=result.imagem;
+  document.getElementById('avatar-editor').hidden=true;document.querySelector('.profile-hero').hidden=false;
+  if(onboarding)location.assign('/app');
+ }finally{options.inert=false;controls.forEach(control=>control.disabled=false);}
 });
-accountAction(document.getElementById('random-avatar'),async()=>{draftAvatar.seed=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');draftAvatar.opcoes={};document.querySelectorAll('[data-avatar-option]').forEach(control=>{control.value=control.tagName==='SELECT'?'':control.type==='color'?'#c6a47c':0;});document.querySelectorAll('#avatar-options details').forEach(d=>{d.open=false;delete d.dataset.loaded;d.querySelector('.avatar-choices')?.remove();});await previewAvatar();});
-accountAction(document.getElementById('save-avatar'),async()=>{const r=await accountApi('/api/minha-conta/avatar','PUT',draftAvatar);savedAvatar=structuredClone(draftAvatar);document.getElementById('saved-avatar').src=r.imagem;document.getElementById('avatar-editor').hidden=true;if(onboarding)location.assign('/app');});
-accountAction(document.getElementById('cancel-avatar'),async()=>{++previewSequence;draftAvatar=null;document.getElementById('avatar-editor').hidden=true;});
-accountForm('password-form',async data=>{await accountApi('/api/minha-conta/senha','POST',data);location.assign('/acesso');});
-accountForm('verify-email-form',async data=>{const r=await accountApi('/api/minha-conta/email/enviar','POST',data);document.getElementById('account-status').textContent=r.mensagem;});
-accountForm('confirm-email-form',async data=>{await accountApi('/api/minha-conta/email/confirmar','POST',data);location.assign('/acesso');});
+accountAction(document.getElementById('cancel-avatar'),async()=>{++previewSequence;draftAvatar=null;document.getElementById('avatar-editor').hidden=true;document.querySelector('.profile-hero').hidden=false;document.getElementById('edit-avatar').focus();});
 loadProfile().catch(e=>document.getElementById('account-status').textContent=e.message);
 
 accountAction(document.getElementById('suggested-avatar'),async()=>{await accountApi('/api/minha-conta/avatar','PUT',savedAvatar);location.assign('/app');});
@@ -100,7 +124,3 @@ async function loadFavorites(){
  const books=await accountApi('/api/livros');const select=document.getElementById('favorite-book');select.replaceChildren();books.filter(b=>!b.arquivado&&!favorites.some(f=>f.id===b.id)).forEach(b=>{const o=accountText('option',b.titulo);o.value=b.id;select.append(o);});
 }
 accountForm('favorite-form',async()=>{const id=Number(document.getElementById('favorite-book').value);await accountApi('/api/minha-conta/favoritos','PUT',{livros:[...favorites.map(b=>b.id),id]});await loadFavorites();});
-
-function openProfileEdit(){const details=document.getElementById('edit-profile');if(details){details.open=true;details.scrollIntoView();}}
-document.getElementById('edit-profile-link')?.addEventListener('click',openProfileEdit);
-if(location.hash==='#edit-profile')openProfileEdit();

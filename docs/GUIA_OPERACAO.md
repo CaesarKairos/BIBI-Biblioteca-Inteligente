@@ -52,7 +52,7 @@ A senha salva nunca é devolvida pela API. Deixe a nova senha vazia para mantê-
 
 Para convite por e-mail, selecione o leitor e use **Enviar convite por e-mail**. Um envio recusado revoga o código e mostra falha. Um envio aceito não cria a conta nem verifica o e-mail. A ativação com o código recebido exclusivamente por essa caixa confirma sua posse. A mensagem informa que o acesso depende da rede escolar e do servidor ligado; não manda localhost para os leitores.
 
-Em **Perfil → Editar perfil e segurança → E-mail de acesso**, confirme sua senha e solicite um código para o endereço atual ou novo. Confirme o código recebido para verificar/trocar o e-mail. A operação encerra sessões anteriores. Mensagens com informações pessoais e recuperação automática só são enviadas a contas ativas com endereço verificado. Contas presenciais sem verificação usam notificações internas e recuperação assistida.
+Em **Configurações → Minha conta → E-mail de acesso**, confirme sua senha e solicite um código para o endereço atual ou novo. Confirme o código recebido para verificar/trocar o e-mail. A operação encerra sessões anteriores. Mensagens com informações pessoais e recuperação automática só são enviadas a contas ativas com endereço verificado. Contas presenciais sem verificação usam notificações internas e recuperação assistida.
 
 ## Recuperação assistida
 
@@ -78,17 +78,17 @@ Arquivar livro/leitor preserva referências e histórico. Empréstimos e reserva
 
 ## Navegação, Perfil e Configurações
 
-Perfil e Configurações preservam os três painéis do BIBI, tons creme/bege/verde, tema escuro, navegação por teclado e redimensionamento. Em telas pequenas a navegação se reorganiza; conteúdo alto pode rolar. O painel direito permanece vazio sem livro selecionado.
+Perfil preserva os três painéis do BIBI. Configurações abre sobre a página atual pelo ícone de engrenagem, com navegação por seções e rolagem interna. Mantém os tons creme/bege/verde e o tema escuro; fechar devolve o foco sem perder filtros ou o livro selecionado.
 
-Bibliotecários: Dashboard, Acervo, Empréstimos, Agenda, Leitores, Perfil, Configurações e Sair. Leitores: Acervo, Perfil, Configurações e Sair. A autorização é conferida no servidor. `/gestao` redireciona para Configurações; os endpoints administrativos antigos continuam como contratos de compatibilidade, sem uma segunda página Gestão.
+Bibliotecários: Dashboard, Acervo, Empréstimos, Agenda, Leitores e Perfil. Leitores: Acervo e Perfil. Os três ícones inferiores alternam tema, abrem Configurações e encerram a sessão. A autorização é conferida no servidor. `/gestao` redireciona para Configurações; os endpoints administrativos antigos continuam como contratos de compatibilidade, sem uma segunda página Gestão.
 
-Configurações organiza Minha conta, Biblioteca, Acervo/cadastro, Agenda, Circulação, E-mail, Dados, Backup/restauração, Moderação, Segurança/auditoria/integridade e Sobre. Há um único formulário SMTP, que salva servidor, porta, endereço e credencial pelo mesmo contrato. Remover credencial exige senha real. Leitores só recebem aparência, links de segurança pessoal, termos, privacidade e Sobre; os formulários administrativos não são renderizados para eles.
+Configurações organiza Minha conta, Biblioteca, Acervo/cadastro, Agenda, Circulação, E-mail, Dados, Backup/restauração, Moderação, Segurança/auditoria/integridade e Sobre. Há um único formulário SMTP, que salva servidor, porta, endereço e credencial pelo mesmo contrato. Remover credencial exige senha real. Leitores só recebem Minha conta, Aparência, Informações institucionais e Sobre; os formulários administrativos não são renderizados para eles.
 
 Sobre apresenta BIBI, Philocode, versão, projeto e textos institucionais. Bibliotecários também veem biblioteca, data de criação (identificada como aproximada se derivada de conta antiga), schema, migrações, integridade e último backup. Não expõe o diretório local aos leitores.
 
 ## Perfil, avatar e comentários
 
-**Perfil do leitor** destaca avatar, nome, categoria/turma e estado de e-mail. Reúne dados pessoais, até quatro livros favoritos, empréstimos/histórico, Quero ler, reservas, notificações e avaliações. O avatar usa o estilo exato Adventurer Neutral, versão 10.6.0, gerado localmente com DiceBear. Escolha olhos, boca, sobrancelhas, óculos e cores; use prévia, aleatorização, salvar ou cancelar. Configuração, versão e seed aleatória persistem no banco. Nome/e-mail não são usados como seed nem enviados para uma API externa. Atribuição: Lisa Wischofsky, CC BY 4.0.
+**Perfil do leitor** destaca avatar, nome e categoria/turma. Reúne dados pessoais, até quatro livros favoritos, empréstimos/histórico, Quero ler, reservas, notificações e avaliações. O avatar usa o estilo exato Adventurer Neutral, versão 10.6.0, gerado localmente com DiceBear. Escolha olhos, boca, sobrancelhas, óculos e cores; use prévia, aleatorização, salvar ou cancelar. Configuração, versão e seed aleatória persistem no banco. Nome/e-mail não são usados como seed nem enviados para uma API externa. Atribuição: Lisa Wischofsky, CC BY 4.0.
 
 **Favoritos** representa até quatro obras existentes, sem repetição, com remoção e ordenação. Para trocar, remova uma obra e adicione outra. Livros já favoritos que forem arquivados permanecem identificados; não podem ser adicionados novamente. **Quero ler** é uma lista separada de intenção, sem limite de quatro e sem reserva automática. O perfil permanece privado, sem seguidores ou feed.
 
@@ -104,7 +104,7 @@ Os quatro templates editoriais de circulação são preservados. **Saúde** most
 
 ## CSV, exportação e privacidade
 
-Em **Acervo → Importar livros ou Leitores → Importar leitores**, baixe o modelo de livros/leitores, escolha o CSV, confira o mapeamento e a prévia. Limites: 2 MB e 2.000 linhas. Corrija erros antes de confirmar. A validação é repetida no servidor e a transação evita importação parcial. ISBN/e-mail existentes impedem a importação da duplicata; nomes não mesclam pessoas. Livro sem ISBN é novo título; leitor sem e-mail é novo cadastro sem conta. Importar não gera convite nem promove bibliotecário.
+Em **Configurações → Dados → Importação CSV**, baixe o modelo de livros/leitores, escolha o CSV, confira o mapeamento e a prévia. Limites: 2 MB e 2.000 linhas. Corrija erros antes de confirmar. A validação é repetida no servidor e a transação evita importação parcial. ISBN/e-mail existentes impedem a importação da duplicata; nomes não mesclam pessoas. Livro sem ISBN é novo título; leitor sem e-mail é novo cadastro sem conta. Importar não gera convite nem promove bibliotecário.
 
 Exportação padrão na interface: agregado mensal por status, sem nomes/turmas/títulos. Pode selecionar relatório detalhado para gestão, com dados pessoais. Ambos são administrativos, têm filtro de período/status e proteção contra fórmulas em planilhas. Pequenos grupos ainda exigem revisão antes de divulgação; não se promete anonimização formal. Empréstimos não provam leitura concluída ou sucesso pedagógico.
 
@@ -133,3 +133,5 @@ Salve a origem HTTPS real em **Configurações → Biblioteca → Endereço na r
 - Backups portáteis anteriores com migrações conhecidas são atualizados em cópia isolada, com preservação do banco recebido antes da migração. Backups com versões desconhecidas ou mais novas são rejeitados. O banco legado é atualizado na abertura; um arquivo `.db` cru não é tratado como ZIP restaurável.
 - Proteção DPAPI é específica do usuário Windows. O fallback para desenvolvimento fora do Windows usa arquivo com permissão restrita, sem alegar criptografia equivalente.
 - A integração real de IA, chatbot, decisões automáticas e resultados acadêmicos continuam fora desta etapa. Nenhum SDK, chave ou serviço de IA foi criado.
+
+Consulte [REFINO_INTERFACE.md](REFINO_INTERFACE.md) para o inventário dos formulários centralizados e a verificação da interface.

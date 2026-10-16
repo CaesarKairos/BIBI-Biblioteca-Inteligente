@@ -4,7 +4,7 @@ import shutil
 import time
 from pathlib import Path
 from urllib.parse import urlsplit
-from flask import Blueprint,request,jsonify,current_app,render_template,g,send_file,Response,redirect
+from flask import Blueprint,request,jsonify,current_app,g,send_file,Response,redirect
 from werkzeug.exceptions import BadRequest,NotFound
 from database.database import db_manager
 from services.contas_service import auditar,limitar
@@ -250,16 +250,17 @@ def audit():
 
 @bp.get('/leitores/contas')
 def reader_accounts():
-    return render_template('leitores_contas.html',ativo='lei')
+    from urllib.parse import urlencode
+    return redirect('/app?'+urlencode({'config':'gestao-convites','leitor':request.args.get('leitor','')}))
 
 
 @bp.get('/emprestimos/circulacao')
 def circulation_page():
-    return render_template('circulacao.html',ativo='emp')
+    return redirect('/app?config=circulacao')
 
 
 @bp.get('/acervo/importacao')
 @bp.get('/leitores/importacao')
 def import_page():
     kind='leitores' if request.path.startswith('/leitores') else 'livros'
-    return render_template('importacao.html',ativo='lei' if kind=='leitores' else 'acervo',import_kind=kind)
+    return redirect('/app?config=dados&tipo='+kind)

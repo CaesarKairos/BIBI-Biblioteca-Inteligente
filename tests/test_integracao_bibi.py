@@ -37,7 +37,7 @@ class IntegracaoBibiTests(AppTest):
 
     def test_shell_roles_and_preferences(self):
         client=self.reader_account()
-        for url in ('/perfil','/configuracoes'):
+        for url in ('/perfil',):
             html=client.get(url).get_data(as_text=True)
             self.assertIn('resize-sidebar',html)
             self.assertIn('resize-details',html)
@@ -51,7 +51,23 @@ class IntegracaoBibiTests(AppTest):
         self.assertEqual(client.put('/api/minha-conta/preferencias',json={'tema':'escuro','conta_id':1}).status_code,200)
         self.assertEqual(self.client.get('/api/minha-conta/preferencias').json['tema'],'claro')
         self.assertEqual(self.client.get('/gestao').location,'/configuracoes#gestao-config')
-        self.assertEqual(self.client.get('/configuracoes').get_data(as_text=True).count('id="smtp-form"'),1)
+        self.assertEqual(self.client.get('/configuracoes?fragmento=1').get_data(as_text=True).count('id="smtp-form"'),1)
+
+    def test_settings_fragment_roles_and_legacy_context(self):
+        reader=self.reader_account()
+        public=reader.get('/configuracoes?fragmento=1').get_data(as_text=True)
+        self.assertIn('id="password-form"',public)
+        self.assertIn('id="confirm-email-form"',public)
+        for protected in ('invite-form','smtp-form','occurrence-form','csv-form','restore-form','audit-list'):
+            self.assertNotIn('id="'+protected+'"',public)
+        profile=reader.get('/perfil').get_data(as_text=True)
+        self.assertNotIn('id="password-form"',profile)
+        self.assertIn('id="settings-dialog"',profile)
+        self.assertEqual(reader.get('/leitores/contas?leitor=7').status_code,403)
+        self.assertEqual(self.client.get('/leitores/contas?leitor=7').location,'/app?config=gestao-convites&leitor=7')
+        self.assertEqual(self.client.get('/leitores/importacao').location,'/app?config=dados&tipo=leitores')
+        self.assertEqual(self.client.get('/acervo/importacao').location,'/app?config=dados&tipo=livros')
+        self.assertEqual(self.client.get('/emprestimos/circulacao').location,'/app?config=circulacao')
 
     def test_onboarding_only_once(self):
         self.sql('UPDATE Contas SET onboarding_concluido_em=NULL WHERE id=1')

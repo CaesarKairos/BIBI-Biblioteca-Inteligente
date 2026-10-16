@@ -36,9 +36,9 @@ Atalhos administrativos: Ctrl+1 Dashboard, Ctrl+2 Acervo, Ctrl+3 Empréstimos, C
 
 ## Navegação e recuperação
 
-Bibliotecários navegam por Dashboard, Acervo, Empréstimos, Agenda, Leitores, Perfil e Configurações. Leitores recebem apenas Acervo, Perfil, Configurações e Sair. Perfil e Configurações usam a mesma sidebar, área central e painel direito do acervo; sem livro selecionado, o painel permanece vazio.
+Bibliotecários navegam por Dashboard, Acervo, Empréstimos, Agenda, Leitores e Perfil. Leitores recebem Acervo e Perfil. No rodapé do menu, os ícones alternam tema, abrem Configurações e encerram a sessão. Configurações abre em um modal compartilhado, preservando a página, os filtros e o livro selecionado.
 
-Convites, recuperação assistida e permissões ficam em Leitores; reservas, renovações e ocorrências em Empréstimos; importações no Acervo/Leitores. Configurações reúne identidade institucional, regras, um único remetente SMTP, dados, backup, moderação, segurança, auditoria e Sobre. Leitores acessam aparência, segurança pessoal, textos institucionais e Sobre. O PIN legado foi descontinuado; operações sensíveis confirmam a senha real da conta.
+Configurações reúne Minha conta, Aparência, Biblioteca, Acervo e agenda, Circulação, Contas e acesso, E-mail, Dados, Moderação, Sistema e segurança e Sobre. Importações, convites, recuperação assistida, reservas administrativas, renovações e ocorrências funcionam dentro do modal. Leitores acessam somente sua conta, aparência, textos institucionais e Sobre. O PIN legado foi descontinuado; operações sensíveis confirmam a senha real da conta.
 
 Para recuperar uma conta bibliotecária no servidor, use **Conta → Recuperar conta bibliotecária neste computador** no menu nativo da janela BIBI. Informe o e-mail e defina/confirme a nova senha. A autorização combina loopback, sessão aberta pelo desktop e token aleatório de uso único em memória, válido por três minutos. Um navegador local ou remoto não pode iniciar esse fluxo por HTTP.
 
@@ -56,7 +56,7 @@ A pessoa com acesso à sessão Windows usada pela instalação já possui acesso
 | `services/circulacao_service.py` | Regras e transições de estoque, reservas e empréstimos |
 | `services/mensagens_service.py`, `services/email_service.py` | Notificações persistentes, SMTP TLS e worker |
 | `routes/gestao.py`, `services/dados_service.py` | Políticas, moderação, CSV, backup, auditoria e saúde |
-| `templates/`, `static/` | Interface existente e páginas de acesso, Perfil e Configurações no shell compartilhado |
+| `templates/`, `static/` | Interface existente e páginas de acesso e Perfil, com modal compartilhado de Configurações |
 | `tests/` | Testes sintéticos de serviços, segurança e navegador |
 | `legacy/`, `docs/REFATORACAO.md` | Referência histórica, sem execução ou autenticação de produção |
 
@@ -95,3 +95,5 @@ A equipe da escola precisa configurar HTTPS/proxy/certificado antes de liberar a
 ## Licença
 
 O projeto tinha declaração de MIT, mas não possui arquivo LICENSE versionado nesta revisão; isso precisa ser formalizado pelo responsável. As dependências preservam suas licenças. Adventurer Neutral, de Lisa Wischofsky, usa [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), com atribuição no editor de avatar. Relatórios acadêmicos e resultados de pesquisa não foram alterados.
+
+A reorganização da interface, o inventário de operações e a verificação no navegador estão em [REFINO_INTERFACE.md](docs/REFINO_INTERFACE.md).

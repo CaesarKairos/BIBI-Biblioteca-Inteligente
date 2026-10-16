@@ -84,3 +84,95 @@
 .password-confirm-dialog::backdrop { background:#0008; }
 .password-confirm-dialog label { display:block; margin:16px 0; }
 .password-confirm-dialog input { display:block; width:100%; }
+
+/* Shared settings keep the current page and its state behind a native dialog. */
+#settings-dialog { margin:auto; width:min(1040px,calc(100% - 40px)); max-width:none; height:min(720px,calc(100dvh - 40px)); max-height:none; padding:0; overflow:hidden; background:var(--main); color:var(--text); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); }
+#settings-dialog[open] { display:flex; flex-direction:column; }
+#settings-dialog::backdrop { background:rgba(25,28,22,.48); }
+.settings-header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 24px; border-bottom:1px solid var(--border); }
+.settings-header h2 { margin:0; font-size:22px; }
+#settings-dialog button { cursor:pointer; font:inherit; }
+#settings-dialog button:not(.btn-primary) { background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:9px 14px; min-height:42px; }
+#settings-close { font-size:24px !important; width:44px; }
+#settings-status { margin:0; padding:0 24px; font-size:13px; }
+#settings-status:not(:empty) { padding-top:10px; padding-bottom:10px; }
+#settings-content { display:grid; grid-template-columns:210px minmax(0,1fr); min-height:0; flex:1; }
+.settings-nav { display:flex; flex-direction:column; gap:4px; padding:16px 12px; overflow:auto; border-right:1px solid var(--border); }
+#settings-dialog .settings-nav button { text-align:left; border:0; background:transparent; margin:0; padding:10px 12px; flex-shrink:0; }
+#settings-dialog .settings-nav button[aria-current=true] { background:var(--accent-soft); color:var(--accent-strong); font-weight:700; }
+.settings-panels { overflow:auto; padding:8px 24px 24px; overscroll-behavior:contain; }
+.settings-panels .config-panel { padding:20px; margin:16px 0 0; border-radius:12px; background:var(--surface); }
+.settings-panels h2 { font-size:19px; margin:0 0 14px; }
+.settings-panels h3 { font-size:16px; margin:22px 0 10px; }
+.settings-panels p { color:var(--light); font-size:13px; line-height:1.55; margin:12px 0; }
+.settings-panels label { display:block; font-size:14px; font-weight:600; margin:16px 0; }
+.settings-panels input:not([type=checkbox]),.settings-panels select,.settings-panels textarea { display:block; width:100%; min-width:0; margin:7px 0 0; }
+.settings-panels textarea { min-height:110px; resize:vertical; }
+.settings-panels input[type=checkbox] { width:auto; }
+.settings-panels button { margin:6px 8px 6px 0; }
+.settings-panels .btn-primary { width:auto; min-height:42px; }
+.settings-panels section section { margin:24px 0 0; padding-top:20px; border-top:1px solid var(--border); }
+.settings-panels details { margin:16px 0; }
+.settings-panels summary { cursor:pointer; font-size:14px; }
+.settings-panels a { color:var(--accent-strong); }
+.settings-panels pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; }
+.settings-panels .config-toggle-row { flex-direction:row; align-items:center; justify-content:space-between; gap:20px; padding:12px 0; border-bottom:1px solid var(--border); font-weight:500; }
+.config-toggle-row .switch { flex-shrink:0; order:2; }
+.health-summary { display:grid; grid-template-columns:minmax(100px,1fr) minmax(0,2fr); gap:14px; font-size:14px; }
+.health-summary dd { margin:0; overflow-wrap:anywhere; }
+.health-summary dt { font-weight:600; }
+#settings-discard { padding:12px 24px; border-top:1px solid var(--border); background:var(--surface); }
+#settings-dialog :focus-visible { outline:2px solid var(--accent-strong); outline-offset:3px; }
+#settings-dialog .operation-status { color:var(--accent-strong); }
+.sidebar-buttons { display:flex; gap:8px; }
+.sidebar-buttons .icon-item { min-width:44px; min-height:44px; padding:10px; display:inline-flex; align-items:center; justify-content:center; }
+.sidebar-buttons button:focus-visible { outline:2px solid var(--accent-strong); outline-offset:3px; }
+#acervo #catalog-clear { width:auto; justify-self:start; height:42px; padding:0 16px; background:var(--surface); color:var(--text); border:1px solid var(--border); margin:0; }
+#acervo .search-box > .custom-select { min-width:0; width:100%; margin:0; }
+#acervo .search-box .select-selected { min-height:42px; }
+#avatar-options { display:block; }
+#avatar-options .avatar-group { margin:24px 0; padding:0; border:0; }
+.avatar-group h3 { font-size:16px; margin:0 0 12px; }
+.avatar-choices { grid-template-columns:repeat(auto-fill,minmax(86px,1fr)); gap:10px; max-height:none; overflow:visible; }
+.account-card .avatar-choice { position:relative; padding:6px !important; margin:0 !important; font-size:11px !important; border:2px solid transparent !important; min-height:104px; }
+.avatar-choice img { width:72px; height:72px; object-fit:contain; }
+.account-card .avatar-choice[aria-pressed=true],.account-card .avatar-swatch[aria-pressed=true] { border-color:var(--accent-strong) !important; box-shadow:0 0 0 2px var(--surface); }
+.avatar-choice[aria-pressed=true]::after { content:'✓'; position:absolute; top:4px; right:5px; background:var(--accent-strong); color:var(--surface); width:18px; border-radius:50%; font-size:12px; }
+.avatar-choice[aria-busy=true] img { background:var(--accent-soft); border-radius:12px; }
+.avatar-preview { text-align:center; padding:16px; border-radius:16px; background:var(--surface); }
+.avatar-preview h2 { margin:0 0 12px; font-size:18px; }
+.avatar-preview img { width:220px; height:220px; max-width:100%; border-radius:24px; }
+.avatar-colors { display:flex; flex-wrap:wrap; gap:10px; }
+.account-card .avatar-swatch { width:40px; height:40px; min-height:40px; padding:0 !important; margin:0 !important; border:2px solid var(--border) !important; border-radius:50% !important; font-size:0; }
+.avatar-group label { display:flex; align-items:center; gap:12px; font-size:12px; }
+.avatar-group input[type=color] { width:48px; margin:0 !important; }
+#avatar-editor > button { margin:16px 10px 0 0; }
+#save-avatar { width:auto; }
+#profile-content[data-onboarding=true] > section { border:0; padding-top:0; }
+#profile-content[data-onboarding=true] .avatar-preview { background:transparent; }
+@media(min-width:1000px) { #avatar-editor { display:grid; grid-template-columns:250px minmax(0,1fr); gap:0 28px; align-items:start; } .avatar-preview { position:sticky; top:0; } #avatar-options { grid-column:2; grid-row:1 / span 4; } #avatar-editor > button { grid-column:1; } }
+@media(max-width:600px) {
+ #settings-dialog { width:calc(100% - 16px); height:calc(100dvh - 24px); border-radius:12px; }
+ .settings-header { padding:12px 16px; }
+ #settings-content { display:flex; flex-direction:column; }
+ .settings-nav { flex-direction:row; overflow-x:auto; padding:8px; border-right:0; border-bottom:1px solid var(--border); flex-shrink:0; }
+ .settings-panels { padding:0 12px 16px; }
+ .settings-panels .config-panel { padding:16px; }
+ .settings-panels button { max-width:100%; }
+ .health-summary { grid-template-columns:1fr; gap:6px; }
+ .health-summary dd { margin-bottom:12px; }
+ #acervo #catalog-clear { height:40px; }
+}
+
+.avatar-actions { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }
+.avatar-actions button { margin:0 !important; }
+@media(min-width:1000px){.avatar-preview-column { position:sticky; top:0; }.avatar-preview { position:static; }.avatar-actions { flex-direction:column; }#avatar-options { grid-row:auto; }}
+@media(max-width:600px){.avatar-preview img { width:170px; height:170px; }.avatar-actions .btn-primary { flex-basis:100%; }.avatar-choices { grid-template-columns:repeat(auto-fill,minmax(76px,1fr)); }}
+
+.sidebar-buttons .icon-item { background:transparent; color:var(--light); border:1px solid var(--border); border-radius:10px; }
+.sidebar-buttons .icon-item:hover { background:var(--accent-soft); color:var(--accent-strong); }
+.sidebar-buttons .icon-item svg { width:22px; height:22px; }
+.settings-panels .custom-select { margin-top:7px; width:100%; }
+#settings-dialog .select-selected { width:100%; margin:0; text-align:left; }
+
+#settings-dialog #revoke-invite,#settings-dialog #restore-run { color:var(--danger); border-color:var(--danger); }

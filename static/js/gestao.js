@@ -1,17 +1,22 @@
-let readerStates=[],configValues,csvData,csvMapping={},restoreValidated=false;
-const status=document.getElementById('account-status');
+(()=>{
+let readerStates=[],accountStates=[],configValues,csvData,csvMapping={},restoreValidated=false;
+const status=document.getElementById('settings-status');
 const option=(value,label)=>{const e=accountText('option',label);e.value=value;return e;};
-async function refreshHealth(){if(!document.getElementById('health-result'))return;const r=await accountApi('/api/gestao/saude');document.getElementById('health-result').textContent=JSON.stringify(r,null,2);}
-async function loadManagement(){
+async function refreshHealth(){if(!document.getElementById('health-result'))return;const r=await accountApi('/api/gestao/saude');const container=document.getElementById('health-result');container.replaceChildren();
+ const dl=document.createElement('dl');dl.className='health-summary';
+ for(const [label,value] of [['Banco',r.banco==='ok'?'Íntegro':r.banco],['Tarefas',r.worker],['E-mail',r.email.length?r.email.map(e=>`${e.quantidade} ${e.estado}`).join(' · '):'Nenhum envio na fila'],['Armazenamento',`${(r.espaco_livre/1024**3).toFixed(1)} GB livres`],['Migrações',`${r.migracoes.length} aplicadas`],['Último backup',r.ultimo_backup || 'Nenhum registrado']])dl.append(accountText('dt',label),accountText('dd',value));
+ const details=document.createElement('details');details.append(accountText('summary','Detalhes técnicos'),accountText('pre',JSON.stringify(r,null,2)));container.append(dl,details);}
+async function loadManagement(initial=true){
+    const previousReader=document.getElementById("invite-reader")?.value, previousAccount=document.getElementById("managed-account")?.value, previousBook=document.getElementById("occurrence-book")?.value;
     if(document.getElementById('invite-reader')){
     readerStates=await accountApi('/api/leitores');const readers=document.getElementById('invite-reader');readers.replaceChildren();readerStates.forEach(r=>readers.append(option(r.id,`${r.nome} · ${r.email || 'sem e-mail'} · ${r.tipo}`)));
-    const requested=new URLSearchParams(location.search).get('leitor');if(requested)readers.value=requested;readers.dispatchEvent(new Event('change'));
-    const accounts=await accountApi('/api/contas');const select=document.getElementById('managed-account');select.replaceChildren();accounts.forEach(a=>select.append(option(a.id,`${a.nome} · ${a.papel} · ${a.ativa?'ativa':'bloqueada'}`)));
+    const requested=previousReader||new URLSearchParams(location.search).get('leitor');if(requested&&readerStates.some(r=>String(r.id)===requested))readers.value=requested;if(readers.value)readers.dispatchEvent(new Event('change'));else document.getElementById('invite-state').textContent='Nenhum leitor cadastrado.';
+    const accounts=accountStates=await accountApi('/api/contas');const select=document.getElementById('managed-account');select.replaceChildren();accounts.forEach(a=>select.append(option(a.id,`${a.nome} · ${a.papel} · ${a.ativa?'ativa':'bloqueada'}`)));if(previousAccount&&accounts.some(a=>String(a.id)===previousAccount))select.value=previousAccount;if(initial)syncManagedAccount();
     }
     if(document.getElementById('occurrence-book')){
-    const books=await accountApi('/api/livros');const bookSelect=document.getElementById('occurrence-book');bookSelect.replaceChildren();books.forEach(b=>bookSelect.append(option(b.id,`${b.titulo} · ${b.disponivel} livres`)));
+    const books=await accountApi('/api/livros');const bookSelect=document.getElementById('occurrence-book');bookSelect.replaceChildren();books.forEach(b=>bookSelect.append(option(b.id,`${b.titulo} · ${b.disponivel} livres`)));if(previousBook&&books.some(b=>String(b.id)===previousBook))bookSelect.value=previousBook;
     }
-    if(document.getElementById('institution-form')){
+    if(initial&&document.getElementById('institution-form')){
     configValues=await accountApi('/api/gestao/configuracao');
     for(const formId of ['institution-form','smtp-form']) for(const [key,value] of Object.entries(configValues)){const field=document.getElementById(formId).elements.namedItem(key);if(field)field.value=value;}
     const mail=await accountApi('/api/config/email/status');document.getElementById('smtp-form').elements.email_organizacao.value=mail.email;
@@ -22,13 +27,15 @@ async function loadManagement(){
     }
     await refreshLists();await refreshHealth();
 }
-document.getElementById('invite-reader')?.addEventListener('change',async event=>{try{const r=await accountApi('/api/contas/leitores/'+event.target.value+'/estado');document.getElementById('invite-state').textContent=[r.estado,r.entrega,r.email_verificado?'E-mail verificado':'E-mail não verificado',r.envio].filter(Boolean).join(' · ');}catch(e){status.textContent=e.message;}});
+function syncManagedAccount(){const form=document.getElementById('access-form-admin');const account=accountStates.find(a=>String(a.id)===form.elements.id.value);if(account){form.elements.papel.value=account.papel;form.elements.ativa.value=String(Boolean(account.ativa));}}
+document.getElementById('managed-account')?.addEventListener('change',syncManagedAccount);
+document.getElementById('invite-reader')?.addEventListener('change',async event=>{if(!event.target.value)return;try{const r=await accountApi('/api/contas/leitores/'+event.target.value+'/estado');document.getElementById('invite-state').textContent=[r.estado,r.entrega,r.email_verificado?'E-mail verificado':'E-mail não verificado',r.envio].filter(Boolean).join(' · ');}catch(e){status.textContent=e.message;}});
 accountForm('invite-form',async data=>{const r=await accountApi(`/api/contas/leitores/${data.leitor_id}/codigo`,'POST',{finalidade:data.finalidade});document.getElementById('invite-code').textContent=r.codigo;document.getElementById('invite-result').hidden=false;status.textContent=`Código para ${r.email}. ${r.validade_horas} horas.`;});
 accountAction(document.getElementById('hide-invite'),async()=>{document.getElementById('invite-code').textContent='';document.getElementById('invite-result').hidden=true;});
 accountAction(document.getElementById('copy-invite'),async()=>{const code=document.getElementById('invite-code');try{await navigator.clipboard.writeText(code.textContent);}catch{const range=document.createRange();range.selectNodeContents(code);getSelection().removeAllRanges();getSelection().addRange(range);status.textContent='Código selecionado. Use Ctrl+C para copiar.';}});
 accountAction(document.getElementById('email-invite'),async()=>{const r=await accountApi(`/api/contas/leitores/${document.getElementById('invite-reader').value}/email`,'POST',{});status.textContent=r.mensagem;});
-accountAction(document.getElementById('revoke-invite'),async()=>{await accountApi(`/api/contas/leitores/${document.getElementById('invite-reader').value}/codigo`,'DELETE');status.textContent='Códigos revogados.';document.getElementById('invite-code').textContent='';document.getElementById('invite-result').hidden=true;});
-accountForm('access-form-admin',async data=>{await accountApi('/api/contas/'+data.id,'PUT',{...data,ativa:data.ativa==='true'});status.textContent='Acesso atualizado. Sessões anteriores foram invalidadas.';await loadManagement();});
+accountAction(document.getElementById('revoke-invite'),async()=>{if(!confirm('Revogar os códigos deste leitor?'))return;await accountApi(`/api/contas/leitores/${document.getElementById('invite-reader').value}/codigo`,'DELETE');status.textContent='Códigos revogados.';document.getElementById('invite-code').textContent='';document.getElementById('invite-result').hidden=true;});
+accountForm('access-form-admin',async(data,form)=>{if(!confirm('Confirmar a alteração de acesso desta conta?'))throw new Error('Alteração cancelada.');await accountApi('/api/contas/'+data.id,'PUT',{...data,ativa:data.ativa==='true'});form.elements.senha_atual.value='';status.textContent='Acesso atualizado. Sessões anteriores foram invalidadas.';await loadManagement(false);});
 accountForm('institution-form',async(data,form)=>{await accountApi('/api/gestao/configuracao','PUT',data);form.elements.senha_atual.value='';status.textContent='Configurações salvas.';});
 accountForm('rules-form',async(data,form)=>{const rules={retirada_horas:Number(data.retirada_horas)};for(const c of ['estudante','professor'])rules[c]={maximo:Number(data[c+'_maximo']),prazo:Number(data[c+'_prazo']),renovacoes:Number(data[c+'_renovacoes']),bloquear_atraso:form.elements[c+'_bloquear_atraso'].checked};await accountApi('/api/gestao/configuracao','PUT',{circulacao:rules});status.textContent='Regras salvas. Prazos existentes preservados.';});
 accountForm('smtp-form',async(data,form)=>{await accountApi('/api/config/email/set','POST',{...data,remover_credencial:form.elements.remover_credencial.checked});form.elements.email_app_password.value='';form.elements.senha_atual.value='';status.textContent='Remetente salvo. Use o teste para conferir o envio.';});
@@ -48,15 +55,15 @@ async function refreshLists(){
 document.getElementById('csv-kind')?.addEventListener('change',event=>{document.getElementById('csv-model').href='/api/gestao/csv/modelo/'+event.target.value;csvData=null;document.getElementById('csv-confirm').disabled=true;});
 async function csvPreview(){const r=await accountApi(`/api/gestao/csv/${csvData.tipo}/previa`,'POST',{conteudo:csvData.conteudo,mapeamento:csvMapping});const container=document.getElementById('csv-preview');container.replaceChildren(accountText('p',`${r.linhas.length} linhas. ${r.linhas.filter(l=>l.erros.length).length} com erros.`));r.linhas.slice(0,100).forEach(row=>container.append(accountText('p',`Linha ${row.linha}: ${Object.values(row.dados).join(' · ')}${row.erros.length?' — '+row.erros.join(' '):''}`)));document.getElementById('csv-confirm').disabled=!r.linhas.length||r.linhas.some(l=>l.erros.length);return r;}
 accountForm('csv-form',async data=>{const file=document.getElementById('csv-file').files[0];if(file.size>2*1024*1024)throw new Error('Limite de 2 MB.');csvData={tipo:data.tipo,conteudo:await file.text()};csvMapping={};const r=await csvPreview();const map=document.getElementById('csv-mapping');map.replaceChildren();for(const key of r.campos){const label=accountText('label',key);const select=document.createElement('select');select.append(option('','Não informado'));r.colunas.forEach(col=>select.append(option(col,col)));select.value=r.colunas.includes(key)?key:'';select.onchange=async()=>{csvMapping[key]=select.value;await csvPreview();};label.append(select);map.append(label);}});
-accountAction(document.getElementById('csv-confirm'),async()=>{const r=await accountApi(`/api/gestao/csv/${csvData.tipo}/importar`,'POST',{conteudo:csvData.conteudo,mapeamento:csvMapping,confirmado:true});status.textContent=`${r.importados} registros importados.`;csvData=null;document.getElementById('csv-confirm').disabled=true;await loadManagement();});
+accountAction(document.getElementById('csv-confirm'),async()=>{if(!confirm('Importar os registros da prévia?'))return;const r=await accountApi(`/api/gestao/csv/${csvData.tipo}/importar`,'POST',{conteudo:csvData.conteudo,mapeamento:csvMapping,confirmado:true});status.textContent=`${r.importados} registros importados.`;csvData=null;document.getElementById('csv-confirm').disabled=true;document.getElementById('csv-form').reset();window.settingsSaved?.(document.getElementById('csv-form'));await loadManagement(false);});
 accountAction(document.getElementById('download-backup'),async()=>{const response=await fetch('/api/gestao/backup',{method:'POST',headers:{'X-CSRF-Token':document.querySelector('meta[name=csrf-token]').content}});if(!response.ok)throw new Error((await response.json()).erro);const url=URL.createObjectURL(await response.blob());const link=document.createElement('a');link.href=url;link.download='BIBI-backup.zip';link.click();setTimeout(()=>URL.revokeObjectURL(url),10000);status.textContent='Backup criado. Guarde o arquivo em local protegido.';});
 async function restoreRequest(confirm){const data=new FormData();data.append('arquivo',document.getElementById('restore-file').files[0]);data.append('confirmado',String(confirm));data.append('senha_atual',document.getElementById('restore-password').value);const response=await fetch('/api/gestao/restaurar',{method:'POST',headers:{'X-CSRF-Token':document.querySelector('meta[name=csrf-token]').content},body:data});const r=await response.json();if(!response.ok)throw new Error(r.erro);return r;}
 accountForm('restore-form',async()=>{const r=await restoreRequest(false);restoreValidated=true;status.textContent=r.mensagem;document.getElementById('restore-run').disabled=!document.getElementById('restore-confirm').checked;});
 if(document.getElementById('restore-file')) document.getElementById('restore-file').onchange=()=>{restoreValidated=false;document.getElementById('restore-run').disabled=true;};
 if(document.getElementById('restore-confirm')) document.getElementById('restore-confirm').onchange=event=>{document.getElementById('restore-run').disabled=!restoreValidated||!event.target.checked;};
-accountAction(document.getElementById('restore-run'),async()=>{const r=await restoreRequest(true);status.textContent=r.mensagem;document.getElementById('restore-form').hidden=true;});
+accountAction(document.getElementById('restore-run'),async()=>{const r=await restoreRequest(true);status.textContent=r.mensagem;location.assign('/acesso');});
 accountAction(document.getElementById('refresh-health'),refreshHealth);
-loadManagement().catch(e=>status.textContent=e.message);
+window.settingsManagementReady=loadManagement();
 
 accountAction(document.getElementById('copy-network'),async()=>{
     const field=document.getElementById('institution-form').elements.endereco_rede;
@@ -65,4 +72,9 @@ accountAction(document.getElementById('copy-network'),async()=>{
     catch{field.focus();field.select();status.textContent='Endereço selecionado. Use Ctrl+C para copiar.';}
 });
 
-if(document.body.dataset.importKind){const kind=document.getElementById('csv-kind');kind.value=document.body.dataset.importKind;kind.dispatchEvent(new Event('change'));}
+const requestedKind=new URLSearchParams(location.search).get('tipo');if(requestedKind&&document.getElementById('csv-kind')){const kind=document.getElementById('csv-kind');kind.value=requestedKind;kind.dispatchEvent(new Event('change'));}
+
+window.settingsStatusObserver?.disconnect();
+const statusObserver=window.settingsStatusObserver=new MutationObserver(()=>{const section=document.querySelector('.settings-panels > section:not([hidden])');if(!section)return;let local=section.querySelector(':scope > .operation-status');if(!local){local=accountText('p','','operation-status');local.setAttribute('role','status');section.append(local);}local.textContent=status.textContent;});statusObserver.observe(status,{childList:true,characterData:true,subtree:true});
+
+})();

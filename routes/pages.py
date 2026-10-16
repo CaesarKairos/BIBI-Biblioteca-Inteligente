@@ -48,6 +48,9 @@ def hero_image():
 
 @bp.get('/configuracoes')
 def settings_page():
+    from flask import request, redirect
+    if request.args.get('fragmento') != '1':
+        return redirect('/app?config=minha-conta')
     from database.database import db_manager
     sobre={'versao':'2.0-dev'}
     if is_admin():
@@ -61,4 +64,9 @@ def settings_page():
         backups=list((Path(current_app.config['DATA_DIR'])/'backups').glob('*.zip'))
         sobre['ultimo_backup']=max(backups,key=lambda p:p.stat().st_mtime).name if backups else None
         sobre.update(nome=values.get('biblioteca_nome','BIBI'),criada=values.get('instalacao_criada_em'),estimada=values.get('instalacao_data_estimada')=='true',schema=schema)
-    return render_template('configuracoes.html',ativo='configuracoes',sobre=sobre)
+    with db_manager.connection() as conn:
+        textos=dict(conn.execute("SELECT chave,valor FROM Configuracoes WHERE chave IN ('termos_uso','aviso_privacidade')"))
+    from services.termos_service import TERMOS, PRIVACIDADE
+    textos.setdefault('termos_uso',TERMOS)
+    textos.setdefault('aviso_privacidade',PRIVACIDADE)
+    return render_template('configuracoes.html',admin=is_admin(),sobre=sobre,textos=textos)

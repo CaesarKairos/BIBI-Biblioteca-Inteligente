@@ -1,4 +1,3 @@
-document.getElementById('account-logout')?.addEventListener('click',async()=>{await apiFetch('/api/acesso/sair',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});location.assign('/acesso');});
 window.addEventListener('load',async()=>{const id=new URLSearchParams(location.search).get('livro');if(id&&/^\d+$/.test(id)){const r=await apiFetch('/api/livros/'+id);verDetalhes(await r.json());}});
 function oferecerAcessoLeitor(id) {
     const toast=textElement('div','','toast');toast.append(textElement('p','Empréstimo registrado. O leitor pode ativar uma conta quando desejar.'));

@@ -69,7 +69,7 @@ with patch('smtplib.SMTP',side_effect=AssertionError('SMTP real proibido')),sync
     page.wait_for_function("document.querySelectorAll('.tabela-emprestimos tbody tr').length === 1")
     assert page.locator('.tabela-emprestimos tbody td').evaluate_all('cells=>cells.every(c=>Math.abs(c.getBoundingClientRect().height-cells[0].getBoundingClientRect().height)<1)')
     page.goto(base+'/leitores/contas?leitor='+str(reader));page.wait_for_load_state('networkidle');assert page.locator('#invite-state').inner_text()
-    page.goto(base+'/configuracoes');page.wait_for_load_state('networkidle');assert page.locator('#health-result').inner_text()
+    page.goto(base+'/configuracoes');page.wait_for_load_state('networkidle');expect(page.locator('#health-result')).not_to_be_empty()
     page.screenshot(path=str(screens/'gestao-desktop.png'))
     page.set_viewport_size({'width':390,'height':844});assert page.evaluate('document.documentElement.scrollWidth<=innerWidth');page.screenshot(path=str(screens/'gestao-mobile.png'));page.set_viewport_size({'width':1366,'height':768})
     page.goto(base+'/perfil');page.wait_for_load_state('networkidle');assert page.locator('#saved-avatar').get_attribute('src').startswith('data:')
@@ -83,12 +83,12 @@ with patch('smtplib.SMTP',side_effect=AssertionError('SMTP real proibido')),sync
     assert not reader_page.locator('#m-age').is_visible()
     assert reader_page.evaluate("fetch('/api/leitores').then(r=>r.status)")==403
     reader_page.locator('.book').first.click();reader_page.get_by_role('button',name='Quero ler',exact=True).click();reader_page.wait_for_load_state('networkidle')
-    reader_page.goto(base+'/perfil');reader_page.wait_for_load_state('networkidle');assert 'não verificado' in reader_page.locator('#email-state').inner_text(),(reader_errors,reader_page.locator('#account-status').inner_text(),reader_page.locator('#profile-info').inner_text());assert reader_page.locator('#profile-wishes .profile-row').count()==1
+    reader_page.goto(base+'/perfil');reader_page.wait_for_load_state('networkidle');reader_page.locator('#config-open').click();expect(reader_page.locator('#email-state')).to_contain_text('não verificado');reader_page.keyboard.press('Escape');assert reader_page.locator('#profile-wishes .profile-row').count()==1
     reader_page.locator('#favorite-book').select_option(str(books[0]['id']),force=True);reader_page.locator('#favorite-form button').last.click();reader_page.wait_for_load_state('networkidle');expect(reader_page.locator('#profile-favorites article')).to_have_count(1)
     reader_page.locator('#edit-avatar').click();reader_page.wait_for_load_state('networkidle')
-    reader_page.locator('[data-avatar-option=eyesVariant]').select_option('variant02',force=True);reader_page.wait_for_load_state('networkidle')
+    reader_page.locator('[data-avatar-field=eyesVariant][data-avatar-value=variant02]').click();reader_page.wait_for_load_state('networkidle')
     reader_page.locator('#save-avatar').click();reader_page.wait_for_load_state('networkidle');reader_page.reload();reader_page.wait_for_load_state('networkidle')
-    reader_page.locator('#edit-avatar').click();reader_page.wait_for_load_state('networkidle');assert reader_page.locator('[data-avatar-option=eyesVariant]').input_value()=='variant02'
+    reader_page.locator('#edit-avatar').click();reader_page.wait_for_load_state('networkidle');expect(reader_page.locator('[data-avatar-field=eyesVariant][data-avatar-value=variant02]')).to_have_attribute('aria-pressed','true')
     reader_page.screenshot(path=str(screens/'perfil-avatar.png'));reader_page.locator('#cancel-avatar').click()
     for role,tab in [('admin',page),('leitor',reader_page)]:
         for width,height in [(1366,768),(1920,1080),(800,900),(390,844)]:

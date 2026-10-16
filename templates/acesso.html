@@ -7,12 +7,12 @@
 <a href="/" class="account-brand"><img src="/static/images/icon.png" alt=""> BIBI</a>
 {% if modo == 'setup' %}<h1>Vamos preparar sua biblioteca</h1><p>Cadastre o primeiro bibliotecário. Seus livros e históricos existentes serão preservados. Não é necessário configurar e-mail agora.</p>
 {% elif modo == 'offline' %}<h1>Recuperação local</h1><p>No servidor, use Conta → Recuperar conta na janela desktop. {% if legado %}Um código legado desta instalação ainda pode ser usado uma única vez.{% else %}A recuperação será aberta pelo menu nativo; não há código manual para guardar.{% endif %}</p>
-{% else %}<h1>Bem-vindo à biblioteca</h1><nav class="access-tabs" aria-label="Opções de acesso"><button type="button" data-mode="login">Entrar</button><button type="button" data-mode="ativar">Ativar convite</button><button type="button" data-mode="redefinir">Esqueci minha senha</button></nav><p id="access-help">Entre com seu e-mail e senha.</p>{% endif %}
-<form id="access-form">
+{% else %}<h1 id="access-title">Entrar na biblioteca</h1><button type="button" id="back-login" hidden>Voltar para entrar</button><p id="access-help" hidden></p>{% endif %}
+<form id="access-form" method="post">
 {% if modo == 'setup' %}<label>Biblioteca ou escola<input name="biblioteca" required maxlength="180" autocomplete="organization"></label><label>Nome do bibliotecário<input name="nome" required maxlength="180" autocomplete="name"></label>{% endif %}
 <label>E-mail de acesso<input type="email" name="email" required maxlength="254" autocomplete="username"></label>
 <label id="code-label" {% if modo != 'offline' or not legado %}hidden{% endif %}>Código recebido<input name="codigo" autocomplete="off" spellcheck="false"></label>
-<label>Senha<input type="password" name="senha" required maxlength="128" {% if modo != 'login' %}minlength="12"{% endif %} autocomplete="{% if modo == 'login' %}current-password{% else %}new-password{% endif %}"></label>
+<label id="password-label">Senha<input type="password" name="senha" required maxlength="128" {% if modo != 'login' %}minlength="12"{% endif %} autocomplete="{% if modo == 'login' %}current-password{% else %}new-password{% endif %}"></label>
 <label id="confirm-label" {% if modo == 'login' %}hidden{% endif %}>Confirme sua senha<input type="password" name="confirmacao" maxlength="128" autocomplete="new-password"></label>
 <p id="password-help" {% if modo == 'login' %}hidden{% endif %}>Use de 12 a 128 caracteres.</p>
 {% if modo == 'setup' %}
@@ -22,9 +22,9 @@
 <button class="btn-primary" id="access-submit">{% if modo == 'setup' %}Criar biblioteca{% elif modo == 'offline' %}Redefinir senha{% else %}Entrar{% endif %}</button>
 </form>
 <p id="access-status" role="status" aria-live="polite"></p>
-{% if modo == 'login' %}<button type="button" id="request-recovery" hidden>Enviar código de recuperação por e-mail</button>{% endif %}
+{% if modo == 'login' %}<div class="account-links" id="login-actions"><button type="button" data-access-mode="ativar">Ativar convite</button><button type="button" data-access-mode="solicitar">Esqueci minha senha</button></div><button type="button" id="have-code" hidden>Já tenho um código</button>{% endif %}
 
-{% if modo == 'login' %}<a href="/recuperacao-local">Recuperação do bibliotecário no servidor</a>{% endif %}
+
 {% if modo != 'setup' %}<p><a href="/instituicao">Termos de uso e privacidade da instituição</a></p>{% endif %}
 {% if modo == 'setup' %}
 <dialog id="legal-dialog" aria-labelledby="legal-title"><button type="button" id="close-legal">Fechar</button><h2 id="legal-title">Termos de Uso e Aviso de Privacidade</h2><div tabindex="0"><h3 id="termos-iniciais">Termos de Uso</h3><p>{{ termos }}</p><h3 id="privacidade-inicial">Aviso de Privacidade</h3><p>{{ privacidade }}</p><small>Versão {{ termos_versao }}. A escola deverá revisar estes textos em Configurações.</small></div></dialog>

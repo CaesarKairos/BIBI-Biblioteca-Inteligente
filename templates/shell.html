@@ -21,7 +21,10 @@
             <div class="panel-resizer" id="resize-details" role="separator" aria-orientation="vertical" aria-label="Redimensionar painel de detalhes" tabindex="0" title="Arraste para ajustar. Use as setas ou dê dois cliques para restaurar."></div>
             <aside class="right-bar" id="painel-detalhes" aria-label="Detalhes do livro">{% block details %}{% endblock %}</aside>
 </div>
+<dialog id="settings-dialog" aria-labelledby="settings-title"><header class="settings-header"><h2 id="settings-title">Configurações</h2><button type="button" id="settings-close" aria-label="Fechar Configurações" title="Fechar">×</button></header><p id="settings-status" role="status" aria-live="polite"></p><div id="settings-content"></div><div id="settings-discard" hidden><p>Há alterações não salvas.</p><button type="button" id="settings-continue">Continuar editando</button><button type="button" id="settings-discard-confirm">Descartar e fechar</button></div></dialog>
 {% block overlays %}{% endblock %}
 <script src="/static/js/ui.js"></script><script src="/static/js/layout.js"></script>
-{% block scripts %}<script src="/static/js/conta_comum.js"></script><script src="/static/js/shell.js"></script>{% endblock %}
+<script src="/static/js/conta_comum.js"></script>
+{% block scripts %}<script src="/static/js/shell.js"></script>{% endblock %}
+<script src="/static/js/settings_modal.js"></script>
 </body></html>

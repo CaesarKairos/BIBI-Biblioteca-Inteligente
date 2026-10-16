@@ -56,12 +56,12 @@
                         <select id="catalog-availability" aria-label="Disponibilidade"><option value="">Qualquer disponibilidade</option><option value="disponivel">Disponíveis</option><option value="indisponivel">Indisponíveis</option></select>
                         <button type="button" id="catalog-clear" class="btn-cancel">Limpar filtros</button>
                     </div>
-                    {% if admin %}<p><a href="/acervo/importacao">Importar livros</a></p>{% endif %}<div id="acervo-prateleiras"></div>
+                    <div id="acervo-prateleiras"></div>
                     <p id="catalog-count" role="status"></p><button type="button" id="catalog-more" class="btn-primary" hidden>Carregar mais livros</button>
                 </div>
 
                 <div id="emp" class="section">
-                    <h2>Empréstimos</h2>{% if admin %}<a href="/emprestimos/circulacao">Renovações, reservas e ocorrências</a>{% endif %}
+                    <h2>Empréstimos</h2>
                     <div class="emprestimos-busca">
                         <label for="busca-emprestimos">Buscar empréstimos</label>
                         <input type="search" id="busca-emprestimos" placeholder="Nome do leitor, livro, turma ou status..." autocomplete="off" aria-describedby="resultado-busca-emprestimos">
@@ -110,7 +110,7 @@
                     </div>
                 </div>
 
-                <div id="lei" class="section">{% if admin %}<p><a href="/leitores/contas">Convites, recuperação e permissões</a> · <a href="/leitores/importacao">Importar leitores</a></p>{% endif %}
+                <div id="lei" class="section">
                     <h2>Leitores Cadastrados</h2>
                     <div class="search-box" data-bibi-style="s12">
                         <input type="text" id="busca-leitor" placeholder="Buscar por nome..." data-bibi-oninput="h20">
@@ -260,19 +260,6 @@
                     </div>
                     <button class="btn-primary" id="btn-confirmar-emprestimo" data-bibi-onclick="h39">Confirmar Empréstimo</button>
                     <button class="btn-cancel" data-bibi-style="s21" data-bibi-onclick="h40">Cancelar</button>
-                </div>
-            </div>
-        {% endif %}
-        {% if admin %}
-            <div id="modalConfigAgenda" class="modal">
-                <div class="modal-content">
-                    <h3>Configurações da Agenda</h3>
-                    <div class="config-panel">
-                        <label>Quantidade de aulas por dia:</label>
-                        <input type="number" id="cfg-qtd-aulas" min="1" max="20" value="6">
-                    </div>
-                    <button class="btn-primary" id="btn-salvar-config" data-bibi-onclick="h43">Salvar Configurações</button>
-                    <button class="btn-cancel" data-bibi-style="s21" data-bibi-onclick="h44">Cancelar</button>
                 </div>
             </div>
         {% endif %}

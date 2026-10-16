@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+@font-face { font-family:'Nunito'; font-style:normal; font-weight:200 900; font-display:swap; src:url('/static/vendor/nunito/Nunito.ttf') format('truetype'); }
 :root {
     --bg: #f6f1e9; --app: #fcfaf6; --main: #f6f1e9;
     --dark: #3e332a; --light: #72665b; --accent: #e5d8cc;

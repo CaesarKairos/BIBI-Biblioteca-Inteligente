@@ -1,4 +1,17 @@
 // Funções auxiliares
+window.addEventListener('bibi-settings-changed',async event=>{
+    const paths=event.detail,scroll=document.querySelector('.content-area').scrollTop;
+    try{
+        if(paths.some(path=>path.startsWith('/api/config/'))){
+            aplicarVisibilidadeCamposLivro(true);aplicarVisibilidadeCamposLivro(false);aplicarVisibilidadeCamposEmprestimo();
+            await verificarObrigarLocalizacao();await carregarConfigAgenda();if(isAdminGlobal)await carregarAgenda();
+        }
+        if(paths.some(path=>path.includes('/csv/livros/importar')||path.includes('/ocorrencias')||path.includes('/reservas/')||path.startsWith('/api/emprestimos/')))await carregarAcervo();
+        if(paths.some(path=>path.includes('/csv/leitores/importar')))await carregarLeitores();
+        if(paths.some(path=>path.includes('/ocorrencias')||path.startsWith('/api/emprestimos/')))await filtrarEmprestimos(filtroEmprestimosAtual);
+    }catch(error){showToast(error.message,'error');}
+    finally{document.querySelector('.content-area').scrollTop=scroll;}
+});
 let isAdminGlobal = document.body.dataset.admin === 'true';
 // Quantidade de aulas injetada do backend (valor salvo no banco de dados)
 let quantidadeAulasGlobal = Number(document.body.dataset.quantidadeAulas);
@@ -24,6 +37,7 @@ let categoriaManualSelect, categoriaEditSelect, tipoLeitorModalSelect;
 let tipoRapidoSelect, prazoRapidoSelect, periodoRapidoSelect;
 
 document.addEventListener('keydown', (e) => {
+    if(document.querySelector('dialog[open]'))return;
     if (e.ctrlKey && e.key >= '1' && e.key <= '5') {
         e.preventDefault();
         if (!isAdminGlobal) {
@@ -98,7 +112,7 @@ window.onload = async () => {
 
 function prepararAcessibilidade() {
     document.querySelectorAll('.nav-menu li, .logo, .theme-item, .config-item, .card[data-bibi-onclick]').forEach(element => {
-        if(element.querySelector('a,button'))return;
+        if(element.matches('button')||element.querySelector('a,button'))return;
         element.tabIndex = 0;
         element.setAttribute('role', 'button');
         if (element.title) element.setAttribute('aria-label', element.title);
