@@ -93,12 +93,15 @@ class IntegrationTests(AppTest):
 
     def test_desktop_explicit_start_and_close(self):
         import desktop
-        server=Mock();window=Mock()
-        with patch.dict('sys.modules',{'webview':window,'webview.menu':Mock()}),patch.object(desktop,'create_server',return_value=server),patch('services.email_service.iniciar_verificacao_notificacoes') as worker,patch.object(desktop.threading,'Thread'):
+        from unittest.mock import MagicMock
+        server=Mock();window=MagicMock()
+        with patch.dict('sys.modules',{'webview':window,'webview.menu':Mock()}),patch.object(desktop,'create_server',return_value=server),patch('services.email_service.iniciar_verificacao_notificacoes') as worker,patch.object(desktop.threading,'Thread'),patch('services.rede_service.NetworkRuntime') as network:
             desktop.run_desktop(self.app)
         worker.assert_called_once_with(self.app)
         window.create_window.assert_called_once()
         server.close.assert_called_once()
+        network.return_value.start.assert_called_once()
+        network.return_value.stop.assert_called_once()
 
     def test_slow_worker_does_not_block_normal_requests(self):
         import threading

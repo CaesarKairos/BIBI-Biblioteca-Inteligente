@@ -15,7 +15,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 def main():
     with tempfile.TemporaryDirectory(prefix='bibi-native-test-') as directory:
-        app=create_app({'DATA_DIR':directory,'TESTING':True})
+        app=create_app({'DATA_DIR':directory,'TESTING':True,'LAN_ENABLED':False,'DESKTOP_TRAY':False})
         with app.extensions['database'].connection() as conn:
             conn.execute("INSERT INTO Contas(nome,email,senha_hash,papel,ativacao,onboarding_concluido_em) VALUES ('Teste','native@example.test',?,'bibliotecario','inicial',CURRENT_TIMESTAMP)",(generate_password_hash('senha inicial sintetica'),))
             conn.commit()

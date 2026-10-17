@@ -15,6 +15,33 @@ from utils.auth import admin_required
 bp=Blueprint('gestao',__name__)
 
 
+@bp.get('/api/gestao/rede')
+@admin_required
+def network_status():
+    network=current_app.extensions.get('network_runtime')
+    if not network:
+        return jsonify(ativo=False,enderecos=[],erro='Servidor de rede não iniciado. Abra o BIBI pelo aplicativo desktop.',certificado_sha256=None,bandeja=False)
+    return jsonify(network.status())
+
+
+@bp.post('/api/gestao/rede/diagnostico')
+@admin_required
+def network_diagnose():
+    network=current_app.extensions.get('network_runtime')
+    if not network:
+        raise BadRequest('Servidor de rede não iniciado nesta execução.')
+    return jsonify(network.diagnose())
+
+
+@bp.get('/api/gestao/rede/certificado')
+@admin_required
+def network_certificate():
+    network=current_app.extensions.get('network_runtime')
+    if not network or not network.certificates or not network.certificates.ca_path.exists():
+        raise BadRequest('Certificado de rede ainda não disponível.')
+    return send_file(network.certificates.ca_path,as_attachment=True,download_name='BIBI-rede-local.crt',mimetype='application/x-x509-ca-cert')
+
+
 @bp.get('/api/gestao/csv/modelo/<kind>')
 def csv_template(kind):
     from services.dados_service import FIELDS
@@ -239,7 +266,8 @@ def health():
     return jsonify(banco=integrity,versao='2.0-dev',espaco_livre=shutil.disk_usage(current_app.config['DATA_DIR']).free,
         migracoes=migrations,email=emails,ultimo_backup=backups[-1].name if backups else None,
         worker='executando' if worker and worker.is_alive() else 'não iniciado',metadados=current_app.extensions.get('metadata_health',{'estado':'Nenhuma consulta nesta execução. Fontes consultadas sob demanda.'}),
-        rede='Servidor local. Acesso autenticado de rede exige origem HTTPS configurada e proxy TLS da escola.')
+        rede=(current_app.extensions['network_runtime'].status() if current_app.extensions.get('network_runtime')
+              else {'ativo':False,'erro':'Servidor desktop não iniciado nesta execução.'}))
 
 
 @bp.get('/api/gestao/auditoria')

@@ -53,6 +53,13 @@ def install_security(app):
             raise BadRequest('Envie os dados em um objeto JSON.')
         hostname = urlsplit(request.host_url).hostname
         allowed = set(current_app.config['ALLOWED_HOSTS'])
+        network=current_app.extensions.get('network_runtime')
+        if network:
+            allowed.update(network.hosts)
+        if request.environ.get('bibi.lan'):
+            from services.rede_service import private_peer
+            if not private_peer(request.remote_addr):
+                raise Forbidden('Este servidor atende somente à rede local da biblioteca.')
         with db_manager.connection() as conn:
             row = conn.execute("SELECT valor FROM Configuracoes WHERE chave='endereco_rede'").fetchone()
             if row and row[0]:
@@ -60,7 +67,7 @@ def install_security(app):
         if hostname not in allowed:
             raise BadRequest('Endereço de acesso não configurado.')
         if request.remote_addr not in ('127.0.0.1','::1') and not request.is_secure:
-            raise Forbidden('Acesso autenticado pela rede exige HTTPS configurado pela escola.')
+            raise Forbidden('Use o endereço HTTPS exibido em Configurações → Biblioteca. Credenciais não são aceitas por HTTP na rede.')
         if request.method not in ('GET','HEAD','OPTIONS'):
             origin = request.headers.get('Origin')
             if origin and origin.rstrip('/') != request.host_url.rstrip('/'):

@@ -1,6 +1,6 @@
 # BIBI — Biblioteca Inteligente
 
-BIBI administra bibliotecas **físicas**, com Python, Flask, SQLite, HTML/CSS/JavaScript e janela PyWebView no Windows. O computador da biblioteca mantém o banco e atende os navegadores dos leitores quando a rede HTTPS é configurada. Não existem bancos independentes nos celulares.
+BIBI administra bibliotecas **físicas**, com Python, Flask, SQLite, HTML/CSS/JavaScript e janela PyWebView no Windows. O computador da biblioteca mantém o banco e atende os navegadores dos leitores pelo servidor HTTPS local integrado. Não existem bancos independentes nos celulares.
 
 Esta evolução preserva o acervo, circulação, agenda, Dashboard, capas uniformes, cinco prateleiras, temas e painéis redimensionáveis. Acrescenta contas individuais, convites fechados, perfil, reservas, avaliações, notificações, CSV e backup. **Não há integração de IA.** O gatinho identifica apenas as áreas preparadas para recursos futuros; a prateleira especial informa que mostra uma amostra do acervo.
 
@@ -92,10 +92,12 @@ Testes usam bancos temporários e dados sintéticos; não enviam e-mails reais. 
 
 ## Limites relevantes
 
-A equipe da escola precisa configurar HTTPS/proxy/certificado antes de liberar a rede; o campo de endereço não modifica infraestrutura. O servidor precisa permanecer ligado para acesso e envio. Reservas exigem que a biblioteca defina seu prazo de retirada; regras anteriores são mantidas até a configuração explícita. O filtro de comentários é apoio determinístico à moderação humana. Termos e aviso de privacidade precisam ser revisados pela instituição; não representam certificação jurídica.
+O servidor HTTPS local exibe automaticamente o IP em Configurações → Biblioteca. Cada dispositivo precisa confiar no certificado desta instalação; o firewall pode exigir liberação na rede privada. Veja [Rede local](docs/REDE_LOCAL.md). O servidor precisa permanecer ligado para acesso e envio. Reservas exigem que a biblioteca defina seu prazo de retirada; regras anteriores são mantidas até a configuração explícita. O filtro de comentários é apoio determinístico à moderação humana. Termos e aviso de privacidade precisam ser revisados pela instituição; não representam certificação jurídica.
 
-## Licença
+## Licença de uso
 
-O projeto tinha declaração de MIT, mas não possui arquivo LICENSE versionado nesta revisão; isso precisa ser formalizado pelo responsável. As dependências preservam suas licenças. Adventurer Neutral, de Lisa Wischofsky, usa [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), com atribuição no editor de avatar. Relatórios acadêmicos e resultados de pesquisa não foram alterados.
+A BIBI é software proprietário, com **todos os direitos reservados**. Você pode instalar e usar gratuitamente a versão disponibilizada, inclusive na rede local da biblioteca. Modificar o código, criar versões derivadas ou redistribuir o programa exige autorização prévia e expressa dos titulares. Os termos completos estão em [LICENSE](LICENSE).
 
-A reorganização da interface, o inventário de operações e a verificação no navegador estão em [REFINO_INTERFACE.md](docs/REFINO_INTERFACE.md).
+Configurar o aplicativo e cadastrar, importar ou exportar seus dados pelas ferramentas existentes são usos permitidos.
+
+As dependências e os recursos de terceiros mantêm suas próprias licenças. O estilo de avatar Adventurer Neutral, de Lisa Wischofsky, utiliza [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), com atribuição no editor. Permissões validamente concedidas a versões anteriores sob MIT permanecem válidas.

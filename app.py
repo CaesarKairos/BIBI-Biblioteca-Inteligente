@@ -20,7 +20,8 @@ def create_app(test_config=None):
     app.config.update(DATA_DIR=DATA_DIR,MAX_CONTENT_LENGTH=512*1024*1024,
         SESSION_COOKIE_HTTPONLY=True,SESSION_COOKIE_SAMESITE='Lax',
         PERMANENT_SESSION_LIFETIME=timedelta(hours=8),
-        ALLOWED_HOSTS=['127.0.0.1','::1','localhost'],SESSION_COOKIE_SECURE=False)
+        ALLOWED_HOSTS=['127.0.0.1','::1','localhost'],SESSION_COOKIE_SECURE=False,
+        LAN_ENABLED=True,LAN_PORT=5443,DESKTOP_TRAY=True)
     if test_config:
         app.config.update(test_config)
     app.session_interface=InstallationSessionInterface()

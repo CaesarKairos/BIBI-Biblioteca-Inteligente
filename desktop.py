@@ -1,4 +1,4 @@
-"""Servidor WSGI local e janela desktop; rede requer configuração explícita."""
+"""Janela desktop, loopback de recuperação e servidor HTTPS da rede local."""
 import threading
 from waitress import create_server
 
@@ -46,6 +46,11 @@ def run_desktop(app):
         trusted_proxy='127.0.0.1',trusted_proxy_headers={'x-forwarded-for','x-forwarded-host','x-forwarded-proto'},
         clear_untrusted_proxy_headers=True,max_request_body_size=512*1024*1024)
     threading.Thread(target=server.run,daemon=True).start()
+    from services.rede_service import NetworkRuntime
+    network=NetworkRuntime(app)
+    app.extensions['network_runtime']=network
+    network.start()
+    tray=None
     try:
         iniciar_verificacao_notificacoes(app)
         from services.recuperacao_local import RecuperacaoDesktop
@@ -53,6 +58,10 @@ def run_desktop(app):
         recovery = RecuperacaoDesktop(app.extensions['secrets'])
         app.extensions['desktop_recovery'] = recovery
         window = webview.create_window('BIBI — Biblioteca Inteligente','http://127.0.0.1:5000',width=1366,height=768,resizable=True)
+        from services.bandeja_service import DesktopTray
+        tray=DesktopTray(app,window)
+        window.events.before_show += tray.install
+        window.events.closing += tray.closing
         def alternar_tela_cheia():
             window.toggle_fullscreen()
         def update_menu(toggle=False):
@@ -81,7 +90,12 @@ def run_desktop(app):
             window.load_url('http://127.0.0.1:5000/recuperacao-local#' + token)
         webview.start(menu=[
             Menu('Conta', [MenuAction('Recuperar conta bibliotecária neste computador', recover)]),
-            Menu('Exibir', [MenuAction('Tela cheia (F11)', alternar_tela_cheia)]),
+            Menu('Exibir', [MenuAction('Tela cheia (F11)', alternar_tela_cheia),
+                            MenuAction('Manter servidor na bandeja',tray.hide),
+                            MenuAction('Encerrar BIBI e servidor',tray.exit)]),
         ])
     finally:
+        if tray:
+            tray.dispose()
+        network.stop()
         server.close()

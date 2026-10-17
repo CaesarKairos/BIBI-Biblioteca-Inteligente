@@ -120,9 +120,7 @@ Ao concluir, sessões/convites/tokens anteriores deixam de valer. O vínculo pro
 
 ## Rede e empacotamento
 
-O desktop usa `http://127.0.0.1:5000` localmente. Para leitores, a equipe de infraestrutura deve instalar/configurar um proxy HTTPS no mesmo computador, encaminhando para esse loopback e substituindo corretamente `X-Forwarded-For`, `X-Forwarded-Host` e `X-Forwarded-Proto`. Use certificado confiável pelos dispositivos e DNS acessível na rede escolar. Só o proxy local é confiável. Não exponha a porta interna diretamente nem use cabeçalhos enviados pelo cliente sem sobrescrever.
-
-Salve a origem HTTPS real em **Configurações → Biblioteca → Endereço na rede** e use **Copiar endereço de acesso**. O campo não instala proxy/certificado, não altera firewall e não torna um endereço funcional sozinho. IP é alternativa apenas se o certificado e o acesso HTTPS forem válidos para esse IP. `.local` não é garantido. Leitores usam navegador, mesma rede e servidor ligado; não instalam BIBI. Nenhuma infraestrutura foi modificada nesta entrega.
+O desktop usa `http://127.0.0.1:5000` apenas no computador da biblioteca. O servidor HTTPS integrado atende a rede privada em `https://IP:5443`, sem domínio ou proxy obrigatório. Configurações → Biblioteca exibe os endereços, certificado público e diagnóstico. Prepare a confiança no certificado nos dispositivos e confira o firewall conforme o [guia de rede local](REDE_LOCAL.md). Minimizá-la mantém o servidor; no Windows, fechar mantém na bandeja quando disponível. Encerrar pelo menu da bandeja desliga o servidor.
 
 `packaging/BIBI.spec` inclui os recursos e dados do DiceBear; o instalador deve copiar toda `dist/BIBI`. O build foi verificado no Windows, mas a janela nativa, instalação/desinstalação em máquina limpa, TLS da escola e entrega real do provedor SMTP precisam de homologação no ambiente de uso. Nenhum envio real ocorreu nos testes.
 

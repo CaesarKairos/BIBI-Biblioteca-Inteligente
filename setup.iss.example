@@ -25,6 +25,7 @@ OutputBaseFilename=BIBI-Setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+LicenseFile=LICENSE
 SetupIconFile=static\images\icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName}

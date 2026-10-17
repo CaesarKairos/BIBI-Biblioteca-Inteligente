@@ -36,7 +36,7 @@ accountAction(document.getElementById('copy-invite'),async()=>{const code=docume
 accountAction(document.getElementById('email-invite'),async()=>{const r=await accountApi(`/api/contas/leitores/${document.getElementById('invite-reader').value}/email`,'POST',{});status.textContent=r.mensagem;});
 accountAction(document.getElementById('revoke-invite'),async()=>{if(!confirm('Revogar os códigos deste leitor?'))return;await accountApi(`/api/contas/leitores/${document.getElementById('invite-reader').value}/codigo`,'DELETE');status.textContent='Códigos revogados.';document.getElementById('invite-code').textContent='';document.getElementById('invite-result').hidden=true;});
 accountForm('access-form-admin',async(data,form)=>{if(!confirm('Confirmar a alteração de acesso desta conta?'))throw new Error('Alteração cancelada.');await accountApi('/api/contas/'+data.id,'PUT',{...data,ativa:data.ativa==='true'});form.elements.senha_atual.value='';status.textContent='Acesso atualizado. Sessões anteriores foram invalidadas.';await loadManagement(false);});
-accountForm('institution-form',async(data,form)=>{await accountApi('/api/gestao/configuracao','PUT',data);form.elements.senha_atual.value='';status.textContent='Configurações salvas.';});
+accountForm('institution-form',async data=>{await accountApi('/api/gestao/configuracao','PUT',data);status.textContent='Configurações salvas.';});
 accountForm('rules-form',async(data,form)=>{const rules={retirada_horas:Number(data.retirada_horas)};for(const c of ['estudante','professor'])rules[c]={maximo:Number(data[c+'_maximo']),prazo:Number(data[c+'_prazo']),renovacoes:Number(data[c+'_renovacoes']),bloquear_atraso:form.elements[c+'_bloquear_atraso'].checked};await accountApi('/api/gestao/configuracao','PUT',{circulacao:rules});status.textContent='Regras salvas. Prazos existentes preservados.';});
 accountForm('smtp-form',async(data,form)=>{await accountApi('/api/config/email/set','POST',{...data,remover_credencial:form.elements.remover_credencial.checked});form.elements.email_app_password.value='';form.elements.senha_atual.value='';status.textContent='Remetente salvo. Use o teste para conferir o envio.';});
 accountAction(document.getElementById('test-smtp'),async()=>{const r=await accountApi('/api/gestao/email/testar','POST',{});status.textContent=r.mensagem;});
@@ -65,13 +65,6 @@ if(document.getElementById('restore-confirm')) document.getElementById('restore-
 accountAction(document.getElementById('restore-run'),async()=>{const r=await restoreRequest(true);status.textContent=r.mensagem;location.assign('/acesso');});
 accountAction(document.getElementById('refresh-health'),refreshHealth);
 window.settingsManagementReady=loadManagement();
-
-accountAction(document.getElementById('copy-network'),async()=>{
-    const field=document.getElementById('institution-form').elements.endereco_rede;
-    if(!field.value)throw new Error('Configure e salve o endereço HTTPS da escola primeiro.');
-    try{await navigator.clipboard.writeText(field.value);status.textContent='Endereço copiado. O servidor precisa estar ligado e o HTTPS configurado.';}
-    catch{field.focus();field.select();status.textContent='Endereço selecionado. Use Ctrl+C para copiar.';}
-});
 
 const requestedKind=new URLSearchParams(location.search).get('tipo');if(requestedKind&&document.getElementById('csv-kind')){const kind=document.getElementById('csv-kind');kind.value=requestedKind;kind.dispatchEvent(new Event('change'));}
 

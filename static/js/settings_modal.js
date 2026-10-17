@@ -7,7 +7,7 @@
     const changes=new Set();
     window.settingsMutation=path=>{if(dialog.open)changes.add(path);};
     window.settingsOperation=(source,delta)=>{if(!content.contains(source))return;pending=Math.max(0,pending+delta);document.getElementById("settings-close").disabled=pending>0;};
-    const fingerprint=form=>JSON.stringify([...form.elements].filter(e=>e.matches('input,select,textarea')).map(e=>[e.name||e.id,e.type==='checkbox'?e.checked:e.type==='file'?[...e.files].map(f=>f.name):e.value]));
+    const fingerprint=form=>JSON.stringify([...form.elements].filter(e=>e.matches('input,select,textarea')&&!e.readOnly).map(e=>[e.name||e.id,e.type==='checkbox'?e.checked:e.type==='file'?[...e.files].map(f=>f.name):e.value]));
     function snapshot(){content.querySelectorAll('form:not([method=get])').forEach(form=>snapshots.set(form,fingerprint(form)));}
     function dirty(){return [...snapshots].some(([form,value])=>form.isConnected&&fingerprint(form)!==value);}
     function section(key){
@@ -33,6 +33,8 @@
         if(document.body.dataset.admin==='true'){
             await script('/static/js/gestao.js');
             await window.settingsManagementReady;
+            await script('/static/js/rede.js');
+            await window.settingsNetworkReady;
         }
         content.querySelectorAll('.settings-panels > section').forEach(panel=>panel.classList.add('config-panel'));
         const note=accountText('p','As opções de exibição e os switches são salvos imediatamente.');

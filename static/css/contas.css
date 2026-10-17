@@ -122,6 +122,10 @@
 .settings-panels .settings-help { display:block; margin-top:6px; color:var(--light); font-size:12px; font-weight:400; line-height:1.5; }
 .settings-panels .config-toggle-copy .settings-help { margin-top:5px; max-width:62ch; }
 .settings-panels .settings-form-help { font-size:12px; margin:12px 0 0; }
+.network-fingerprint { font-family:monospace; overflow-wrap:anywhere; font-size:11px !important; }
+.network-settings ol { padding-left:22px; font-size:13px; line-height:1.6; }
+.network-settings li { margin:10px 0; }
+.network-settings input[readonly] { font-weight:700; color:var(--accent-strong); }
 .health-summary { display:grid; grid-template-columns:minmax(100px,1fr) minmax(0,2fr); gap:14px; font-size:14px; }
 .health-summary dd { margin:0; overflow-wrap:anywhere; }
 .health-summary dt { font-weight:600; }
