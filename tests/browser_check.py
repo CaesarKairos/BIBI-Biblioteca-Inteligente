@@ -111,7 +111,11 @@ with patch('smtplib.SMTP',side_effect=AssertionError('SMTP real proibido')),sync
                 for dark in [False,True]:
                     tab.evaluate('(dark)=>document.body.classList.toggle("dark-mode",dark)',dark)
                     assert tab.evaluate('document.documentElement.scrollWidth<=innerWidth'),(role,route,width)
-                    assert tab.locator('.right-bar').inner_text().strip()==''
+                    if route=='/perfil':
+                        assert tab.locator('.right-bar').inner_text().strip()==''
+                    else:
+                        # /configuracoes redireciona ao acervo com modal; o chat integra este painel.
+                        assert tab.locator('#bibi-chat').count()==1
                     tab.screenshot(path=str(screens/f'{role}-{route[1:]}-{width}-{dark}.png'),full_page=True)
                 if role=='leitor':assert tab.locator('#smtp-form').count()==0
     page.goto(base+'/app');page.wait_for_load_state('networkidle')

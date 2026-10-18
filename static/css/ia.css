@@ -1,0 +1,10 @@
+#bibi-chat {margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:16px}
+#bibi-chat textarea {width:100%;min-height:70px;box-sizing:border-box}
+#bibi-suggestions {display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+#bibi-messages {max-height:340px;overflow:auto;overflow-wrap:anywhere}
+#bibi-messages p {white-space:pre-wrap;padding:10px;border:1px solid var(--border);border-radius:12px}
+#bibi-privacy,#ai-model-info {font-size:.85rem;line-height:1.5}
+.bibi-loading {animation:bibi-wait 1.8s ease-in-out infinite}
+@keyframes bibi-wait {50%{opacity:.55}}
+@media(prefers-reduced-motion:reduce){.bibi-loading{animation:none}}
+.bibi-insights {padding:16px;border:1px solid var(--border);border-radius:12px;margin-top:16px;white-space:pre-line}

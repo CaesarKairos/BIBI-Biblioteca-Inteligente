@@ -244,6 +244,14 @@ def restore(upload):
         finally:
             source.close()
     current_app.extensions['secrets'].set('smtp_password',None)
+    from services.ai.providers import PROVIDERS
+    for provider in PROVIDERS:
+        current_app.extensions['secrets'].set('ia_'+provider,None)
+    with db_manager.connection() as conn:
+        conn.execute("DELETE FROM Configuracoes WHERE chave='ia'")
+        conn.commit()
+    current_app.extensions.pop('ai_runtime',None)
+    current_app.extensions.pop('ai_recommendations',None)
     current_app.extensions['secrets'].recovery_key(rotate=True)
     if current_app.extensions.get('desktop_recovery'):
         current_app.extensions['desktop_recovery'].pending=None

@@ -1,0 +1,13 @@
+python : test_usage_persistence_restart_and_backup_excludes_keys 
+(tests.test_ia.AITests.test_usage_persistence_restart_and_backup_excludes_keys) ... ok
+No linha:2 caractere:1
++ python -m unittest tests.test_ia.AITests.test_usage_persistence_resta ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (test_usage_pers...es_keys) ... ok:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+----------------------------------------------------------------------
+Ran 1 test in 1.585s
+
+OK

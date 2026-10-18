@@ -20,7 +20,12 @@ verDetalhes=function(livro) {
         area.append(form);
         apiFetch('/api/minha-conta/avaliacoes').then(r=>r.json()).then(rows=>{
             const own=rows.find(row=>row.livro_id===livro.id);
-            if(own&&form.isConnected){stars.value=own.estrelas;comment.value=own.comentario;}
+            if(own&&form.isConnected){
+                stars.value=own.estrelas;comment.value=own.comentario;
+                const remove=textElement('button','Excluir minha avaliação','btn-small');remove.type='button';
+                remove.onclick=async()=>{remove.disabled=true;try{await apiFetch('/api/minha-conta/avaliacoes/'+livro.id,{method:'DELETE'});if(form.isConnected)verDetalhes(livro);showToast('Sua avaliação foi excluída.','success');}finally{remove.disabled=false;}};
+                form.append(remove);
+            }
         });
     }
     const reviews=textElement('div','Carregando opiniões…');area.append(reviews);document.getElementById('info-livro').append(area);

@@ -11,6 +11,7 @@
         <script src="/static/vendor/chart.umd.js"></script>
         <link rel="stylesheet" href="/static/css/app.css">
         <link rel="stylesheet" href="/static/css/contas.css">
+<link rel="stylesheet" href="/static/css/ia.css">
     </head>
     <body data-import-kind="{{ import_kind or '' }}" data-page="{{ ativo or 'app' }}" data-admin="{{ admin | tojson }}" data-quantidade-aulas="{{ quantidade_aulas }}">
         <div class="toast-container" id="toast-container" role="status" aria-live="polite"></div>
@@ -27,4 +28,5 @@
 <script src="/static/js/conta_comum.js"></script>
 {% block scripts %}<script src="/static/js/shell.js"></script>{% endblock %}
 <script src="/static/js/settings_modal.js"></script>
+<script src="/static/js/ia.js"></script>
 </body></html>

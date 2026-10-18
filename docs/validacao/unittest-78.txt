@@ -1,0 +1,98 @@
+python : .................<user>\AppData\Local\Programs\Python\Python311\Lib\unittest\case.py:579: 
+ResourceWarning: unclosed file <_io.BufferedReader 
+name='C:\\Users\\cesar\\AppData\\Local\\Temp\\bibi-tests-eh28qvh5\\tmpg_6yls53\\backups\\bibi-1792346400635833900.zip'>
+No linha:2 caractere:1
++ python -m unittest discover -s tests -p 'test_*.py' *> "$env:TEMP/bib ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (..................635833900.zip'>:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  if method() is not None:
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+.......[2026-10-18 15:00:18,830] ERROR in __init__: Falha em /api/livros
+Traceback (most recent call last):
+  File "<user>\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 917, in 
+full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "<user>\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 902, in 
+dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<workspace>\routes\livros.py", line 22, in api_livros
+    return json_response(livros_service.api_livros(admin=is_admin(), data=request.json if request.method == 'POST' and 
+is_admin() else None, method=request.method))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<user>\AppData\Local\Programs\Python\Python311\Lib\unittest\mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<user>\AppData\Local\Programs\Python\Python311\Lib\unittest\mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<user>\AppData\Local\Programs\Python\Python311\Lib\unittest\mock.py", line 1183, in _execute_mock_call
+    raise effect
+RuntimeError: PRIVATE-DETAIL
+.....[2026-10-18 15:00:43,488] WARNING in __init__: Conflito de integridade em /api/emprestimos
+Traceback (most recent call last):
+  File "<user>\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 917, in 
+full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "<user>\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 902, in 
+dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<workspace>\utils\auth.py", line 19, in decorated
+    return f(*args,**kwargs)
+           ^^^^^^^^^^^^^^^^^
+  File "<workspace>\routes\emprestimos.py", line 15, in 
+realizar_emprestimo
+    return json_response(circulacao_service.emprestar(data=request.json))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<workspace>\services\circulacao_service.py", line 162, in 
+emprestar
+    cur=conn.execute("INSERT INTO Emprestimo(usuarios_id,livros_id,data_emprestimo,data_vencimento,quantidade,status) 
+VALUES (?,?,?,?,?,'Aprovado')",(leitor,livro,hoje.isoformat(),(hoje+timedelta(days=prazo)).isoformat(),qtd))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: test failure
+..............[2026-10-18 15:01:31,211] ERROR in __init__: Falha em /api/gestao/restaurar
+Traceback (most recent call last):
+  File "<user>\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 917, in 
+full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "<user>\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\app.py", line 902, in 
+dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<workspace>\routes\gestao.py", line 92, in restore_backup
+    return jsonify(restore(upload.stream))
+                   ^^^^^^^^^^^^^^^^^^^^^^
+  File "<workspace>\services\dados_service.py", line 233, in 
+restore
+    auditar(target,'restaurar',safety.name,ator=g.conta['id']);target.commit()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<user>\AppData\Local\Programs\Python\Python311\Lib\unittest\mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<user>\AppData\Local\Programs\Python\Python311\Lib\unittest\mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<user>\AppData\Local\Programs\Python\Python311\Lib\unittest\mock.py", line 1189, in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "<workspace>\tests\test_integracao_seguranca.py", line 86, 
+in fail
+    raise RuntimeError('Falha simulada')
+RuntimeError: Falha simulada
+...........................Client ('127.0.0.1', 60434) lost — peer dropped the TLS connection suddenly, during 
+handshake: (1, '[SSL: TLSV1_ALERT_UNKNOWN_CA] tlsv1 alert unknown ca (_ssl.c:1006)')
+Client ('192.168.0.198', 60440) lost — peer dropped the TLS connection suddenly, during handshake: (10053, 'Uma 
+conexão estabelecida foi anulada pelo software no computador host', None, 10053, None)
+........
+----------------------------------------------------------------------
+Ran 78 tests in 287.403s
+
+OK

@@ -3,7 +3,7 @@
     const content=document.getElementById('settings-content');
     const status=document.getElementById('settings-status');
     const warning=document.getElementById('settings-discard');
-    let ready, opener, snapshots=new Map(),pending=0;
+    let ready, opener, snapshots=new Map(),pending=0,selectedKey='minha-conta';
     const changes=new Set();
     window.settingsMutation=path=>{if(dialog.open)changes.add(path);};
     window.settingsOperation=(source,delta)=>{if(!content.contains(source))return;pending=Math.max(0,pending+delta);document.getElementById("settings-close").disabled=pending>0;};
@@ -14,6 +14,7 @@
         const target=content.querySelector(`[data-settings-section="${CSS.escape(key)}"]`) || content.querySelector('[data-settings-section]');
         if(!target)return;
         key=target.dataset.settingsSection;
+        selectedKey=key;
         content.querySelectorAll('.settings-panels > section').forEach(panel=>panel.hidden=(panel.dataset.group||panel.id)!==key);
         content.querySelectorAll('[data-settings-section]').forEach(button=>button.setAttribute('aria-current',String(button===target)));
         content.querySelector('.settings-panels').scrollTop=0;
@@ -24,6 +25,9 @@
         const response=await fetch('/configuracoes?fragmento=1');
         if(!response.ok)throw new Error('Não foi possível abrir Configurações.');
         content.innerHTML=await response.text();
+        content.querySelectorAll('.settings-panels > section').forEach(panel=>panel.classList.add('config-panel'));
+        section(selectedKey);
+        await window.initializeAISettings?.();
         accountForm('password-form',async data=>{await accountApi('/api/minha-conta/senha','POST',data);location.assign('/acesso');});
         accountForm('verify-email-form',async(data,form)=>{const r=await accountApi('/api/minha-conta/email/enviar','POST',data);form.elements.senha_atual.value='';accountStatus(r.mensagem,form);});
         accountForm('confirm-email-form',async data=>{await accountApi('/api/minha-conta/email/confirmar','POST',data);location.assign('/acesso');});
@@ -44,9 +48,10 @@
     }
     window.abrirConfiguracoesCompartilhadas=async(key='minha-conta')=>{
         if(typeof key!=='string')key='minha-conta';
+        selectedKey=key;
         if(!dialog.open){opener=document.activeElement;dialog.showModal();}
         status.textContent='Carregando…';
-        try{ready??=load();await ready;document.getElementById('settings-theme').value=document.body.classList.contains('dark-mode')?'escuro':'claro';section(key);}
+        try{ready??=load();await ready;document.getElementById('settings-theme').value=document.body.classList.contains('dark-mode')?'escuro':'claro';section(selectedKey);}
         catch(error){status.textContent=error.message;ready=null;}
     };
     function close(){

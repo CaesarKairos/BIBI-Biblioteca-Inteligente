@@ -10,8 +10,8 @@ def json_response(result):
     return jsonify(result)
 
 def register_blueprints(app):
-    from routes import pages, admin, livros, leitores, emprestimos, agendamentos, configuracoes, contas, perfil, gestao
-    for module in (pages, admin, configuracoes, livros, leitores, emprestimos, agendamentos, contas, perfil, gestao):
+    from routes import pages, admin, livros, leitores, emprestimos, agendamentos, configuracoes, contas, perfil, gestao, ia
+    for module in (pages, admin, configuracoes, livros, leitores, emprestimos, agendamentos, contas, perfil, gestao, ia):
         app.register_blueprint(module.bp)
 
 

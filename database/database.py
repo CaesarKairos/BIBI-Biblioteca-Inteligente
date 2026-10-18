@@ -12,6 +12,37 @@ operation_lock = threading.RLock()
 # Envio externo pode ser lento: bloqueia restauração, não o uso normal da biblioteca.
 maintenance_lock = threading.RLock()
 
+class ExternalGate:
+    """Chamadas externas simultâneas podem coexistir; restauração exige exclusividade."""
+    def __init__(self):
+        self.condition=threading.Condition()
+        self.readers=0
+        self.writer=False
+        self.waiting=0
+
+    def acquire(self, restore=False):
+        with self.condition:
+            if restore:
+                self.waiting+=1
+                try:
+                    self.condition.wait_for(lambda:not self.writer and self.readers==0)
+                    self.writer=True
+                finally:
+                    self.waiting-=1
+            else:
+                self.condition.wait_for(lambda:not self.writer and self.waiting==0)
+                self.readers+=1
+
+    def release(self, restore=False):
+        with self.condition:
+            if restore:
+                self.writer=False
+            else:
+                self.readers-=1
+            self.condition.notify_all()
+
+external_gate=ExternalGate()
+
 class DatabaseManager:
     def __init__(self, db_name=DB_NAME, initialize=True):
         self.db_name = db_name

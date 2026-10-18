@@ -1,0 +1,9 @@
+admin app
+config, models, connection mock
+personalized shelf, suggestions, streaming, context, isolation
+review filled
+review saved
+review reopened
+cancel confirmed; settings visible: True
+disable confirmed
+PASS: AI settings, model list, dashboard insights, stream, contexts, review editing/moderation/notification, cancellation, mobile/themes, global disable. Cloud mocked.

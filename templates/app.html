@@ -120,6 +120,7 @@
                 </div>
             {% endblock %}
 {% block details %}
+<section id="bibi-chat"><h3>Converse com a BIBI</h3><p id="bibi-privacy"></p><div id="bibi-suggestions"></div><div id="bibi-messages" aria-live="polite"></div><p id="bibi-status" role="status"></p><form id="bibi-chat-form"><label>Sua mensagem<textarea name="mensagem" maxlength="2000" required placeholder="Vamos conversar sobre livros?"></textarea></label><button class="btn-primary">Enviar</button><button type="button" id="bibi-cancel" disabled>Interromper</button><button type="button" id="bibi-clear">Nova conversa</button></form></section>
                 <div id="info-vazio" aria-hidden="true"></div>
                 <div id="info-livro" data-bibi-style="s14">
                     <div class="details-header"><span class="eyebrow">SEU PRÓXIMO CAPÍTULO</span><button type="button" class="icon-button" id="fechar-detalhes" aria-label="Fechar detalhes do livro" title="Fechar detalhes" data-bibi-onclick="h58">×</button></div>

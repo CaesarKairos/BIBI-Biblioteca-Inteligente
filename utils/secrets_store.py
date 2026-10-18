@@ -81,6 +81,8 @@ class SecretStore:
             return self._read().get(key, default)
 
     def set(self, key, value):
+        if key.startswith('ia_') and value is not None and os.name != 'nt':
+            raise OSError('Credenciais de IA exigem o armazenamento protegido DPAPI desta distribuição Windows.')
         with self.locked():
             values = self._read()
             if value is None:

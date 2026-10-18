@@ -195,14 +195,17 @@ function exibirPrateleiras(livros) {
     especial.className = 'shelf shelf-bibi';
     especial.id = 'prateleira-bibi';
     especial.setAttribute('aria-labelledby', 'recomendacoes-titulo');
-    especial.dataset.contentSource = idsRecomendacoesBibi === null ? 'placeholder' : 'ids';
-    especial.innerHTML = '<div class="shelf-heading"><h3 id="recomendacoes-titulo"><span class="bibi-cat-icon" aria-hidden="true"></span>Recomendações da BIBI</h3><span class="preview-badge">Em preparação</span></div><p class="shelf-note">Uma amostra do acervo. Recomendações inteligentes chegam no futuro.</p><div class="books-grid"></div><div class="shelf-base"></div>';
-    const demonstracao = idsRecomendacoesBibi === null
-        ? [...livros].sort((a, b) => a.id - b.id).slice(0, 8)
-        : idsRecomendacoesBibi.map(id => livros.find(l => l.id === id)).filter(Boolean);
-    const especialGrid = especial.querySelector('.books-grid');
-    demonstracao.forEach(l => especialGrid.appendChild(criarLivroPrateleira(l)));
-    if (!demonstracao.length) especialGrid.appendChild(textElement('p', 'Nenhum livro para exibir nesta seleção.', 'shelf-empty'));
+    especial.dataset.contentSource = 'catalogo-real';
+    especial.innerHTML = '<div class="shelf-heading"><h3 id="recomendacoes-titulo"><span class="bibi-cat-icon" aria-hidden="true"></span>Recomendações da BIBI</h3></div><p class="shelf-note" role="status">Selecionando livros do nosso acervo…</p><div class="books-grid"></div><div class="shelf-base"></div>';
+    const recommendationFilters=new URLSearchParams({q:document.getElementById('busca-acervo').value,prateleira:document.getElementById('catalog-category').value,disponivel:String(document.getElementById('catalog-availability').value==='disponivel'),indisponivel:String(document.getElementById('catalog-availability').value==='indisponivel')});
+    apiFetch('/api/minha-conta/ia/recomendacoes?'+recommendationFilters).then(r=>r.json()).then(data=>{
+        if(!especial.isConnected)return;
+        especial.querySelector('.shelf-note').textContent=data.origem;
+        const grid=especial.querySelector('.books-grid');
+        const visible=data.livros.filter(book=>livros.some(l=>l.id===book.id));
+        visible.forEach(book=>{const node=criarLivroPrateleira(book);node.title=book.motivo;grid.append(node);});
+        if(!visible.length)grid.append(textElement('p','Sem sugestões para os filtros atuais.','shelf-empty'));
+    }).catch(()=>{especial.querySelector('.shelf-note').textContent='Sugestões indisponíveis neste momento.';});
     container.appendChild(especial);
     const categorias = ['Ficção', 'Não-ficção', 'Poesia', 'Quadrinhos'];
     categorias.forEach(cat => {
@@ -231,6 +234,7 @@ function exibirPrateleiras(livros) {
 function verDetalhes(l) {
     const mudouLivro = livroSelecionado?.id !== l.id;
     livroSelecionado = l;
+    window.bibiQuestions?.();
     document.getElementById('info-vazio').style.display = 'none';
     document.getElementById('info-livro').style.display = 'block';
     document.querySelectorAll('.book[data-livro-id]').forEach(book => {
@@ -279,6 +283,7 @@ function fecharDetalhes() {
     const id = livroSelecionado?.id;
     const devolverFoco = document.getElementById('info-livro').contains(document.activeElement);
     livroSelecionado = null;
+    window.bibiQuestions?.();
     document.getElementById('info-livro').style.display = 'none';
     document.getElementById('info-vazio').style.display = 'block';
     document.querySelectorAll('.book').forEach(book => book.setAttribute('aria-pressed', 'false'));

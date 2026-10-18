@@ -2,7 +2,9 @@
 
 BIBI administra bibliotecas **físicas**, com Python, Flask, SQLite, HTML/CSS/JavaScript e janela PyWebView no Windows. O computador da biblioteca mantém o banco e atende os navegadores dos leitores pelo servidor HTTPS local integrado. Não existem bancos independentes nos celulares.
 
-Esta evolução preserva o acervo, circulação, agenda, Dashboard, capas uniformes, cinco prateleiras, temas e painéis redimensionáveis. Acrescenta contas individuais, convites fechados, perfil, reservas, avaliações, notificações, CSV e backup. **Não há integração de IA.** O gatinho identifica apenas as áreas preparadas para recursos futuros; a prateleira especial informa que mostra uma amostra do acervo.
+Esta evolução preserva o acervo, circulação, agenda, Dashboard, capas uniformes, cinco prateleiras, temas e painéis redimensionáveis. Inclui contas individuais, convites, perfil, reservas, avaliações, notificações, CSV e backup. A BIBI agora integra chat literário com streaming e insights administrativos por provedores em nuvem, além de recomendações locais personalizadas com prioridade verificável a autoras brasileiras. A IA começa desativada; a seleção local funciona sem chave ou consumo externo.
+
+Consulte a [configuração e arquitetura de IA](docs/INTEGRACAO_IA.md), o [relatório verificável de entrega](docs/RELATORIO_IA.md) e o [roteiro de demonstração](docs/ROTEIRO_DEMONSTRACAO.md). Os testes usam provedores simulados: conectividade real exige configuração e verificação opcional autorizada.
 
 ## Executar no Windows
 
@@ -40,7 +42,7 @@ Atalhos administrativos: Ctrl+1 Dashboard, Ctrl+2 Acervo, Ctrl+3 Empréstimos, C
 
 Bibliotecários navegam por Dashboard, Acervo, Empréstimos, Agenda, Leitores e Perfil. Leitores recebem Acervo e Perfil. No rodapé do menu, os ícones alternam tema, abrem Configurações e encerram a sessão. Configurações abre em um modal compartilhado, preservando a página, os filtros e o livro selecionado.
 
-Configurações reúne Minha conta, Aparência, Biblioteca, Acervo e agenda, Circulação, Contas e acesso, E-mail, Dados, Moderação, Sistema e segurança e Sobre. Importações, convites, recuperação assistida, reservas administrativas, renovações e ocorrências funcionam dentro do modal. Leitores acessam somente sua conta, aparência, textos institucionais e Sobre. O PIN legado foi descontinuado; operações sensíveis confirmam a senha real da conta.
+Configurações reúne Minha conta, Aparência, Biblioteca, Acervo e agenda, Circulação, Contas e acesso, Inteligência Artificial, E-mail, Dados, Moderação, Sistema e segurança e Sobre. Importações, convites, recuperação assistida, reservas administrativas, renovações e ocorrências funcionam dentro do modal. Leitores acessam somente sua conta, aparência, textos institucionais e Sobre. O PIN legado foi descontinuado; operações sensíveis confirmam a senha real da conta.
 
 Para recuperar uma conta bibliotecária no servidor, pressione **Alt** e use **Conta → Recuperar conta bibliotecária neste computador** no menu nativo da janela BIBI. Informe o e-mail e defina/confirme a nova senha. A autorização combina loopback, sessão aberta pelo desktop e token aleatório de uso único em memória, válido por três minutos. Um navegador local ou remoto não pode iniciar esse fluxo por HTTP.
 
@@ -58,6 +60,7 @@ A pessoa com acesso à sessão Windows usada pela instalação já possui acesso
 | `services/circulacao_service.py` | Regras e transições de estoque, reservas e empréstimos |
 | `services/mensagens_service.py`, `services/email_service.py` | Notificações persistentes, SMTP TLS e worker |
 | `routes/gestao.py`, `services/dados_service.py` | Políticas, moderação, CSV, backup, auditoria e saúde |
+| `routes/ia.py`, `services/ai/` | Provedores em nuvem, política pedagógica, recomendações, conversas efêmeras e insights |
 | `templates/`, `static/` | Interface existente e páginas de acesso e Perfil, com modal compartilhado de Configurações |
 | `tests/` | Testes sintéticos de serviços, segurança e navegador |
 | `legacy/`, `docs/REFATORACAO.md` | Referência histórica, sem execução ou autenticação de produção |
@@ -68,7 +71,7 @@ Dependências testadas estão fixadas em `requirements.txt`. Chart.js e Flatpick
 
 Dados permanecem em `%LOCALAPPDATA%\BIBI`: `Biblioteca.db`, capas e `backups`. Não copie apenas o `.db` enquanto o sistema está aberto: use **Configurações → Backup e restauração** para incluir WAL de maneira consistente.
 
-Senha SMTP e chave da sessão ficam em `segredos.dpapi`, protegidas pelo usuário Windows. Não são exportadas no backup portátil. Senhas de contas usam hash adaptativo; códigos temporários ficam somente como hash. O backup contém dados pessoais e hashes e precisa ser guardado com acesso restrito. Ao restaurar, sessões/códigos são invalidados, o vínculo local de recuperação é renovado e o SMTP deve ser reconfigurado, sem emitir código manual.
+Senha SMTP, chaves de API de IA e chave da sessão ficam em `segredos.dpapi`, protegidas pelo usuário Windows. Não são exportadas no backup portátil. Senhas de contas usam hash adaptativo; códigos temporários ficam somente como hash. O backup contém dados pessoais e hashes e precisa ser guardado com acesso restrito. Ao restaurar, sessões/códigos são invalidados, o vínculo local de recuperação é renovado, a IA é desativada e as credenciais SMTP e IA devem ser reconfiguradas.
 
 ## Build Windows
 
@@ -82,13 +85,14 @@ O spec versionado inclui templates, schema, migrações, assets, bibliotecas nat
 
 ```powershell
 python -m unittest discover -s tests -v
-python -m pip install playwright
+python -m pip install -r requirements-dev.txt
 python -m playwright install chromium
 python tests/browser_check.py
+python tests/browser_ia.py
 python tests/browser_loan_search.py
 ```
 
-Testes usam bancos temporários e dados sintéticos; não enviam e-mails reais. O navegador bloqueia serviços externos. As comparações antigas com autorização por IP foram substituídas por contratos autenticados, preservando verificações de catálogo, páginas, agenda e circulação. Resultados desta integração estão em [INTEGRACAO_BIBI.md](docs/INTEGRACAO_BIBI.md); [EVOLUCAO_PRODUTO.md](docs/EVOLUCAO_PRODUTO.md) registra a etapa anterior.
+Testes usam bancos temporários, dados sintéticos e provedores de IA simulados; não enviam e-mails reais nem consomem créditos. O navegador bloqueia serviços externos. A validação final aprovou 78 testes e os dois fluxos de Chromium acima; veja resultados, falhas intermediárias e limites no [relatório de IA](docs/RELATORIO_IA.md). [EVOLUCAO_PRODUTO.md](docs/EVOLUCAO_PRODUTO.md) registra a etapa anterior. Conectividade real em nuvem exige configuração e execução opcional autorizada.
 
 ## Limites relevantes
 
@@ -100,4 +104,4 @@ A BIBI é software proprietário, com **todos os direitos reservados**. Você po
 
 Configurar o aplicativo e cadastrar, importar ou exportar seus dados pelas ferramentas existentes são usos permitidos.
 
-As dependências e os recursos de terceiros mantêm suas próprias licenças. O estilo de avatar Adventurer Neutral, de Lisa Wischofsky, utiliza [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), com atribuição no editor. Permissões validamente concedidas a versões anteriores sob MIT permanecem válidas.
+As dependências e os recursos de terceiros mantêm suas próprias licenças. O estilo de avatar Adventurer Neutral, de Lisa Wischofsky, utiliza [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), com atribuição no editor.

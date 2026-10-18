@@ -1,0 +1,20 @@
+test_chat_context_stream_isolation_and_policy (tests.test_ia.AITests.test_chat_context_stream_isolation_and_policy) ... ok
+test_concurrent_cloud_does_not_block_catalog_or_disable (tests.test_ia.AITests.test_concurrent_cloud_does_not_block_catalog_or_disable) ... ok
+test_configuration_permissions_secret_and_disable_no_network (tests.test_ia.AITests.test_configuration_permissions_secret_and_disable_no_network) ... ok
+test_conversation_expiry_and_concurrency (tests.test_ia.AITests.test_conversation_expiry_and_concurrency) ... ok
+test_explicit_chat_preferences_limit_candidates (tests.test_ia.AITests.test_explicit_chat_preferences_limit_candidates) ... ok
+test_failure_limit_and_cancel_release (tests.test_ia.AITests.test_failure_limit_and_cancel_release) ... ok
+test_insights_real_aggregates_cache_no_personal_data (tests.test_ia.AITests.test_insights_real_aggregates_cache_no_personal_data) ... ok
+test_model_listing_connection_and_removal (tests.test_ia.AITests.test_model_listing_connection_and_removal) ... ok
+test_personalization_uses_favorites_ratings_loans (tests.test_ia.AITests.test_personalization_uses_favorites_ratings_loans) ... ok
+test_priority_filters_unknown_and_invalidation (tests.test_ia.AITests.test_priority_filters_unknown_and_invalidation) ... ok
+test_review_author_edit_delete_published_privacy_and_local_moderation (tests.test_ia.AITests.test_review_author_edit_delete_published_privacy_and_local_moderation) ... ok
+test_usage_persistence_restart_and_backup_excludes_keys (tests.test_ia.AITests.test_usage_persistence_restart_and_backup_excludes_keys) ... ok
+test_all_provider_auth_model_listing_and_stream_contracts (tests.test_ia.ProviderContracts.test_all_provider_auth_model_listing_and_stream_contracts) ... ok
+test_errors_redact_credentials_and_do_not_retry (tests.test_ia.ProviderContracts.test_errors_redact_credentials_and_do_not_retry) ... ok
+test_truncated_stream_is_not_success_and_thinking_is_hidden (tests.test_ia.ProviderContracts.test_truncated_stream_is_not_success_and_thinking_is_hidden) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 23.425s
+
+OK

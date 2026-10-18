@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-18",
+  "timezone": "America/Sao_Paulo",
+  "branch": "integracao-bibi",
+  "cloud_calls": "mocked; no real cloud connectivity verified",
+  "real_other_device": false,
+  "installer_rebuilt": false,
+  "results": [
+    {
+      "command": "python -m unittest discover -s tests -p test_*.py",
+      "passed": 78,
+      "failed": 0,
+      "seconds": 287.403,
+      "log": "unittest-78.txt"
+    },
+    {
+      "command": "python -m unittest tests.test_ia -v",
+      "passed": 15,
+      "failed": 0,
+      "seconds": 23.425,
+      "python_exit_code": 0,
+      "log": "ia-15.txt"
+    },
+    {
+      "command": "python tests/browser_check.py",
+      "result": "PASS",
+      "log": "browser-regressao.txt"
+    },
+    {
+      "command": "python tests/browser_ia.py",
+      "result": "PASS",
+      "cloud": "mocked",
+      "log": "browser-ia.txt"
+    },
+    {
+      "command": "python -m unittest tests.test_ia.ProviderContracts -v",
+      "passed": 3,
+      "failed": 0,
+      "seconds": 0.133
+    },
+    {
+      "command": "python -m unittest tests.test_ia.AITests.test_usage_persistence_restart_and_backup_excludes_keys -v",
+      "passed": 1,
+      "failed": 0,
+      "seconds": 1.585,
+      "log": "backup-recurso.txt"
+    }
+  ],
+  "file_sha256": {
+    "database/database.py": "cf211357b40ae7dede1d1fdcfdcf042c547e2c22c9b49fa524e35a152ae67b31",
+    "database/migrations/004_ia.sql": "1f6d46b769f1b631bd8e0438d47669ee84c3a7b09d7eb9a52f3b3f3f51ec3b89",
+    "packaging/BIBI.spec": "3fda7e98c210f93bd72806c929f33e6acbc0a09f36837a455140cb71d89c6428",
+    "requirements-dev.txt": "151cca93edd38b3e4aea1b744b4e6a39999d64667934de06bc1085bbb9c6d7c6",
+    "routes/__init__.py": "3de2d61b971d2dc35aa84ae8f06389ae75f0a4d5f1fa5ba75c147841b7880b85",
+    "routes/ia.py": "80f8c8e7b7ee6857c0a8e9a214e8b9411b0bf986bfe8622f162a8c2403110396",
+    "services/ai/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "services/ai/policy.py": "f29e4c693beadce82843cd75b870916a31505d0cd26020dd3835fa23f6d85121",
+    "services/ai/prompts.py": "877eda8c65b7cf57db1f8d93e0973cb2709ee7d47831cc3cf73aad5e92a8ba4b",
+    "services/ai/providers.py": "7cabf57a0651ac9a8cc897f2c3214d480bb66fb5721a446af2ca5c5cc4a0b95e",
+    "services/ai/recommendations.py": "1c43ab34bc129fab611207a1d10d700bab48f6c61ef0d4893a32d1ad751d9b5f",
+    "services/ai/runtime.py": "237bb697e913cf4e1caabb6ecd02c1fee163228e49a42cf62cd23b73ddecb8f0",
+    "services/dados_service.py": "c15f6142392677dbba38effe70bb1e3f23b388d5d2e8e893571a74dcb37d674b",
+    "static/css/ia.css": "2cfc66b4773c4526339e7e213909b1c53955096e8fe4e7b98d60a9c2b9072b17",
+    "static/js/conta_acervo.js": "49383dda9f2e0f6b262dcd28bdc3465d049130be823642c9ad425e2b5f421bb1",
+    "static/js/ia.js": "fca178eaae3682a8338e57f16a655f8563c80890f1a05bfc849cb0d0110245eb",
+    "static/js/livros.js": "b67e970659a5ec3db93b4ec0762e1454e271537711a05c64596376735ca39b38",
+    "static/js/settings_modal.js": "d573b63cbebf868c8a9628af02cbc5f53015a2899445dc3632b3aced68e66556",
+    "templates/app.html": "da358a28ed412eb4521273ae79015ecccaa3f48ea4db245b52471afbe397d8fb",
+    "templates/configuracoes.html": "84ecb392077fc25290dc500a97ac6cc0e77fb9ba3df3f202a59e1d4935ecf960",
+    "templates/shell.html": "59162b03c606161e14cd50ec9c196830aba41e68c97b826d2ce1ae9cd3f7f374",
+    "tests/browser_check.py": "f25f901e15a2fdc144d26edcd5f6a12ca8f54bdecfa6407437b90f245152133e",
+    "tests/browser_ia.py": "e9855ccf1c6e5121a768f314a107dbcd4636580baf380a38c8227bd0cce815b5",
+    "tests/check_ia_online.py": "67db1fb80feaf159143117c02f81c67295c35cbc08a63f32dca8abafb21b2a58",
+    "tests/test_ia.py": "0465685b8ac6bbb8d497a0c86e4e849c3c932c10d96d7ff0c6c0d770590eec26",
+    "utils/auth.py": "24d975342223b6adfdb730a2cd6e16a2591074f622e86785ac2c56ecd00c6c59",
+    "utils/secrets_store.py": "7ba4e82ffef9f3babca5378dde3927a1a3f15eda78abb7bad7543bfdc5dfe795"
+  }
+}

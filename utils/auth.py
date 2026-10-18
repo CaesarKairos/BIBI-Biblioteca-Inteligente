@@ -4,7 +4,7 @@ from urllib.parse import urlsplit
 import secrets
 from flask import g, request, session, jsonify, redirect, current_app
 from werkzeug.exceptions import Forbidden, BadRequest,RequestEntityTooLarge
-from database.database import db_manager,operation_lock,maintenance_lock
+from database.database import db_manager,operation_lock,maintenance_lock,external_gate
 
 
 def is_admin():
@@ -40,6 +40,10 @@ def install_security(app):
 
     @app.before_request
     def guard():
+        if request.path in ('/api/gestao/restaurar','/api/ia/modelos','/api/ia/testar','/api/ia/insights','/api/minha-conta/ia/chat'):
+            g.external_restore=request.path=='/api/gestao/restaurar'
+            external_gate.acquire(g.external_restore)
+            g.external_gate_locked=True
         if request.path=='/api/gestao/restaurar':
             # Mesma ordem do worker: manutenção antes de conexões/operações.
             maintenance_lock.acquire()
@@ -136,3 +140,6 @@ def install_security(app):
         if getattr(g,'maintenance_locked',False):
             g.maintenance_locked=False
             maintenance_lock.release()
+        if getattr(g,'external_gate_locked',False):
+            g.external_gate_locked=False
+            external_gate.release(g.external_restore)
