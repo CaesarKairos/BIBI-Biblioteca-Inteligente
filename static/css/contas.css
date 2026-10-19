@@ -101,18 +101,18 @@
 #settings-dialog .settings-nav button { text-align:left; border:0; background:transparent; margin:0; padding:10px 12px; flex-shrink:0; }
 #settings-dialog .settings-nav button[aria-current=true] { background:var(--accent-soft); color:var(--accent-strong); font-weight:700; }
 .settings-panels { overflow:auto; padding:8px 24px 24px; overscroll-behavior:contain; }
-.settings-panels .config-panel { padding:20px; margin:16px 0 0; border-radius:12px; background:var(--surface); }
+.settings-panels .config-panel { padding:20px; margin:16px 0 0; border:1px solid var(--border); border-radius:12px; background:var(--surface); min-width:0; }
 .settings-panels h2 { font-size:19px; margin:0 0 14px; }
 .settings-panels h3 { font-size:16px; margin:22px 0 10px; }
 .settings-panels p { color:var(--light); font-size:13px; line-height:1.55; margin:12px 0; }
-.settings-panels label { display:block; font-size:14px; font-weight:600; margin:16px 0; }
+.settings-panels label { display:block; font-size:14px; font-weight:600; margin:0; min-width:0; line-height:1.5; }
 .settings-panels input:not([type=checkbox]),.settings-panels select,.settings-panels textarea { display:block; width:100%; min-width:0; margin:7px 0 0; }
 .settings-panels textarea { min-height:110px; resize:vertical; }
 .settings-panels input[type=checkbox] { width:auto; }
-.settings-panels button { margin:6px 8px 6px 0; }
+.settings-panels button { margin:0; justify-self:start; max-width:100%; white-space:normal; overflow-wrap:anywhere; }
 .settings-panels .btn-primary { width:auto; min-height:42px; }
 .settings-panels section section { margin:24px 0 0; padding-top:20px; border-top:1px solid var(--border); }
-.settings-panels details { margin:16px 0; }
+
 .settings-panels summary { cursor:pointer; font-size:14px; }
 .settings-panels a { color:var(--accent-strong); }
 .settings-panels pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; }
@@ -121,7 +121,28 @@
 .config-toggle-copy { flex:1; min-width:0; }
 .settings-panels .settings-help { display:block; margin-top:6px; color:var(--light); font-size:12px; font-weight:400; line-height:1.5; }
 .settings-panels .config-toggle-copy .settings-help { margin-top:5px; max-width:62ch; }
-.settings-panels .settings-form-help { font-size:12px; margin:12px 0 0; }
+.settings-panels .settings-form-help { font-size:12px; margin:0; }
+.settings-panels form:not([hidden]) { display:grid; gap:16px; margin:18px 0; min-width:0; }
+.settings-panels form[hidden] { display:none; }
+.settings-panels form > h3,.settings-panels form > p { margin:0; }
+.settings-panels label:has(> input[type=checkbox]):not(.switch) { display:grid; grid-template-columns:20px minmax(0,1fr); align-items:start; gap:6px 10px; font-weight:500; }
+.settings-panels label:has(> input[type=checkbox]) > .settings-help { grid-column:2; margin-top:0; }
+.settings-panels input[type=checkbox] { accent-color:var(--accent-strong); flex-shrink:0; margin-top:4px; }
+.settings-panels label.switch { display:inline-block; flex-shrink:0; }
+.settings-panels .switch input { margin:0; }
+.settings-row { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 0; border-bottom:1px solid var(--border); }
+.settings-row > div { min-width:0; }
+.settings-row p { margin:5px 0 0; }
+.settings-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.settings-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr)); gap:16px; }
+.settings-service { padding:0 0 20px; margin-bottom:20px; border-bottom:1px solid var(--border); }
+.settings-service .settings-row { border:0; }
+.settings-panels details { padding:14px 0; border-top:1px solid var(--border); }
+.settings-panels details p,.settings-panels pre { overflow-wrap:anywhere; }
+.settings-panels .operation-status[data-error=true] { color:var(--danger); }
+.settings-panels .settings-service p { font-size:12px; }
+.settings-panels #ai-service-form { padding-top:16px; border-top:1px solid var(--border); }
+
 .network-fingerprint { font-family:monospace; overflow-wrap:anywhere; font-size:11px !important; }
 .network-settings ol { padding-left:22px; font-size:13px; line-height:1.6; }
 .network-settings li { margin:10px 0; }

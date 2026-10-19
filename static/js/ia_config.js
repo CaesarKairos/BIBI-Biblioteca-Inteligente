@@ -1,72 +1,76 @@
-/* Preparação explícita: nenhuma geração é disparada ao escolher um campo. */
+/* The server selects models. Rendering settings never starts a generation. */
 window.initializeAISettings=async function(){
-    const form=document.getElementById('ai-config-form');if(!form||form.dataset.ready)return;form.dataset.ready='true';
-    const state=document.getElementById('ai-config-state'),feedback=document.getElementById('ai-feedback'),model=form.elements.modelo;
-    let saved,models=[];
-    const identity=()=>form.elements.senha_atual.value?{senha_atual:form.elements.senha_atual.value}:{};
-    const choice=()=>({provedor:form.elements.provedor.value,modelo:model.value});
-    function notify(text,error=false){feedback.textContent=text;feedback.dataset.error=String(error);}
-    async function refresh(){
-        saved=await accountApi('/api/ia/config');
-        form.elements.provedor.value=saved.provedor;
-        if(![...model.options].some(option=>option.value===saved.modelo))model.add(new Option(saved.modelo||'Escolha um modelo',saved.modelo));
-        model.value=saved.modelo;
-        for(const name of ['por_hora','por_dia','concorrencia','max_tokens'])form.elements[name].value=saved[name];
-        form.elements.ativa.checked=saved.ativa;form.elements.privacidade_revisada.checked=saved.privacidade_revisada;
-        state.textContent=saved.mensagem;state.closest('.ai-state-card').dataset.ready=String(saved.disponivel);
-        const provider=saved.provedores.find(p=>p.id===saved.provedor)?.nome;
-        const currentProvider=saved.provedores.find(p=>p.id===saved.em_uso.provedor)?.nome;
-        document.getElementById('ai-current-provider').textContent=`${provider} · ${saved.modelo||'Modelo ainda não escolhido'}${saved.ativa?' · Em uso na biblioteca: '+currentProvider+' / '+saved.em_uso.modelo:' · IA desativada'}`;
-        document.getElementById('ai-key-state').textContent=saved.chave_configurada?'Chave salva e protegida. Deixe o campo vazio para mantê-la.':'Cole a chave de API que a escola obteve no serviço escolhido.';
-        document.getElementById('ai-usage').textContent=`${saved.solicitacoes_24h} solicitações nas últimas 24 horas. Tokens informados pelo serviço: ${saved.tokens_informados_24h??'não disponíveis'}. Isso não representa uma fatura.`;
-        document.getElementById('ai-test').disabled=Boolean(form.dataset.busy)||!saved.chave_configurada||!saved.modelo;
-        window.settingsSaved?.(form);
-    }
-    async function operation(action){
-        if(form.dataset.busy)return;form.dataset.busy='true';window.settingsOperation?.(form,1);
-        const buttons=[...form.querySelectorAll('button')];buttons.forEach(b=>b.disabled=true);
-        const fields=[...form.querySelectorAll('input,select,textarea')],previous=fields.map(field=>field.disabled);fields.forEach(field=>field.disabled=true);
-        try{await action();await refresh();await window.refreshBibiAvailability?.();}
-        catch(error){notify(error.message,true);if(/senha|identidade/i.test(error.message)){document.getElementById('ai-identity').open=true;form.elements.senha_atual.focus();}else{try{await refresh();await window.refreshBibiAvailability?.();}catch{/* Mantém o erro compreensível da operação original. */}}}
-        finally{delete form.dataset.busy;buttons.forEach(b=>b.disabled=false);fields.forEach((field,index)=>field.disabled=previous[index]);document.getElementById('ai-test').disabled=!saved?.chave_configurada||!model.value;form.elements.senha_atual.value='';window.settingsSaved?.(form);window.settingsOperation?.(form,-1);}
-    }
-    form.elements.provedor.onchange=()=>{model.replaceChildren(new Option('Consulte as opções deste provedor',''));form.elements.chave.value='';form.elements.privacidade_revisada.checked=false;notify('Alteração em preparação. A configuração em uso será mantida até sua confirmação.');document.getElementById('ai-test').disabled=true;};
-    document.getElementById('ai-save-key').onclick=()=>operation(async()=>{
-        const data={...choice(),...identity()};if(form.elements.chave.value)data.chave=form.elements.chave.value;
-        await accountApi('/api/ia/config','PUT',data);form.elements.chave.value='';
-        document.getElementById('ai-identity').open=false;notify('Chave salva. Agora consulte os modelos.');
-    });
-    document.getElementById('ai-remove-key').onclick=()=>operation(async()=>{await accountApi('/api/ia/config','PUT',{...choice(),...identity(),remover_chave:true});notify('Chave removida. O uso dessa integração foi desativado.');});
-    document.getElementById('ai-models').onclick=()=>operation(async()=>{
-        await accountApi('/api/ia/config','PUT',choice());
-        const data=await accountApi('/api/ia/modelos','POST',{});models=data.modelos;const previous=model.value;
-        model.replaceChildren(new Option('Selecione um modelo',''));
-        models.forEach(row=>model.add(new Option(row.nome,row.id)));
-        if(models.some(row=>row.id===previous))model.value=previous;
-        notify(models.length?'Opções recebidas. Escolha um modelo para continuar.':'O serviço não retornou modelos utilizáveis para esta chave.');
-    });
-    model.onchange=()=>operation(async()=>{
-        await accountApi('/api/ia/config','PUT',choice());
-        const prices=models.find(row=>row.id===model.value)?.precos;
-        const number=value=>Number(value).toLocaleString('pt-BR',{maximumFractionDigits:4});
-        document.getElementById('ai-model-info').textContent=prices&&typeof prices.prompt==='string'&&typeof prices.completion==='string'?`Preço informado: US$ ${number(Number(prices.prompt)*1000000)} por milhão de tokens de entrada e US$ ${number(Number(prices.completion)*1000000)} de saída. Não equivale ao custo final da solicitação.`:'Confira custos e condições na conta do serviço. Um modelo listado ainda precisa de teste.';
-        notify('Modelo salvo para teste. A configuração em uso continua preservada.');
-    });
-    document.getElementById('ai-test').onclick=()=>operation(async()=>{
-        await accountApi('/api/ia/config','PUT',choice());state.textContent='Verificando a conexão…';notify('Enviando uma mensagem técnica ao serviço…');
-        try{const result=await accountApi('/api/ia/testar','POST',{});notify(result.mensagem);}
-        catch(error){await refresh();throw error;}
-    });
-    form.elements.ativa.onchange=()=>{
-        if(!form.elements.ativa.checked)operation(async()=>{await accountApi('/api/ia/config','PUT',{ativa:false});notify('IA desativada. O acervo e a circulação continuam funcionando.');});
-        else if(!saved?.pode_ativar){form.elements.ativa.checked=false;notify('Primeiro escolha um modelo e teste a conexão.',true);}
-    };
-    document.getElementById('ai-discard').onclick=()=>operation(async()=>{await accountApi('/api/ia/config','PUT',{descartar:true});notify('Preparação descartada. A configuração em uso foi preservada.');});
-    form.onsubmit=event=>{event.preventDefault();operation(async()=>{
-        const data={...choice(),...identity(),ativa:form.elements.ativa.checked,privacidade_revisada:form.elements.privacidade_revisada.checked};
-        for(const name of ['por_hora','por_dia','concorrencia','max_tokens'])data[name]=Number(form.elements[name].value);
-        await accountApi('/api/ia/config','PUT',data);notify(data.ativa?'BIBI disponível para a biblioteca.':'Configuração salva. A IA continua desativada.');
-    });};
-    try{await refresh();}catch(error){notify(error.message,true);}
+ const root=document.getElementById('inteligencia-artificial');if(!root||root.dataset.ready)return;root.dataset.ready='true';
+ const form=document.getElementById('ai-service-form'),advanced=document.getElementById('ai-routing-form');
+ const feedback=document.getElementById('ai-feedback'),toggle=document.getElementById('ai-enabled');let saved,busy=false;
+ const notify=(text,error=false)=>{feedback.textContent=text;feedback.dataset.error=String(error);};
+ async function sensitive(path,method,data){
+  saved=await accountApi('/api/ia/servicos');
+  if(!saved.identidade_confirmada){const password=await confirmarSenhaConta();if(password===null)throw new Error('Operação cancelada.');data={...data,senha_atual:password};}
+  return accountApi(path,method,data);
+ }
+ function resetForm(){form.reset();form.hidden=true;form.elements.provedor.disabled=false;form.elements.provedor.dispatchEvent(new Event('change'));window.settingsSaved?.(form);}
+ function edit(service){
+  form.hidden=false;form.elements.provedor.disabled=false;
+  form.elements.provedor.value=service?.id||'openai';form.elements.provedor.disabled=Boolean(service);
+  form.elements.provedor.dispatchEvent(new Event('change'));
+  form.elements.chave.value='';form.elements.custos_autorizados.checked=service?.custos_autorizados||false;
+  form.elements.chave.required=!service?.chave_salva&&!service?.chave_pendente;
+  form.elements.privacidade_revisada.checked=service?.privacidade_revisada||false;
+  form.elements.limite_diario.value=service?.limite_diario||200;
+  document.getElementById('ai-service-title').textContent=service?'Alterar serviço':'Adicionar serviço';
+  window.settingsSaved?.(form);form.scrollIntoView({block:'nearest'});form.elements.chave.focus();
+ }
+ async function refresh(){
+  saved=await accountApi('/api/ia/servicos');toggle.checked=saved.ativa;
+  document.getElementById('ai-config-state').textContent=saved.disponivel?'IA ativada':saved.ativa?'IA indisponível': 'IA desativada';
+  const list=document.getElementById('ai-services');list.replaceChildren();
+  if(!saved.servicos.length)list.append(accountText('p','Nenhum serviço cadastrado.'));
+  saved.pendencias.forEach(text=>list.append(accountText('p',text)));
+  const labels={disponivel:'Disponível',desativado:'Desativado',verificacao_necessaria:'Verificação necessária'};
+  saved.servicos.forEach(service=>{
+   const row=accountText('article','','settings-service');const header=accountText('div','','settings-row');
+   const info=accountText('div');info.append(accountText('strong',service.nome),accountText('p',`${labels[service.estado]} · ${service.chave_salva?'Chave protegida':'Chave ainda não verificada'}${service.chave_pendente?' · Alteração pendente':''}`));header.append(info);row.append(header);
+   const actions=accountText('div','','settings-actions');
+   const button=(text,action,parent=actions)=>{const b=accountText('button',text);b.type='button';b.onclick=()=>operation(action);parent.append(b);};
+   button('Verificar serviço',async()=>{notify('Verificando o serviço…');const r=await accountApi(`/api/ia/servicos/${service.id}/testar`,'POST',{});notify(r.mensagem);});
+   const change=accountText('button','Alterar');change.type='button';change.onclick=()=>edit(service);actions.append(change);
+   button(service.habilitado?'Desativar':'Habilitar',async()=>{await accountApi(`/api/ia/servicos/${service.id}`,'PUT',{habilitado:!service.habilitado});notify('Estado do serviço atualizado.');});
+   button('Remover',async()=>{if(!confirm(`Remover o serviço ${service.nome} e sua chave?`))return;await sensitive(`/api/ia/servicos/${service.id}`,'DELETE',{});notify('Serviço removido.');});
+   row.append(actions,accountText('p','A verificação envia uma mensagem de teste e pode consumir créditos.'));
+   if(service.modelos.some(m=>m.legado_autorizado))row.append(accountText('p','A configuração anterior autoriza somente seu modelo já verificado. Salvar a opção de custos desmarcada revoga essa autorização.'));
+   const details=accountText('details');details.append(accountText('summary','Modelos e condições'));
+   button('Atualizar modelos',async()=>{await accountApi(`/api/ia/servicos/${service.id}/modelos`,'POST',{});notify('Modelos atualizados sem geração de resposta.');},details);
+   const models=service.chave_pendente?service.modelos_pendentes:service.modelos;
+   models.slice(0,50).forEach(m=>{const prices=m.precos;let cost='Preço não informado';if(prices?.prompt!==undefined&&prices?.completion!==undefined)cost=`US$ ${Number(prices.prompt)*1e6} / ${Number(prices.completion)*1e6} por milhão de tokens de entrada / saída`;
+    details.append(accountText('p',`${m.nome||m.id} · ${m.compativel?(m.estado||'Listado; geração não verificada'):'Compatibilidade não confirmada'} · ${cost}`));
+    if(m.compativel&&!service.chave_pendente){const label=accountText('label','Português: avaliação da escola (opcional)');const select=document.createElement('select');for(const [value,text] of [['nao_avaliado','Não avaliado'],['aprovado','Adequado às leituras da escola'],['rejeitado','Não utilizar']])select.add(new Option(text,value));select.value=m.portugues||'nao_avaliado';select.onchange=()=>{const value=select.value;operation(async()=>{await accountApi(`/api/ia/servicos/${service.id}/modelos/${encodeURIComponent(m.id)}`,'PUT',{portugues:value});notify('Avaliação local registrada.');});};label.append(select);details.append(label);}
+   });
+   if(models.length>50)details.append(accountText('p',`Exibindo 50 de ${models.length} modelos. O roteamento considera todo o registro compatível.`));
+   if(!models.length)details.append(accountText('p','Consulte os modelos ou verifique o serviço.'));
+   row.append(details);list.append(row);
+  });
+  for(const [name,value] of Object.entries(saved.limites))advanced.elements[name].value=value;
+  advanced.elements.preferencia.value=saved.politica.preferencia;
+  advanced.elements.max_estimado_usd.value=saved.politica.max_estimado_usd??'';
+  for(const task of ['chat','insights']){const select=advanced.elements[task];select.replaceChildren(new Option('Automático',''));saved.servicos.forEach(s=>s.modelos.filter(m=>m.compativel).forEach(m=>select.add(new Option(s.nome+' · '+(m.nome||m.id),s.id+'/'+m.id))));select.value=saved.politica.preferidos?.[task]||'';select.dispatchEvent(new Event('change'));}
+  document.getElementById('ai-usage').textContent=`${saved.solicitacoes_24h} solicitações nas últimas 24 horas. Tokens informados: ${saved.tokens_24h??'não disponíveis'}.`;
+  const attempts=document.getElementById('ai-attempts');attempts.replaceChildren();saved.tentativas.forEach(a=>attempts.append(accountText('p',`${a.provedor} · ${a.modelo} · ${a.operacao} · ${a.estado} · ${a.tokens??'—'} tokens`)));
+  window.settingsSaved?.(advanced);
+ }
+ async function operation(action){
+  if(busy)return;busy=true;window.settingsOperation?.(root,1);root.setAttribute('aria-busy','true');
+  const controls=[...root.querySelectorAll('button,input,select')],states=controls.map(c=>c.disabled);controls.forEach(c=>c.disabled=true);
+  try{await action();await refresh();await window.refreshBibiAvailability?.();}
+  catch(error){notify(error.message,true);try{await refresh();await window.refreshBibiAvailability?.();}catch{}}
+  finally{controls.forEach((c,i)=>{if(c.isConnected)c.disabled=states[i];});root.setAttribute('aria-busy','false');busy=false;window.settingsOperation?.(root,-1);}
+ }
+ document.getElementById('ai-add-service').onclick=()=>edit();document.getElementById('ai-service-cancel').onclick=resetForm;
+ form.onsubmit=e=>{e.preventDefault();const name=form.elements.provedor.value;const data={custos_autorizados:form.elements.custos_autorizados.checked,privacidade_revisada:form.elements.privacidade_revisada.checked,limite_diario:Number(form.elements.limite_diario.value)};if(form.elements.chave.value)data.chave=form.elements.chave.value;
+  operation(async()=>{await sensitive(`/api/ia/servicos/${name}`,'PUT',data);resetForm();notify('Serviço salvo. Verifique a conexão antes de ativar.');try{await accountApi(`/api/ia/servicos/${name}/modelos`,'POST',{});}catch(error){notify('Serviço salvo. '+error.message,true);}});
+ };
+ toggle.onchange=()=>{const value=toggle.checked;if(value&&!saved.pode_ativar){toggle.checked=false;notify('Verifique pelo menos um serviço e suas permissões antes de ativar.',true);return;}operation(async()=>{if(value)await sensitive('/api/ia/servicos','PUT',{ativa:true});else await accountApi('/api/ia/servicos','PUT',{ativa:false});notify(value?'IA ativada.':'IA desativada.');});};
+ advanced.onsubmit=e=>{e.preventDefault();const data={};for(const name of ['por_hora','por_dia','concorrencia','max_tokens'])data[name]=Number(advanced.elements[name].value);data.politica={preferencia:advanced.elements.preferencia.value,max_estimado_usd:advanced.elements.max_estimado_usd.value===''?null:Number(advanced.elements.max_estimado_usd.value),preferidos:{}};for(const task of ['chat','insights'])if(advanced.elements[task].value)data.politica.preferidos[task]=advanced.elements[task].value;operation(async()=>{await accountApi('/api/ia/servicos','PUT',data);notify('Opções salvas.');});};
+ try{await refresh();}catch(error){notify(error.message,true);throw error;}
 };
 window.initializeAISettings();

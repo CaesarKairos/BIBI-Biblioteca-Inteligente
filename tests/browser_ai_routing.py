@@ -1,0 +1,101 @@
+"""Actual settings, student chat and catalog in Chromium; external providers mocked."""
+from pathlib import Path
+import tempfile
+from playwright.sync_api import expect
+
+
+def run_scenarios(page,student,second,base,calls,errors,browser,failure):
+    shots=Path(tempfile.gettempdir())/'bibi-auto-routing';shots.mkdir(exist_ok=True)
+    page.goto(base+'/app');student.goto(base+'/app');second.goto(base+'/app')
+    expect(student.locator('.shelf')).to_have_count(4);expect(student.locator('#bibi-chat')).to_be_hidden()
+    page.locator('#config-open').click()
+    page.wait_for_function("document.getElementById('settings-content').getAttribute('aria-busy')==='false'")
+    page.locator('[data-settings-section=inteligencia-artificial]').click()
+    expect(page.locator('#ai-config-state')).to_have_text('IA desativada')
+    assert page.locator('#ai-identity').count()==0
+    assert page.locator('.ai-step-number').count()==0
+    def add(name,first=False):
+        page.locator('#ai-add-service').click();form=page.locator('#ai-service-form')
+        form.locator('[name=provedor]').select_option(name,force=True)
+        form.locator('[name=chave]').fill('synthetic-secret-'+name)
+        form.locator('[name=privacidade_revisada]').check()
+        form.get_by_role('button',name='Salvar serviço',exact=True).click()
+        if first:
+            dialog=page.locator('.password-confirm-dialog');expect(dialog).to_be_visible()
+            dialog.locator('input').fill('senha forte de teste');dialog.get_by_role('button',name='Confirmar',exact=True).click()
+        expect(form).to_be_hidden()
+        page.wait_for_function("document.getElementById('inteligencia-artificial').getAttribute('aria-busy')==='false'")
+        row=page.locator('.settings-service').filter(has=page.get_by_text({'openai':'OpenAI','groq':'GroqCloud'}[name],exact=True))
+        row.get_by_role('button',name='Verificar serviço',exact=True).click()
+        expect(page.locator('#ai-feedback')).to_contain_text('verificadas')
+        page.wait_for_function("document.getElementById('inteligencia-artificial').getAttribute('aria-busy')==='false'")
+    add('openai',True)
+    assert len(calls)==1,'Only the explicit connectivity test may generate before activation'
+    expect(student.locator('#bibi-chat')).to_be_hidden()
+    page.locator('#ai-enabled').press('Space')
+    expect(page.locator('#ai-config-state')).to_have_text('IA ativada')
+    expect(student.locator('#bibi-chat')).to_be_visible(timeout=15000)
+    expect(student.locator('.shelf')).to_have_count(5)
+    recommendation=student.evaluate("async()=>await (await fetch('/api/minha-conta/ia/recomendacoes')).json()")
+    assert recommendation['livros'][0]['id']==2
+    student.locator('#bibi-input').fill('Quero conversar sobre os temas de um livro, sem spoilers.')
+    student.locator('#bibi-send').click()
+    expect(student.locator('.bibi-answer').last).to_contain_text('Vamos conversar')
+    expect(student.locator('.bibi-answer').last).to_contain_text('sem spoilers.',timeout=15000)
+    expect(second.locator('.bibi-answer')).to_have_count(0)
+    student.locator('#bibi-clear').click()
+    expect(student.locator('.bibi-answer')).to_have_count(0)
+    student.locator('.book').first.click()
+    expect(student.locator('#info-livro')).to_be_visible()
+    expect(student.locator('#bibi-suggestions')).to_contain_text('personagens')
+    student.get_by_role('button',name='Podemos discutir os personagens?',exact=True).click()
+    expect(student.locator('.bibi-answer').last).to_contain_text('Vamos conversar')
+    student.locator('#bibi-cancel').click()
+    expect(student.locator('#bibi-send')).to_be_enabled()
+    student.locator('#bibi-clear').click()
+    expect(student.locator('.bibi-answer')).to_have_count(0)
+    print('PASS: one service, contextual password, no model selection, activation, real catalog recommendations and isolated streaming chat.',flush=True)
+    add('groq')
+    assert page.locator('.password-confirm-dialog').count()==0,'Recent confirmation must be reused'
+    expect(page.locator('.settings-service')).to_have_count(2)
+    # Every panel is checked using the same shared shell and components.
+    keys=page.locator('[data-settings-section]').evaluate_all('els=>els.map(e=>e.dataset.settingsSection)')
+    for width in [1366,800,390]:
+        page.set_viewport_size({'width':width,'height':900})
+        for dark in [False,True]:
+            page.evaluate('(value)=>toggleTheme(value)',dark)
+            for key in keys:
+                nav=page.locator(f'[data-settings-section="{key}"]');nav.scroll_into_view_if_needed();nav.click()
+                panel=page.locator(f'#{key}')
+                expect(panel).to_be_visible()
+                assert page.locator('.settings-panels').evaluate('e=>e.scrollWidth<=e.clientWidth+2'),(width,dark,key)
+                assert page.locator('#settings-dialog').evaluate('e=>e.getBoundingClientRect().right<=innerWidth'),(width,dark,key)
+                assert panel.evaluate('p=>Array.from(p.querySelectorAll("input:not([type=checkbox]),textarea,.select-selected,button")).filter(e=>e.getClientRects().length).every(e=>e.getBoundingClientRect().right<=p.getBoundingClientRect().right+2)'),(width,dark,key)
+                if width in (1366,390):page.screenshot(path=str(shots/f'{key}-{width}-{dark}.png'))
+    print('PASS: all 13 settings sections, three widths, both themes, screenshots and no horizontal overflow.',flush=True)
+    page.set_viewport_size({'width':1366,'height':900})
+    page.locator('[data-settings-section=inteligencia-artificial]').click()
+    groq=page.locator('.settings-service').filter(has=page.get_by_text('GroqCloud',exact=True))
+    groq.get_by_role('button',name='Alterar',exact=True).click()
+    page.locator('#ai-service-form [name=chave]').fill('replacement-synthetic-key')
+    page.locator('#ai-service-form').get_by_role('button',name='Salvar serviço',exact=True).click()
+    expect(page.locator('#ai-service-form')).to_be_hidden()
+    page.wait_for_function("document.getElementById('inteligencia-artificial').getAttribute('aria-busy')==='false'")
+    expect(groq).to_contain_text('Alteração pendente')
+    groq.get_by_role('button',name='Verificar serviço',exact=True).click()
+    expect(page.locator('#ai-feedback')).to_contain_text('verificadas')
+    page.wait_for_function("document.getElementById('inteligencia-artificial').getAttribute('aria-busy')==='false'")
+    page.once('dialog',lambda dialog:dialog.accept())
+    groq.get_by_role('button',name='Remover',exact=True).click()
+    expect(page.locator('.settings-service')).to_have_count(1)
+    page.wait_for_function("document.getElementById('inteligencia-artificial').getAttribute('aria-busy')==='false'")
+    expect(page.locator('#ai-config-state')).to_have_text('IA ativada')
+    print('PASS: replacement verified before promotion, removal, and continued operation with one authorized service.',flush=True)
+    page.locator('#ai-enabled').press('Space')
+    expect(page.locator('#ai-config-state')).to_have_text('IA desativada')
+    expect(student.locator('#bibi-chat')).to_be_hidden(timeout=15000)
+    expect(student.locator('.shelf')).to_have_count(4)
+    expect(student.locator('#info-livro')).to_be_visible()
+    assert not errors,errors
+    browser.close()
+    print('PASS: global disabling hides AI while preserving the selected book and normal catalog.',flush=True)

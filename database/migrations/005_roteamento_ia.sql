@@ -1,0 +1,2 @@
+CREATE TABLE IATentativas (id INTEGER PRIMARY KEY, utilizacao_id INTEGER REFERENCES IAUtilizacao(id) ON DELETE CASCADE, instante INTEGER NOT NULL, operacao TEXT NOT NULL, provedor TEXT NOT NULL, modelo TEXT NOT NULL, estado TEXT NOT NULL, motivo TEXT NOT NULL, duracao_ms INTEGER, primeiro_token_ms INTEGER, tokens INTEGER, custo_estimado_usd REAL, custo_informado_usd REAL);
+CREATE INDEX ia_tentativas_instante ON IATentativas(instante,provedor);

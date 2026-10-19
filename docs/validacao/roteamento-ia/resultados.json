@@ -1,0 +1,40 @@
+{
+  "data": "2026-10-19",
+  "branch": "integracao-bibi",
+  "nuvem_real": false,
+  "bancos": "temporarios",
+  "unittest_geral": {
+    "comando": "python -m unittest discover -s tests -p \"test_*.py\"",
+    "testes": 105,
+    "segundos": 356.472,
+    "saida": 0
+  },
+  "unittest_roteamento_final": {
+    "comando": "python -m unittest tests.test_ai_routing -q",
+    "testes": 15,
+    "segundos": 72.654,
+    "saida": 0,
+    "observacao": "Dois cenarios acrescentados depois do discovery geral: revogacao em streaming e cache de insights."
+  },
+  "playwright": {
+    "comando": "python tests/browser_ia.py",
+    "saida": 0,
+    "secoes": 13,
+    "larguras": [
+      1366,
+      800,
+      390
+    ],
+    "temas": [
+      "claro",
+      "escuro"
+    ],
+    "capturas_geradas": 52,
+    "capturas_preservadas": 26
+  },
+  "loading": {
+    "comando": "python tests/browser_ia.py --loading-only",
+    "saida": 0
+  },
+  "limites": "Sem chamadas reais aos seis provedores, sem SMTP real, sem novo instalador e sem outro dispositivo fisico."
+}

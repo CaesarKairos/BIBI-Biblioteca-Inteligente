@@ -256,8 +256,9 @@ def restore(upload):
     for provider in PROVIDERS:
         current_app.extensions['secrets'].set('ia_'+provider,None)
         current_app.extensions['secrets'].set('ia_rascunho_'+provider,None)
+        current_app.extensions['secrets'].set('ia_pendente_'+provider,None)
     with db_manager.connection() as conn:
-        conn.execute("DELETE FROM Configuracoes WHERE chave IN ('ia','ia_rascunho','ia_validacoes')")
+        conn.execute("DELETE FROM Configuracoes WHERE chave IN ('ia','ia_rascunho','ia_validacoes','ia_servicos_v1')")
         conn.commit()
     current_app.extensions.pop('ai_runtime',None)
     current_app.extensions.pop('ai_recommendations',None)

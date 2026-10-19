@@ -1,13 +1,43 @@
 <section id="inteligencia-artificial">
-  <div class="ai-heading"><span class="bibi-cat-icon" aria-hidden="true"></span><div><span class="eyebrow">UMA COMPANHIA PARA A LEITURA</span><h2>Inteligência Artificial</h2><p>Prepare a BIBI no seu ritmo. Os leitores só terão acesso quando você ativar.</p></div></div>
-  <div class="ai-state-card" role="status"><span class="ai-state-dot" aria-hidden="true"></span><div><strong id="ai-config-state">Carregando configuração…</strong><p id="ai-current-provider"></p></div></div>
-  <form id="ai-config-form" class="ai-setup">
-    <div class="ai-step"><span class="ai-step-number">1</span><div><h3>Escolha quem conversa com a BIBI</h3><p>O provedor é o serviço que prepara as respostas.</p><label>Provedor<select name="provedor"><option value="openai">OpenAI</option><option value="anthropic">Anthropic · Claude</option><option value="google">Google · Gemini</option><option value="xai">xAI · Grok</option><option value="groq">GroqCloud</option><option value="openrouter">OpenRouter</option></select></label></div></div>
-    <div class="ai-step"><span class="ai-step-number">2</span><div><h3>Conecte a conta da escola</h3><p id="ai-key-state">A chave fica protegida neste servidor e não será exibida novamente.</p><label>Chave de API<input type="password" name="chave" autocomplete="new-password" maxlength="4096" placeholder="Cole a chave fornecida pelo serviço"></label><details id="ai-identity"><summary>Confirmar minha identidade</summary><p>Para salvar ou remover uma chave, confirme sua senha uma vez. A confirmação vale por dez minutos nesta sessão.</p><label>Sua senha atual<input name="senha_atual" type="password" autocomplete="current-password"></label></details><div class="ai-actions"><button type="button" id="ai-save-key" class="btn-primary">Salvar chave</button><button type="button" id="ai-remove-key" class="ai-text-button">Remover chave</button></div></div></div>
-    <div class="ai-step"><span class="ai-step-number">3</span><div><h3>Escolha o modelo</h3><p>Modelos são as opções de resposta oferecidas pelo serviço. Você pode consultar a lista sem ativar a BIBI.</p><button type="button" id="ai-models" class="ai-secondary">Consultar modelos</button><label>Modelo<select name="modelo"><option value="">Salve a chave para consultar as opções</option></select></label><p id="ai-model-info" class="ai-help">Uma opção listada pode depender de saldo ou das condições da sua conta.</p></div></div>
-    <div class="ai-step"><span class="ai-step-number">4</span><div><h3>Confira a conexão</h3><p>Este botão envia uma mensagem de teste ao provedor e pode consumir créditos. Não enviamos dados de leitores nesse teste.</p><button type="button" id="ai-test" class="ai-secondary">Testar conexão</button></div></div>
-    <div class="ai-step ai-activation"><span class="ai-step-number">5</span><div><h3>Disponibilize para a biblioteca</h3><p>As perguntas enviadas à BIBI serão processadas pelo provedor escolhido. Antes de ativar para os estudantes, a escola precisa verificar suas condições de utilização e privacidade.</p><label class="ai-consent"><input name="privacidade_revisada" type="checkbox"> A escola verificou as condições do serviço e autoriza o uso com seus leitores.</label><label class="ai-switch"><input name="ativa" type="checkbox" role="switch"><span class="ai-switch-track" aria-hidden="true"></span><span>Ativar IA para a biblioteca</span></label><p class="ai-help">A confirmação fica registrada. Ela não representa certificação jurídica. Um teste bem-sucedido não garante disponibilidade futura.</p><div class="ai-actions"><button type="submit" class="btn-primary">Confirmar configuração</button><button type="button" id="ai-discard" class="ai-text-button">Descartar alterações em preparação</button></div></div></div>
-    <details class="ai-advanced"><summary>Uso e opções avançadas</summary><p id="ai-usage"></p><div class="ai-limit-grid"><label>Solicitações por leitor / hora<input name="por_hora" type="number" min="1" max="500" required></label><label>Solicitações na biblioteca / dia<input name="por_dia" type="number" min="1" max="10000" required></label><label>Respostas simultâneas<input name="concorrencia" type="number" min="1" max="8" required></label><label>Tamanho máximo da resposta (tokens)<input name="max_tokens" type="number" min="128" max="4096" required></label></div><p class="ai-help">O total diário considera as últimas 24 horas. Custos e limites do plano devem ser conferidos no painel do serviço; opções gratuitas também podem ter limites. Nenhum serviço pago é ativado como alternativa automática.</p></details>
-    <p id="ai-feedback" class="ai-feedback" role="status" aria-live="polite"></p>
+  <h2>Inteligência Artificial</h2>
+  <p>Configure os serviços que a biblioteca poderá utilizar.</p>
+  <div class="settings-row">
+    <div><strong id="ai-config-state" role="status">Carregando…</strong><p>A seleção de modelos é automática.</p></div>
+    <label class="switch"><input id="ai-enabled" type="checkbox" role="switch" aria-label="Ativar IA para a biblioteca"><span class="slider"></span></label>
+  </div>
+  <h3>Serviços conectados</h3>
+  <div id="ai-services" aria-live="polite"></div>
+  <button type="button" id="ai-add-service" class="btn-primary">Adicionar serviço</button>
+  <form id="ai-service-form" hidden>
+    <h3 id="ai-service-title">Adicionar serviço</h3>
+    <label>Serviço<select name="provedor"><option value="openai">OpenAI</option><option value="anthropic">Anthropic · Claude</option><option value="google">Google Gemini</option><option value="xai">xAI · Grok</option><option value="groq">GroqCloud</option><option value="openrouter">OpenRouter</option></select></label>
+    <label>Chave de API<input name="chave" type="password" autocomplete="new-password" maxlength="4096" placeholder="A chave salva nunca é exibida"></label>
+    <label><input type="checkbox" name="custos_autorizados"> Permitir modelos pagos ou com preço não informado neste serviço</label>
+    <label><input type="checkbox" name="privacidade_revisada"> A escola revisou as condições de uso e privacidade deste serviço e autoriza o processamento externo.</label>
+    <p>Essa confirmação fica registrada e não representa certificação jurídica. Sem permissão de custos, apenas modelos com preço zero informado poderão ser utilizados.</p>
+    <details><summary>Limite deste serviço</summary><label>Tentativas automáticas por dia<input name="limite_diario" type="number" min="1" max="10000" value="200" required></label><p>Inclui tentativas de fallback. Verificações manuais usam o limite geral da biblioteca.</p></details>
+    <div class="settings-actions"><button class="btn-primary" type="submit">Salvar serviço</button><button type="button" id="ai-service-cancel">Cancelar</button></div>
   </form>
+  <h3>Seleção automática</h3>
+  <p>A BIBI escolhe entre os modelos compatíveis dos serviços autorizados. Considera limites, falhas, custos e tempos de resposta observados. Não é necessário escolher um modelo.</p>
+  <p>As mensagens e o contexto literário serão enviados ao serviço selecionado. Evite compartilhar dados pessoais.</p>
+  <details><summary>Uso e opções avançadas</summary>
+    <form id="ai-routing-form">
+      <p id="ai-usage"></p>
+      <div class="settings-fields">
+        <label>Solicitações por leitor / hora<input name="por_hora" type="number" min="1" max="500" required></label>
+        <label>Solicitações na biblioteca / dia<input name="por_dia" type="number" min="1" max="10000" required></label>
+        <label>Respostas simultâneas<input name="concorrencia" type="number" min="1" max="8" required></label>
+        <label>Tamanho máximo da resposta (tokens)<input name="max_tokens" type="number" min="128" max="4096" required></label>
+      </div>
+      <label>Preferência de seleção<select name="preferencia"><option value="equilibrado">Equilíbrio entre tempo e custo</option><option value="economia">Priorizar menor custo informado</option></select></label>
+      <label>Teto estimado por solicitação (US$)<input name="max_estimado_usd" type="number" min="0" max="100" step="0.000001" placeholder="Sem teto estimado"></label>
+      <p>Estimativas não são cobranças. Com um teto definido, modelos sem preço suficiente para estimar ficam excluídos. Confira também o limite de gastos na conta do serviço.</p>
+      <label>Modelo preferencial para conversas<select name="chat"><option value="">Automático</option></select></label>
+      <label>Modelo preferencial para insights<select name="insights"><option value="">Automático</option></select></label>
+      <button type="submit" class="btn-primary">Salvar opções</button>
+      <details><summary>Utilização recente</summary><div id="ai-attempts"></div></details>
+    </form>
+  </details>
+  <p id="ai-feedback" class="operation-status" role="status" aria-live="polite"></p>
 </section>

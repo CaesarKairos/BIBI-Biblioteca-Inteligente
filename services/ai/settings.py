@@ -19,6 +19,12 @@ def confirm_identity(password):
         raise Forbidden('Confirme sua senha uma vez para configurar a IA. A confirmação vale por dez minutos nesta sessão.')
 
 def save(data):
+    from services.ai import routing
+    if routing.read() is not None:
+        if data=={'ativa':False}:
+            from services.ai.connections import configure
+            return configure(data)
+        raise BadRequest('Use Serviços conectados nas Configurações. A seleção de modelos agora é automática.')
     active=rt.config();cfg=rt.draft()
     if set(data)-set(rt.DEFAULTS)-{'chave','remover_chave','senha_atual','descartar'}:
         raise BadRequest('Configuração desconhecida.')

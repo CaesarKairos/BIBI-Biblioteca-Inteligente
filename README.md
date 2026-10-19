@@ -4,7 +4,11 @@ BIBI administra bibliotecas **físicas**, com Python, Flask, SQLite, HTML/CSS/Ja
 
 Esta evolução preserva o acervo, circulação, agenda, Dashboard, capas uniformes, temas e painéis redimensionáveis. Inclui contas individuais, convites, perfil, reservas, avaliações, notificações, CSV e backup. A BIBI integra chat literário com streaming, insights administrativos e recomendações personalizadas com prioridade verificável a autoras brasileiras. A IA começa desativada: chat, quinta prateleira e insights de IA só aparecem após configuração, teste de conexão e ativação. As quatro prateleiras tradicionais e os detalhes dos livros funcionam normalmente sem IA.
 
-Consulte a [configuração e arquitetura de IA](docs/INTEGRACAO_IA.md), o [refinamento visual e seus testes](docs/REFINO_IA.md), a [auditoria das configurações e da agenda](docs/AUDITORIA_CONFIGURACOES.md), o [relatório da integração inicial](docs/RELATORIO_IA.md) e o [roteiro de demonstração](docs/ROTEIRO_DEMONSTRACAO.md). Os testes usam provedores simulados: conectividade real exige configuração e verificação opcional autorizada.
+A escola cadastra um ou mais **serviços de IA**; a BIBI seleciona automaticamente modelos compatíveis e autorizados por solicitação. Não é necessário definir um provedor ou modelo principal. Chaves anteriores são preservadas e modelos pagos exigem autorização da escola.
+
+Validação do roteamento: **105 testes na suíte geral e 15 no módulo final**, mais Chromium com as 13 seções de Configurações em três larguras e nos temas claro/escuro. Resultados, escopo das execuções e capturas estão no [relatório atual](docs/ROTEAMENTO_IA.md).
+
+Consulte a [configuração e arquitetura de IA](docs/INTEGRACAO_IA.md), o [roteamento automático e a validação atual](docs/ROTEAMENTO_IA.md), o [refinamento visual anterior](docs/REFINO_IA.md), a [auditoria das configurações e da agenda](docs/AUDITORIA_CONFIGURACOES.md) e o [roteiro de demonstração](docs/ROTEIRO_DEMONSTRACAO.md). Os testes usam provedores simulados: conectividade real exige configuração e verificação opcional autorizada.
 
 ## Executar no Windows
 

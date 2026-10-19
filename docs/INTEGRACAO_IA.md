@@ -2,7 +2,7 @@
 
 ## Arquitetura
 
-A aplicação Flask existente registra `routes/ia.py`. Não há segundo servidor, interface antiga ou banco demonstrativo. A migração versionada `004_ia` acrescenta três campos opcionais de autoria e uma tabela de utilização. O mecanismo existente cria backup antes de migrar bancos anteriores.
+A aplicação Flask existente registra `routes/ia.py`. Não há segundo servidor, interface antiga ou banco demonstrativo. A migração `004_ia` acrescenta os campos opcionais de autoria e utilização; `005_roteamento_ia` acrescenta a auditoria de tentativas por modelo. O mecanismo existente cria backup antes de migrar bancos anteriores.
 
 Referência analisada: `CaesarKairos/Agente-de-IA-em-Bibliotecas`, commit `be010a39d73398a59b32664129ad106251f8399c`. Foram examinados prompts, política pedagógica, serviços de chat, recomendações e conversas, provedores Gemini/Ollama e testes de política, API, biblioteca, transporte e provedores. A política determinística foi reutilizada em `services/ai/policy.py`; o prompt foi adaptado para distinguir catálogo verificado, conhecimento literário geral e interpretação. Não foram trazidos o acervo de demonstração, a interface, raciocínio exposto, seleção livre de provedor pelo aluno ou fallback do agente original.
 
@@ -12,17 +12,20 @@ As consultas ao catálogo e os indicadores são locais. Os estudantes recebem co
 
 ## Configuração pelo bibliotecário
 
-1. Entre como bibliotecário e abra **Configurações → Inteligência Artificial**.
-2. Escolha OpenAI, Anthropic, Google Gemini, xAI — Grok, GroqCloud ou OpenRouter. Grok e GroqCloud são distintos.
-3. Insira a chave e use **Salvar chave**. Confirme sua senha para proteger a credencial. A confirmação vale por dez minutos nesta sessão, sem repetir a senha ao escolher o modelo.
-4. Use **Consultar modelos** e escolha uma opção da lista. A escola ainda está com a IA desativada; nenhum estudante recebe acesso nessa preparação. Nenhum modelo de produção é pré-fixado.
-5. Use **Testar conexão**. Somente esse botão envia uma mensagem técnica de geração: pode consumir créditos e não envia dados de leitores. Listar modelos não comprova geração; salvar chave não comprova conexão.
-6. Confira termos do plano, tratamento de dados, retenção, disponibilidade regional e uso com menores. Confirme a autorização institucional no bloco de ativação, ligue o switch e use **Confirmar configuração**. O backend exige teste bem-sucedido da combinação provedor/modelo/chave. A confirmação é auditada e não representa certificação jurídica.
-7. Se necessário, abra **Uso e opções avançadas** para ajustar solicitações por usuário/hora, total da instalação em 24 horas, concorrência e saída máxima. São janelas móveis, não viradas de dia civil.
+1. Entre como bibliotecário e abra **Configurações → Inteligência Artificial → Adicionar serviço**.
+2. Informe a plataforma da chave: OpenAI, Anthropic, Google Gemini, xAI/Grok, GroqCloud ou OpenRouter. Essa identificação não fixa o serviço para todas as conversas.
+3. Insira a chave, revise as permissões de custos e a autorização institucional de privacidade e use **Salvar serviço**. A senha é solicitada em um diálogo somente quando falta confirmação recente; a operação continua depois da confirmação. Não há senha em expansível.
+4. A BIBI consulta o catálogo do serviço sem gerar respostas. Use **Verificar serviço** quando autorizar um teste real, que pode consumir créditos. Não são enviados dados de leitores nesse teste. Chave salva e modelo listado não comprovam geração.
+5. Ative o switch geral. Não é necessário escolher um modelo. Para cadastrar mais serviços, repita o cadastro; a BIBI seleciona entre os modelos compatíveis e autorizados a cada solicitação.
+6. Em **Uso e opções avançadas**, ajuste limites, preferência de economia, teto estimado e, opcionalmente, um modelo preferencial por tarefa. Sem preço suficiente, um modelo não pode satisfazer um teto numérico. Sem autorização de custos, somente preço zero informado é aceito, além da autorização restrita preservada de uma configuração anterior já ativa e verificada.
 
-Uma chave vazia mantém a credencial. Alterações de provedor, chave e modelo são preparadas separadamente da configuração em uso e só a substituem na confirmação final após teste. **Descartar alterações em preparação** recupera a seleção em uso. Remover a chave exige confirmação recente de identidade e desativa o uso daquele provedor quando necessário. Desligar o switch é imediato, sem repetir senha. Operações já iniciadas podem chegar ao provedor antes da desativação; o chat verifica o estado entre fragmentos. Não é possível desfazer processamento remoto já recebido.
+Uma chave vazia mantém a credencial existente. Uma substituição fica pendente até um teste bem-sucedido; a chave em uso continua funcionando se a nova falhar. Remover um serviço exige confirmação recente e remove somente suas credenciais. Desativar serviços ou a IA global não exige senha. Solicitações em andamento verificam revogação entre fragmentos; não é possível desfazer processamento remoto já recebido.
 
-O estado compartilhado distingue integração não configurada, desativada, em verificação, pronta e indisponível. A prova do teste é persistida e vinculada à combinação exata de provedor, modelo e credencial por hash; não é inferida pela existência de uma chave. Uma falha conhecida invalida a prova correspondente e pede novo teste manual. Não há sondagem paga automática. Um sucesso anterior não garante disponibilidade futura. Nas outras sessões abertas, a visibilidade acompanha o estado em consultas locais de até cinco segundos, sem chamadas ao fornecedor; no painel que faz a alteração, a atualização ocorre ao concluir a operação. O backend bloqueia novas gerações imediatamente.
+O registro persistente `ia_servicos_v1` contém compatibilidade, autorização e estado por serviço/modelo, vinculado à credencial por hash. Não há sondagem paga automática. A disponibilidade exige pelo menos um serviço verificado, habilitado e autorizado com candidato elegível. Falhas aplicam pausa temporária; erros de chave ou permissão desabilitam a prova do serviço. Outras sessões atualizam a visibilidade em até cinco segundos, sem consultar a nuvem; o backend bloqueia novas gerações imediatamente.
+
+O roteador em `routing.py` não usa outro modelo. Conversas priorizam latência observada e insights priorizam custo estimado, após filtros de compatibilidade, contexto, limites, falhas e autorização. A avaliação opcional de português é registrada pela escola, nunca inferida do nome. Empates são determinísticos. Veja critérios, migração e limitações no [relatório do roteamento](ROTEAMENTO_IA.md).
+
+Há no máximo duas tentativas externas por solicitação. Fallback só ocorre após rejeição HTTP explícita 401/403/404/429, antes de entregar texto, e somente para outro candidato autorizado. Quedas de rede, respostas incompletas e texto parcial não são reenviados, pois podem já ter sido cobrados. O transporte OpenRouter mantém seus fallbacks internos desligados; seus modelos roteadores não entram na seleção.
 
 Sem integração pronta e ativa, o chat, a quinta prateleira e o painel de insights de IA não aparecem. O chat começa oculto no HTML, evitando exibição antes da consulta de estado. Os quatro grupos tradicionais e os detalhes dos livros continuam funcionando. Operações preparatórias são exceções administrativas explícitas ao desligamento global: consulta de modelos e teste continuam autorizadas com limites, enquanto geração estudantil e insights permanecem bloqueados.
 
@@ -72,7 +75,7 @@ Conversas ficam apenas na memória do processo, vinculadas a conta **e sessão a
 
 Há saída máxima de 20000 caracteres, limite de resposta de 60 segundos verificado nos eventos, conexão de 5 segundos e leitura de rede de 35 segundos. O navegador interrompe a espera em 65 segundos e oferece cancelamento. Interrupção não adiciona resposta incompleta ao histórico contextual. Fechar a conexão no navegador não garante reembolso nem cancelamento instantâneo da inferência já iniciada no fornecedor.
 
-Utilização local registra conta, instante, operação, provedor, modelo, estado e tokens quando informados. Não registra mensagens, chaves ou nomes. Registros são mantidos por até 90 dias, com limpeza ao iniciar nova solicitação. Falhas e cancelamentos contam para proteção de consumo. Os cabeçalhos de limites fornecidos pelo provedor são apresentados na configuração. Tokens são totais reportados por respostas, não estimativa de custo nem uma fatura completa. Preços do catálogo OpenRouter não são cobranças efetivas.
+Utilização local registra conta, instante, operação, provedor, modelo, estado e tokens quando informados. Não registra mensagens, chaves ou nomes. Registros são mantidos por até 90 dias, com limpeza ao iniciar nova solicitação. Falhas e cancelamentos contam para proteção de consumo. Os cabeçalhos de limites fornecidos pelo provedor ficam no registro administrativo do serviço. Tokens são totais reportados por respostas, não estimativa de custo nem uma fatura completa. Preços do catálogo OpenRouter não são cobranças efetivas.
 
 O Dashboard conserva indicadores reais e resumo local quando desligado ou indisponível. Interpretações de IA usam cache de uma hora e assinatura dos agregados/configuração. Devem ser revisadas pelo bibliotecário. O prompt não elimina todos os riscos de erro ou injeção; o controle de privilégios está no backend, sem ferramentas executáveis pelo modelo.
 

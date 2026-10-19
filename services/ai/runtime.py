@@ -52,6 +52,14 @@ def record_verification(cfg, success, message, preparation=False, signature=None
 
 def availability(cfg=None):
     cfg=cfg or config()
+    from services.ai import routing
+    registry=routing.read()
+    if registry is not None:
+        usable=routing.ready()
+        state='pronta' if cfg['ativa'] and usable else 'desativada'
+        if not registry['servicos']:state='nao_configurada'
+        elif cfg['ativa'] and not usable:state='indisponivel'
+        return {'estado':state,'disponivel':bool(cfg['ativa'] and usable),'ativa':cfg['ativa']}
     check=verification(cfg)
     state='desativada'
     if not credential(cfg) or not cfg['modelo']:state='nao_configurada'
@@ -103,6 +111,7 @@ def budget(operation, preparation=False, cfg=None):
             conn.commit()
         state['active']+=1
     completed=False
+    g.ai_use_id=use
     try:
         yield cfg
         completed=True
@@ -117,7 +126,8 @@ def budget(operation, preparation=False, cfg=None):
                 tokens=usage.get('input_tokens',0)+usage.get('output_tokens',0)
             if instance:
                 state['provider_limits']=instance.limits
-            conn.execute('UPDATE IAUtilizacao SET estado=?,tokens=? WHERE id=?',('concluida' if completed else 'interrompida',tokens,use));conn.commit()
+            selected=getattr(g,'ai_selected',{})
+            conn.execute('UPDATE IAUtilizacao SET estado=?,tokens=?,provedor=?,modelo=? WHERE id=?',('concluida' if completed else 'interrompida',tokens,selected.get('provedor',cfg['provedor']),selected.get('id',cfg['modelo']),use));conn.commit()
 
 def owner():
     from flask import session

@@ -14,9 +14,11 @@ PROVIDERS = {
 }
 
 class ProviderError(Exception):
-    def __init__(self, message, code='provedor'):
+    def __init__(self, message, code='provedor', safe_retry=False):
         super().__init__(message)
         self.code = code
+        # Only an explicit HTTP rejection establishes that generation did not start.
+        self.safe_retry = safe_retry
 
 class Provider:
     def __init__(self, name, key):
@@ -45,7 +47,7 @@ class Provider:
                 404: ('modelo', 'Modelo ou recurso indisponível.'),
                 429: ('limite', 'Limite de utilização ou saldo do provedor atingido.'),
             }.get(status, ('provedor', 'O provedor não concluiu a solicitação. Confira o modelo e o plano.'))
-            raise ProviderError(message, code)
+            raise ProviderError(message, code, safe_retry=status in (401,403,404,429))
         self.limits = {k:v for k,v in response.headers.items() if k.lower().startswith(('x-ratelimit-', 'anthropic-ratelimit-'))}
         return response
 
@@ -64,10 +66,11 @@ class Provider:
             for row in rows:
                 if self.name == 'google' and 'generateContent' not in row.get('supportedGenerationMethods', []):
                     continue
-                result.append({'id': row.get('id') or row['name'].removeprefix('models/'),
+                from services.ai.model_catalog import describe
+                result.append(describe(self.name, row) | {'id': row.get('id') or row['name'].removeprefix('models/'),
                                'nome': row.get('display_name') or row.get('displayName') or row.get('name') or row['id'],
                                'estado': 'listado; geração ainda não verificada',
-                               'precos': row.get('pricing'), 'contexto': row.get('context_length')})
+                               'precos': row.get('pricing'), 'contexto': row.get('context_length') or row.get('context_window') or row.get('inputTokenLimit') or row.get('max_input_tokens')})
             after = data.get('nextPageToken') if self.name == 'google' else (data.get('last_id') if data.get('has_more') else None)
             if not after:
                 break

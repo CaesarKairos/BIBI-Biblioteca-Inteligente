@@ -59,6 +59,10 @@ def create_app(test_config=None):
                 store.set('smtp_password',legacy[0])
             conn.execute("UPDATE Configuracoes SET valor='' WHERE chave='email_app_password'")
             conn.commit()
+    if legacy_ai:
+        with app.app_context():
+            from services.ai.routing import migrate
+            migrate()
     from routes import register_blueprints,register_error_handlers
     from utils.auth import install_security
     install_security(app)

@@ -37,7 +37,7 @@ def main():
             time.sleep(1.2)
             yield 'sobre os temas desta leitura, sem spoilers.'
         try:
-            with patch.object(Provider,'models',return_value=[{'id':'mock-literature','nome':'Modelo simulado','estado':'listado','precos':None}]),patch.object(Provider,'stream',side_effect=stream),patch('requests.request',side_effect=AssertionError('Rede externa proibida')),sync_playwright() as p:
+            with patch.object(Provider,'models',return_value=[{'id':'mock-literature','nome':'Modelo simulado','estado':'listado','compativel':True,'tarefas':['chat','insights'],'precos':{'prompt':'0','completion':'0'}}]),patch.object(Provider,'stream',side_effect=stream),patch('requests.request',side_effect=AssertionError('Rede externa proibida')),sync_playwright() as p:
                 browser=p.chromium.launch()
                 def context(id):
                     client=app.test_client()
@@ -49,7 +49,8 @@ def main():
                     page=ctx.new_page();page.on('pageerror',lambda error:(errors.append(str(error)),print('JS ERROR:',error,flush=True)))
                     return ctx,page
                 admin,page=context(1);reader,student=context(2);other,second=context(3)
-                from tests.browser_ia_refino import run_scenarios,run_loading_scenario
+                from tests.browser_ia_refino import run_loading_scenario
+                from tests.browser_ai_routing import run_scenarios
                 if '--loading-only' in sys.argv:run_loading_scenario(student,base,browser)
                 else:run_scenarios(page,student,second,base,calls,errors,browser,failure)
         finally:
