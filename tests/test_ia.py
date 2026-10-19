@@ -12,15 +12,98 @@ def deltas(chunks):
 
 
 class AITests(AppTest):
+    def test_preparation_then_activation_and_persistent_readiness(self):
+        reader=self.reader_account()
+        state=lambda:reader.get('/api/minha-conta/ia/estado').json
+        self.assertFalse(state()['disponivel'])
+        payload={'provedor':'openai','chave':'temporary-key','senha_atual':'senha forte de teste'}
+        with patch('requests.request') as network:
+            self.assertEqual(reader.post('/api/ia/modelos',json={}).status_code,403)
+            self.assertEqual(reader.post('/api/ia/testar',json={}).status_code,403)
+            self.assertEqual(self.client.put('/api/ia/config',json=payload).status_code,200)
+            self.assertFalse(state()['disponivel'])
+            self.assertEqual(reader.get('/api/minha-conta/ia/recomendacoes').status_code,503)
+            network.assert_not_called()
+        with patch.object(Provider,'models',return_value=[{'id':'test-model'}]):
+            self.assertEqual(self.client.post('/api/ia/modelos',json={}).status_code,200)
+        self.assertEqual(self.client.put('/api/ia/config',json={'modelo':'test-model'}).status_code,200)
+        self.assertEqual(self.client.put('/api/ia/config',json={'ativa':True,'privacidade_revisada':True}).status_code,400)
+        with patch.object(Provider,'stream',side_effect=lambda *args:deltas(['OK'])):
+            self.assertEqual(self.client.post('/api/ia/testar',json={}).status_code,200)
+        self.assertFalse(state()['disponivel'])
+        self.assertEqual(self.client.put('/api/ia/config',json={'ativa':True,'privacidade_revisada':True}).status_code,200)
+        self.assertTrue(state()['disponivel'])
+        self.app.extensions.pop('ai_runtime',None)
+        self.assertTrue(state()['disponivel'],'A prova de conexão deve sobreviver ao reinício do estado efêmero.')
+        self.assertEqual(self.client.put('/api/ia/config',json={'ativa':False}).status_code,200)
+        self.assertFalse(state()['disponivel'])
+
+    def test_draft_failure_does_not_replace_working_provider(self):
+        self.enable()
+        from services.ai import runtime as rt
+        self.client.put('/api/ia/config',json={'provedor':'groq','chave':'other-key','modelo':'other-model'})
+        self.assertFalse(rt.draft()['privacidade_revisada'],'Outro provedor exige revisão institucional própria.')
+        with patch.object(Provider,'stream',side_effect=ProviderError('Chave inválida','chave')):
+            self.assertEqual(self.client.post('/api/ia/testar',json={}).status_code,503)
+        self.assertEqual(rt.config()['provedor'],'openai')
+        self.assertTrue(rt.availability()['disponivel'])
+        self.assertEqual(self.client.put('/api/ia/config',json={'ativa':True}).status_code,400)
+        self.client.put('/api/ia/config',json={'descartar':True})
+        self.assertEqual(self.client.get('/api/ia/config').json['provedor'],'openai')
+
+    def test_expired_confirmation_and_failed_active_connection(self):
+        self.enable()
+        with self.client.session_transaction() as session:session['ia_confirmacao']={'conta':1,'em':0}
+        self.assertEqual(self.client.put('/api/ia/config',json={'chave':'replace-key'}).status_code,403)
+        self.assertEqual(self.client.put('/api/ia/config',json={'modelo':'other-model'}).status_code,200)
+        self.client.put('/api/ia/config',json={'descartar':True})
+        with patch.object(Provider,'stream',side_effect=ProviderError('Não foi possível conectar.','rede')):
+            self.client.post('/api/ia/testar',json={})
+        self.assertEqual(self.client.get('/api/minha-conta/ia/estado').json['estado'],'indisponivel')
+        with patch('requests.request') as network:
+            self.assertEqual(self.client.post('/api/minha-conta/ia/chat',json={'mensagem':'Literatura'}).status_code,503)
+            network.assert_not_called()
+
+    def test_book_authorship_is_optional_atomic_and_preserved(self):
+        payload={'manual':True,'titulo':'Obra documentada','autor':'Pessoa autora','quantidade':1,
+                 'autoria_genero':'feminina','autoria_pais':'Brasil','autoria_fonte':'Biografia consultada'}
+        response=self.client.post('/api/livros',json=payload)
+        self.assertEqual(response.status_code,201)
+        book=response.json['id']
+        self.assertEqual(self.client.get(f'/api/ia/livros/{book}/autoria').json['pais'],'Brasil')
+        edit={'titulo':payload['titulo'],'autor':payload['autor'],'estoque':1,'categoria':'Ficção'}
+        self.assertEqual(self.client.put(f'/api/livros/{book}',json=edit).status_code,200)
+        self.assertEqual(self.client.get(f'/api/ia/livros/{book}/autoria').json['genero'],'feminina')
+        invalid=edit|{'titulo':'Não deve salvar','autoria_genero':'feminina','autoria_fonte':None}
+        self.assertEqual(self.client.put(f'/api/livros/{book}',json=invalid).status_code,400)
+        self.assertEqual(self.sql('SELECT nome FROM Livros WHERE id=?',(book,))[0][0],payload['titulo'])
+
+    def test_legacy_saved_key_does_not_imply_ready_after_upgrade(self):
+        from app import create_app
+        from services.ai import runtime as rt
+        self.app.extensions['secrets'].set('ia_openai','legacy-key')
+        self.sql("INSERT INTO Configuracoes VALUES ('ia',?)",(json.dumps({'ativa':True,'provedor':'openai','modelo':'legacy-model'}),))
+        updated=create_app({'TESTING':True,'DATA_DIR':str(self.directory)})
+        with updated.app_context():
+            self.assertFalse(rt.config()['ativa'])
+            self.assertFalse(rt.availability()['disponivel'])
+            self.assertEqual(updated.extensions['secrets'].get('ia_openai'),'legacy-key')
+
     def reader_account(self, id=2):
         reader=self.reader(name='Leitor '+str(id),email=f'reader{id}@example.test')
         self.sql("INSERT INTO Contas(id,leitor_id,nome,email,senha_hash,papel,ativacao,onboarding_concluido_em) VALUES (?,?,'Leitor',?,?,'leitor','presencial',CURRENT_TIMESTAMP)",(id,reader,f'reader{id}@example.test',HASH))
         return authenticate(self.app,self.app.test_client(),id)
 
     def enable(self, **changes):
-        payload={'ativa':True,'provedor':'openai','modelo':'test-model','chave':'SECRET-TEST-KEY','senha_atual':'senha forte de teste','privacidade_revisada':True}|changes
+        payload={'provedor':'openai','modelo':'test-model','chave':'SECRET-TEST-KEY','senha_atual':'senha forte de teste','privacidade_revisada':True}|changes
+        payload.pop('ativa',None)
         response=self.client.put('/api/ia/config',json=payload)
         self.assertEqual(response.status_code,200,response.json)
+        with patch.object(Provider,'stream',side_effect=lambda *args:deltas(['OK'])):
+            self.assertEqual(self.client.post('/api/ia/testar',json={}).status_code,200)
+        response=self.client.put('/api/ia/config',json={'ativa':True})
+        self.assertEqual(response.status_code,200,response.json)
+        self.sql('DELETE FROM IAUtilizacao')
         return response
 
     def events(self, response):
@@ -38,15 +121,18 @@ class AITests(AppTest):
         self.assertNotIn(b'SECRET-TEST-KEY',(self.directory/'segredos.dpapi').read_bytes())
         with patch('requests.request') as network:
             self.assertEqual(self.client.put('/api/ia/config',json={'ativa':False}).status_code,200)
-            self.assertEqual(self.client.post('/api/ia/modelos',json={}).status_code,503)
-            self.assertEqual(self.client.post('/api/ia/testar',json={}).status_code,503)
+            # Preparatory operations are authorized while disabled.
+            with patch.object(Provider,'models',return_value=[]):
+                self.assertEqual(self.client.post('/api/ia/modelos',json={}).status_code,200)
+            with patch.object(Provider,'stream',side_effect=lambda *args:deltas(['OK'])):
+                self.assertEqual(self.client.post('/api/ia/testar',json={}).status_code,200)
             self.assertEqual(reader.post('/api/minha-conta/ia/chat',json={'mensagem':'Olá'}).status_code,503)
-            self.assertEqual(self.client.get('/api/ia/insights').status_code,200)
-            self.assertEqual(reader.get('/api/minha-conta/ia/recomendacoes').status_code,200)
+            self.assertEqual(self.client.get('/api/ia/insights').status_code,503)
+            self.assertEqual(reader.get('/api/minha-conta/ia/recomendacoes').status_code,503)
             network.assert_not_called()
 
     def test_priority_filters_unknown_and_invalidation(self):
-        client=self.reader_account()
+        client=self.reader_account();self.enable()
         ids=[self.book() for _ in range(5)]
         self.sql('UPDATE Livros SET autoria_genero=?,autoria_pais=?,autoria_fonte=? WHERE id=?',('feminina','Brasil','Bibliografia',ids[3]))
         self.sql('UPDATE Livros SET autoria_genero=?,autoria_pais=?,autoria_fonte=? WHERE id=?',('feminina','Portugal','Bibliografia',ids[1]))
@@ -61,7 +147,7 @@ class AITests(AppTest):
         self.assertEqual(get()[0]['id'],ids[1])
 
     def test_personalization_uses_favorites_ratings_loans(self):
-        client=self.reader_account();ids=[self.book() for _ in range(3)]
+        client=self.reader_account();self.enable();ids=[self.book() for _ in range(3)]
         self.sql("UPDATE Livros SET categoria='Poesia',temas='natureza' WHERE id IN (?,?)",(ids[1],ids[2]))
         client.put('/api/minha-conta/favoritos',json={'livros':[ids[1]]})
         client.post('/api/minha-conta/avaliacoes/'+str(ids[1]),json={'estrelas':5,'comentario':'Gostei'})
@@ -98,6 +184,8 @@ class AITests(AppTest):
         with patch.object(Provider,'stream',side_effect=ProviderError('Limite do provedor','limite')):
             result=self.events(reader.post('/api/minha-conta/ia/chat',json={'mensagem':'Quero um livro'}))
             self.assertTrue(any(e['tipo']=='erro' for e in result));self.assertFalse(result[-1]['sucesso'])
+        from services.ai import runtime as rt
+        rt.record_verification(rt.config(),True,'Reteste simulado')
         with patch.object(Provider,'stream') as remote:
             result=self.events(reader.post('/api/minha-conta/ia/chat',json={'mensagem':'Outra leitura'}))
             self.assertTrue(any('Limite' in e.get('mensagem','') for e in result));remote.assert_not_called()

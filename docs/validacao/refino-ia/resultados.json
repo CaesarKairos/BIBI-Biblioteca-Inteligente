@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-18",
+  "timezone": "America/Sao_Paulo",
+  "branch": "integracao-bibi",
+  "real_cloud_tested": false,
+  "real_paid_calls": 0,
+  "real_other_device_tested": false,
+  "installer_rebuilt": false,
+  "other_sessions_refresh_seconds": 5,
+  "results": [
+    {
+      "command": "python -m unittest discover -s tests -p test_*.py",
+      "passed": 83,
+      "failed": 0,
+      "seconds": 283.059,
+      "exit_code": 0,
+      "log": "unittest-83.txt"
+    },
+    {
+      "command": "python tests/browser_check.py",
+      "result": "PASS",
+      "exit_code": 0,
+      "log": "browser-regressao.txt",
+      "note": "Transcript; raw queue notices omitted."
+    },
+    {
+      "command": "python tests/browser_ia.py",
+      "result": "PASS",
+      "exit_code": 0,
+      "cloud": "mocked",
+      "log": "browser-ia.txt"
+    },
+    {
+      "command": "python tests/browser_ia.py --loading-only",
+      "result": "PASS",
+      "exit_code": 0,
+      "log": "carregamento.txt"
+    },
+    {
+      "command": "python -m unittest tests.test_ia.AITests.test_draft_failure_does_not_replace_working_provider tests.test_ia.AITests.test_preparation_then_activation_and_persistent_readiness -v",
+      "passed": 2,
+      "failed": 0,
+      "seconds": 17.186,
+      "exit_code": 0,
+      "log": "preparacao-ativacao.txt",
+      "note": "Targeted rerun after resetting institutional consent for a new provider."
+    }
+  ],
+  "working_tree_sha256": {
+    "app.py": "6a22dd11a62c5c1316d1aa92952d88ec4851514be6ad9055d89591365bf653be",
+    "routes/ia.py": "542f2a62288190e962572a23209e175f3438c7e23a8b5727494e6dbb9816877d",
+    "services/ai/runtime.py": "56b036e20c6bdfb178a65be93645f66843a4f704d3739bd962a0a7a16ce2d8b7",
+    "services/ai/settings.py": "af928173ee2046818a88db8cd64472d9624a288a3e6c717ea1e6f94685c106c7",
+    "services/autoria_service.py": "f9965f4ee3435439234408ece7f0f2a77c6894c102a336337357bb6c85c75bfe",
+    "services/dados_service.py": "7bc9755929a0ed114e056f6f14f4cf37c41c8c024cd862fe98392e5221e93ea5",
+    "services/livros_service.py": "58374ce88d8e8af1a1e536bbdaa16ade523aaafb8ad3b0af44f728564c18f9a6",
+    "static/css/ia.css": "f28244223e7be1b00b4d090a62d910538da63e514165257ec43d986819779083",
+    "static/js/ia.js": "bca0d3fa31b85dd01eb0f410180992e9cb57f96c8c041c5df57563969ef83e25",
+    "static/js/ia_config.js": "689f63ce12b39f16d7350320f4e19444e2ab1501ecc3d7675a539f747ff21b11",
+    "static/js/livros.js": "bb6d86a0deebaf8cd9733dcb9b603daa17382b296bd731007cd8e641bf3240b9",
+    "templates/app.html": "3d2d6a0940b735e469ba4e80283a1757332eaf950ee947c7457f2e1fa5c9c9ae",
+    "templates/autoria_fields.html": "3b08d0c7f50c4c8f20dd89b20db8752fa765b985f2e7f977c6344205c4c49c55",
+    "templates/configuracoes.html": "5fd0999fbeeda5b9d8cd24c19593a43fe7fea6a475fe5751c1c6dbe07616b431",
+    "templates/ia_chat.html": "fa871128b8de4de805742ca2929cc84e3fbdd37da83bfc93e5db6a57771f5ef9",
+    "templates/ia_settings.html": "dc177f67ebf701e37d9696247d2dcd32b3dff9a7aafef68e6b7b88703e7b2527",
+    "templates/shell.html": "d99203dacb2d64ddb60bc83d9bcf41fbcab0bb0a94067690a4e0df56714afed7",
+    "tests/browser_check.py": "b5393e1d53fb73334a33d189e02d2e3ee06b9d0d7c6c096ed1dc0809d3563c42",
+    "tests/browser_ia.py": "1bcb888bcbb773ad23c7df77e018e3b308bfbfe9b469535794034edfcb396ab7",
+    "tests/browser_ia_refino.py": "3dc5f5e94895dc112337780f636969bf7b8283142bf949e71163b0daa5cda8d3",
+    "tests/test_ia.py": "0479e758d565333578d2d7782a190fdf5ea52dd2393a6810cf7266c4fbe9fa4d",
+    "tests/test_regression.py": "bd14bef1a9e7536c8613eec3b0845606d709b2f567dddaed642ad3422e6cd22d"
+  }
+}

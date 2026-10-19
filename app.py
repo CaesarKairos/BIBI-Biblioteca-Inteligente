@@ -1,6 +1,7 @@
 """Fabrica Flask sem efeitos de importacao."""
 from datetime import timedelta
 from pathlib import Path
+import json
 from flask import Flask
 from config import STATIC_DIR,TEMPLATE_DIR,DATA_DIR
 from database.database import DatabaseManager
@@ -42,6 +43,16 @@ def create_app(test_config=None):
     app.extensions['dummy_password_hash']=generate_password_hash(secrets.token_urlsafe(24),method='scrypt')
     # Migra apenas a configuração já existente no banco, nunca lê .env.
     with app.extensions['database'].connection() as conn:
+        # Configurações anteriores ao fluxo de verificação persistente precisam de teste
+        # e ativação explícitos. Nenhuma chave salva é tratada como prova de conexão.
+        legacy_ai=conn.execute("SELECT valor FROM Configuracoes WHERE chave='ia'").fetchone()
+        proofs=conn.execute("SELECT 1 FROM Configuracoes WHERE chave='ia_validacoes'").fetchone()
+        if legacy_ai and not proofs:
+            settings=json.loads(legacy_ai[0])
+            if settings.get('ativa'):
+                settings['ativa']=False
+                conn.execute("UPDATE Configuracoes SET valor=? WHERE chave='ia'",(json.dumps(settings),))
+                conn.commit()
         legacy = conn.execute("SELECT valor FROM Configuracoes WHERE chave='email_app_password'").fetchone()
         if legacy and legacy[0]:
             if not store.get('smtp_password'):

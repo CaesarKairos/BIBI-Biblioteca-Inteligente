@@ -21,8 +21,50 @@ def config():
 def runtime():
     return current_app.extensions.setdefault('ai_runtime', {'lock':threading.RLock(),'active':0,'conversations':{},'insights':None})
 
-def provider(cfg):
-    key=current_app.extensions['secrets'].get('ia_'+cfg['provedor'])
+def draft():
+    with db_manager.connection() as conn:
+        row=conn.execute("SELECT valor FROM Configuracoes WHERE chave='ia_rascunho'").fetchone()
+    return DEFAULTS | (json.loads(row[0]) if row else config())
+
+def credential(cfg, preparation=False):
+    store=current_app.extensions['secrets']
+    if preparation:
+        key=store.get('ia_rascunho_'+cfg['provedor'])
+        if key is not None:
+            return key
+    return store.get('ia_'+cfg['provedor'])
+
+def fingerprint(cfg, preparation=False):
+    return hashlib.sha256(json.dumps([cfg['provedor'],cfg['modelo'],credential(cfg,preparation)],ensure_ascii=False).encode()).hexdigest()
+
+def verification(cfg, preparation=False):
+    with db_manager.connection() as conn:
+        row=conn.execute("SELECT valor FROM Configuracoes WHERE chave='ia_validacoes'").fetchone()
+    return (json.loads(row[0]) if row else {}).get(fingerprint(cfg,preparation))
+
+def record_verification(cfg, success, message, preparation=False, signature=None):
+    with db_manager.connection() as conn:
+        row=conn.execute("SELECT valor FROM Configuracoes WHERE chave='ia_validacoes'").fetchone()
+        checks=json.loads(row[0]) if row else {}
+        checks[signature or fingerprint(cfg,preparation)]={'funcionou':success,'mensagem':message,'instante':int(time.time())}
+        checks=dict(sorted(checks.items(),key=lambda pair:pair[1]['instante'])[-20:])
+        conn.execute("INSERT OR REPLACE INTO Configuracoes VALUES ('ia_validacoes',?)",(json.dumps(checks),));conn.commit()
+
+def availability(cfg=None):
+    cfg=cfg or config()
+    check=verification(cfg)
+    state='desativada'
+    if not credential(cfg) or not cfg['modelo']:state='nao_configurada'
+    elif fingerprint(cfg) in runtime().get('verifying',set()):state='verificando'
+    elif cfg['ativa']:state='pronta' if check and check['funcionou'] else 'indisponivel'
+    return {'estado':state,'disponivel':state=='pronta','ativa':cfg['ativa']}
+
+def require_ready():
+    if not availability()['disponivel']:
+        raise ServiceUnavailable('A BIBI está sem uma integração de IA disponível. A biblioteca continua funcionando normalmente.')
+
+def provider(cfg, preparation=False):
+    key=credential(cfg,preparation)
     if not key or not cfg['modelo']:
         raise ServiceUnavailable('A BIBI está sem configuração de IA. A biblioteca continua disponível.')
     instance=Provider(cfg['provedor'],key)
@@ -42,10 +84,10 @@ def external():
             operation_lock.acquire();g.operation_locked=True
 
 @contextmanager
-def budget(operation):
-    cfg=config()
-    if not cfg['ativa']:
-        raise ServiceUnavailable('A inteligência artificial está desativada nesta biblioteca.')
+def budget(operation, preparation=False, cfg=None):
+    cfg=cfg or config()
+    if not preparation:
+        require_ready()
     state=runtime();now=int(time.time())
     with operation_lock,state['lock']:
         if state['active']>=cfg['concorrencia']:

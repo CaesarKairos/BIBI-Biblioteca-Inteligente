@@ -14,13 +14,17 @@ As consultas ao catálogo e os indicadores são locais. Os estudantes recebem co
 
 1. Entre como bibliotecário e abra **Configurações → Inteligência Artificial**.
 2. Escolha OpenAI, Anthropic, Google Gemini, xAI — Grok, GroqCloud ou OpenRouter. Grok e GroqCloud são distintos.
-3. Confira os termos do plano, tratamento de dados, retenção, disponibilidade regional e uso com menores. Registre a política da instituição; a caixa de revisão não substitui essa análise.
-4. Insira a chave, confirme sua senha, assinale a revisão institucional e ative a IA. Salve. Uma instalação pode estar ativa para consulta de modelos e ainda não estar pronta para chat por faltar modelo.
-5. Clique **Consultar modelos**, selecione um identificador retornado pela API, confirme sua senha e salve novamente. Nenhum modelo de produção é pré-fixado.
-6. Clique **Testar conexão e geração**. O teste usa um pedido técnico curto e pode consumir saldo. Um sucesso vale para aquele instante, não garante solicitações futuras.
-7. Configure solicitações por usuário/hora, total da instalação em 24 horas, concorrência e saída máxima. São janelas móveis, não viradas de dia civil.
+3. Insira a chave e use **Salvar chave**. Confirme sua senha para proteger a credencial. A confirmação vale por dez minutos nesta sessão, sem repetir a senha ao escolher o modelo.
+4. Use **Consultar modelos** e escolha uma opção da lista. A escola ainda está com a IA desativada; nenhum estudante recebe acesso nessa preparação. Nenhum modelo de produção é pré-fixado.
+5. Use **Testar conexão**. Somente esse botão envia uma mensagem técnica de geração: pode consumir créditos e não envia dados de leitores. Listar modelos não comprova geração; salvar chave não comprova conexão.
+6. Confira termos do plano, tratamento de dados, retenção, disponibilidade regional e uso com menores. Confirme a autorização institucional no bloco de ativação, ligue o switch e use **Confirmar configuração**. O backend exige teste bem-sucedido da combinação provedor/modelo/chave. A confirmação é auditada e não representa certificação jurídica.
+7. Se necessário, abra **Uso e opções avançadas** para ajustar solicitações por usuário/hora, total da instalação em 24 horas, concorrência e saída máxima. São janelas móveis, não viradas de dia civil.
 
-Uma chave vazia mantém a credencial; uma nova chave substitui a salva. Remoção exige senha e desativa o uso se necessário. **Desativar imediatamente** não exige reenviar senha e impede novas chamadas. Operações já iniciadas podem chegar ao provedor antes da desativação; o chat verifica o estado entre fragmentos. Não é possível desfazer processamento remoto já recebido.
+Uma chave vazia mantém a credencial. Alterações de provedor, chave e modelo são preparadas separadamente da configuração em uso e só a substituem na confirmação final após teste. **Descartar alterações em preparação** recupera a seleção em uso. Remover a chave exige confirmação recente de identidade e desativa o uso daquele provedor quando necessário. Desligar o switch é imediato, sem repetir senha. Operações já iniciadas podem chegar ao provedor antes da desativação; o chat verifica o estado entre fragmentos. Não é possível desfazer processamento remoto já recebido.
+
+O estado compartilhado distingue integração não configurada, desativada, em verificação, pronta e indisponível. A prova do teste é persistida e vinculada à combinação exata de provedor, modelo e credencial por hash; não é inferida pela existência de uma chave. Uma falha conhecida invalida a prova correspondente e pede novo teste manual. Não há sondagem paga automática. Um sucesso anterior não garante disponibilidade futura. Nas outras sessões abertas, a visibilidade acompanha o estado em consultas locais de até cinco segundos, sem chamadas ao fornecedor; no painel que faz a alteração, a atualização ocorre ao concluir a operação. O backend bloqueia novas gerações imediatamente.
+
+Sem integração pronta e ativa, o chat, a quinta prateleira e o painel de insights de IA não aparecem. O chat começa oculto no HTML, evitando exibição antes da consulta de estado. Os quatro grupos tradicionais e os detalhes dos livros continuam funcionando. Operações preparatórias são exceções administrativas explícitas ao desligamento global: consulta de modelos e teste continuam autorizadas com limites, enquanto geração estudantil e insights permanecem bloqueados.
 
 Chaves ficam em `segredos.dpapi`, protegidas por DPAPI do usuário Windows. A API nunca as devolve, nem mesmo parcialmente. Não entram no banco, exportações ou pacote. O navegador contém a chave apenas enquanto o bibliotecário a digita/envia, e limpa o campo após salvar; não é possível ocultar do próprio navegador um segredo que está sendo digitado nele. Para acesso pela rede, use o HTTPS existente com certificado confiável.
 
@@ -56,11 +60,11 @@ Não foi feita avaliação contratual de um plano real de escola. `store:false` 
 
 Entre candidatos do mesmo patamar de afinidade, a ordem explícita é: **autoria feminina brasileira documentada → autoria feminina ou brasileira documentada → classificação restante/desconhecida**. Em seguida considera disponibilidade e títulos ainda não emprestados. A diversidade distribui gêneros dentro do mesmo patamar de afinidade/prioridade. Autoria mista não é automaticamente classificada como feminina.
 
-Os campos `autoria_genero`, `autoria_pais` e `autoria_fonte` são opcionais. A prioridade exige fonte registrada; nunca se deduz identidade pelo nome. País aceita Brasil/BR/Brazil. Sem fonte, a classificação não eleva a posição. A seção administrativa permite registrar os metadados. Para múltiplas nacionalidades ou autorias complexas, mantenha desconhecido quando o esquema não representar corretamente a obra.
+Os campos `autoria_genero`, `autoria_pais` e `autoria_fonte` são opcionais. A prioridade exige fonte registrada; nunca se deduz identidade pelo nome. País aceita Brasil/BR/Brazil. Sem fonte, a classificação não eleva a posição. Os formulários de cadastro manual e edição do livro incluem **Sobre a autoria · opcional**, com validação e salvamento na mesma transação da obra. Clientes antigos que não enviam esses campos preservam seu conteúdo. Eles não ficam nas configurações do provedor. Para múltiplas nacionalidades ou autorias complexas, mantenha desconhecido quando o esquema não representar corretamente a obra.
 
 Filtros explícitos de gênero, autor, autoria feminina, brasileira e disponibilidade são aplicados antes da ordenação. O chat reconhece pedidos comuns e nomes completos/categorias existentes; não é um interpretador universal de filtros em linguagem natural. Quando não há candidatos compatíveis, a IA deve explicar a ausência, sem completar com livros externos.
 
-A quinta prateleira sempre identifica a seleção como algoritmo local, mesmo se o chat estiver ativo. Não faz geração externa ao abrir o acervo. Cache por assinatura inclui catálogo, disponibilidade, histórico, favoritos, avaliações, Quero ler e filtros, invalidando alterações relevantes. As outras quatro prateleiras permanecem.
+A quinta prateleira só aparece com IA pronta e ativa. Sua seleção continua sendo calculada localmente; não faz geração externa ao abrir o acervo. Cache por assinatura inclui catálogo, disponibilidade, histórico, favoritos, avaliações, Quero ler e filtros, invalidando alterações relevantes. As outras quatro prateleiras permanecem sempre disponíveis.
 
 ## Conversas, privacidade e limites
 

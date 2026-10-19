@@ -56,7 +56,7 @@ with patch('smtplib.SMTP',side_effect=AssertionError('SMTP real proibido')),sync
     api(page,'/api/emprestimos','POST',{'leitor_id':reader,'livros':[{'id':books[1]['id']}]})
     invite=api(page,f'/api/contas/leitores/{reader}/codigo','POST',{})['codigo']
     page.goto(base+'/app');page.wait_for_load_state('networkidle')
-    assert page.locator('.shelf').count()==5
+    assert page.locator('.shelf').count()==4
     page.locator('#busca-acervo').fill('autora');page.wait_for_timeout(350);page.wait_for_load_state('networkidle')
     assert page.locator('.book').count()>=3
     assert page.locator('.book.unavailable').count()>=1
@@ -96,7 +96,7 @@ with patch('smtplib.SMTP',side_effect=AssertionError('SMTP real proibido')),sync
             for dark in [False,True]:
                 tab.evaluate('(dark)=>toggleTheme(dark)',dark);tab.wait_for_timeout(250)
                 assert tab.evaluate('document.documentElement.scrollWidth<=innerWidth'),(role,width,dark)
-                assert tab.locator('.shelf').count()==5
+                assert tab.locator('.shelf').count()==4
                 sizes=tab.locator('.book').evaluate_all('es=>es.map(e=>[e.offsetWidth,e.offsetHeight,getComputedStyle(e).backgroundSize])')
                 assert all(size==[80,110,'cover'] for size in sizes),sizes
                 tab.screenshot(path=str(screens/f'{role}-{width}-{"dark" if dark else "light"}.png'))
@@ -115,7 +115,7 @@ with patch('smtplib.SMTP',side_effect=AssertionError('SMTP real proibido')),sync
                         assert tab.locator('.right-bar').inner_text().strip()==''
                     else:
                         # /configuracoes redireciona ao acervo com modal; o chat integra este painel.
-                        assert tab.locator('#bibi-chat').count()==1
+                        assert not tab.locator('#bibi-chat').is_visible()
                     tab.screenshot(path=str(screens/f'{role}-{route[1:]}-{width}-{dark}.png'),full_page=True)
                 if role=='leitor':assert tab.locator('#smtp-form').count()==0
     page.goto(base+'/app');page.wait_for_load_state('networkidle')
@@ -129,5 +129,5 @@ with patch('smtplib.SMTP',side_effect=AssertionError('SMTP real proibido')),sync
     guest.close();admin.close();browser.close()
 server.close();thread.join(timeout=3)
 work.cleanup()
-print('Browser passed: setup, real login/invite, admin/reader, privacy, profile/avatar cancel, search, 5 shelves, details, fixed covers, 4 viewports, light/dark and resizing.')
+print('Browser passed: setup, real login/invite, admin/reader, privacy, profile/avatar cancel, search, 4 shelves without AI, details, fixed covers, 4 viewports, light/dark and resizing.')
 print('Screenshots:',screens)

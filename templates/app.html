@@ -120,7 +120,6 @@
                 </div>
             {% endblock %}
 {% block details %}
-<section id="bibi-chat"><h3>Converse com a BIBI</h3><p id="bibi-privacy"></p><div id="bibi-suggestions"></div><div id="bibi-messages" aria-live="polite"></div><p id="bibi-status" role="status"></p><form id="bibi-chat-form"><label>Sua mensagem<textarea name="mensagem" maxlength="2000" required placeholder="Vamos conversar sobre livros?"></textarea></label><button class="btn-primary">Enviar</button><button type="button" id="bibi-cancel" disabled>Interromper</button><button type="button" id="bibi-clear">Nova conversa</button></form></section>
                 <div id="info-vazio" aria-hidden="true"></div>
                 <div id="info-livro" data-bibi-style="s14">
                     <div class="details-header"><span class="eyebrow">SEU PRÓXIMO CAPÍTULO</span><button type="button" class="icon-button" id="fechar-detalhes" aria-label="Fechar detalhes do livro" title="Fechar detalhes" data-bibi-onclick="h58">×</button></div>
@@ -132,6 +131,7 @@
                     <div id="det-desc"></div>
                     {% if admin %}<button class="btn-primary" id="btn-emprestar" data-bibi-style="s20" data-bibi-onclick="h22">Emprestar este</button><button class="btn-primary" data-bibi-style="s20" data-bibi-onclick="h23">Editar</button><button class="btn-primary" id="btn-excluir-livro" data-bibi-style="s5" data-bibi-onclick="h24">Arquivar Livro</button>{% endif %}
                 </div>
+{% include 'ia_chat.html' %}
             {% endblock %}
 {% block overlays %}{% if admin %}            <div id="modalAddLivro" class="modal">
                 <div class="modal-content">
@@ -149,7 +149,8 @@
                     <label>ISBN (opcional)</label><input type="text" id="manual-isbn">
                     <label>Título *</label><input type="text" id="manual-titulo">
                     <label>Autor *</label><input type="text" id="manual-autor">
-                    <div class="campo-ano"><label>Ano</label><input type="number" id="manual-ano"></div>
+                    {% with prefix='manual' %}{% include 'autoria_fields.html' %}{% endwith %}
+<div class="campo-ano"><label>Ano</label><input type="number" id="manual-ano"></div>
                     <div class="campo-paginas"><label for="manual-paginas">Número de páginas (opcional)</label><input type="number" id="manual-paginas" min="1" step="1" max="9007199254740991" inputmode="numeric"></div>
                     <div class="campo-descricao"><label>Descrição</label><textarea id="manual-descricao" rows="3"></textarea></div>
                     <div class="campo-temas"><label>Temas (separados por vírgula)</label><input type="text" id="manual-temas" placeholder="Ficção, Aventura..."></div>
@@ -177,7 +178,8 @@
                     <input type="hidden" id="edit-id">
                     <label>Título</label><input type="text" id="edit-titulo">
                     <label>Autor</label><input type="text" id="edit-autor">
-                    <div class="campo-ano"><label>Ano</label><input type="number" id="edit-ano"></div>
+                    {% with prefix='edit' %}{% include 'autoria_fields.html' %}{% endwith %}
+<div class="campo-ano"><label>Ano</label><input type="number" id="edit-ano"></div>
                     <div class="campo-paginas"><label for="edit-paginas">Número de páginas (opcional)</label><input type="number" id="edit-paginas" min="1" step="1" max="9007199254740991" inputmode="numeric"></div>
                     <div class="campo-descricao"><label>Descrição</label><textarea id="edit-descricao" rows="3"></textarea></div>
                     <div class="campo-temas"><label>Temas</label><input type="text" id="edit-temas" placeholder="Ficção, Aventura..."></div>

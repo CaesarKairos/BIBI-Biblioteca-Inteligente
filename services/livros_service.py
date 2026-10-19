@@ -296,6 +296,8 @@ def api_livros(admin, data, method):
                 numero_paginas = validar_numero_paginas(data.get('numero_paginas'))
             except ValueError as error:
                 return {"erro": str(error)}, 400
+            from services.autoria_service import validate
+            authorship=validate(data)
             hoje = get_brasilia_today().isoformat()
         
             localizacao = data.get('localizacao', '').strip()
@@ -334,6 +336,8 @@ def api_livros(admin, data, method):
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (isbn, titulo, autor, ano, capa, descricao, temas, categoria, quantidade, quantidade, hoje, localizacao, numero_paginas))
             livro_id = cursor.lastrowid
+            if authorship is not None:
+                conn.execute('UPDATE Livros SET autoria_genero=?,autoria_pais=?,autoria_fonte=? WHERE id=?',(*authorship,livro_id))
             from services.contas_service import auditar
             auditar(conn,'criar_livro',livro_id)
             conn.commit()
@@ -361,6 +365,8 @@ def api_livros(admin, data, method):
 
 
 def editar_livro(id, data):
+    from services.autoria_service import validate
+    authorship=validate(data) if isinstance(data,dict) else None
     if not isinstance(data, dict):
         return {"erro": "Envie os dados do livro em um objeto JSON."}, 400
     try:
@@ -395,6 +401,8 @@ def editar_livro(id, data):
             data.get('categoria'), data.get('localizacao', ''), id
         ))
         from services.contas_service import auditar
+        if authorship is not None:
+            conn.execute('UPDATE Livros SET autoria_genero=?,autoria_pais=?,autoria_fonte=? WHERE id=?',(*authorship,id))
         auditar(conn,'editar_livro',id,motivo=f'estoque {old[0]} → {stock}')
         conn.commit()
         return {"status": "ok"}

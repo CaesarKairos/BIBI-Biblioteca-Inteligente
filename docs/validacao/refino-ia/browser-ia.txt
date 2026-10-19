@@ -1,0 +1,42 @@
+Task queue depth is 1
+Task queue depth is 2
+Task queue depth is 3
+Task queue depth is 4
+Task queue depth is 4
+Task queue depth is 4
+Task queue depth is 5
+Task queue depth is 4
+Task queue depth is 3
+Task queue depth is 3
+Task queue depth is 2
+Task queue depth is 3
+Task queue depth is 4
+Task queue depth is 3
+Task queue depth is 3
+Task queue depth is 3
+Task queue depth is 2
+Task queue depth is 3
+Task queue depth is 2
+Task queue depth is 1
+Task queue depth is 2
+Task queue depth is 1
+Task queue depth is 1
+Task queue depth is 2
+Task queue depth is 2
+Task queue depth is 2
+Task queue depth is 1
+Task queue depth is 1
+Task queue depth is 2
+Task queue depth is 2
+Task queue depth is 3
+Task queue depth is 3
+Task queue depth is 2
+Task queue depth is 3
+Task queue depth is 3
+Task queue depth is 3
+Task queue depth is 3
+PASS: sem chave, quatro prateleiras, painel convencional, nenhum insight ou chamada.
+PASS: chave sem ativar, modelos e teste preparatórios, confirmação única, ativação imediata.
+PASS: sugestões contextuais, streaming, histórico isolado, nova conversa, cancelamento e controles sem sobreposição em três larguras e dois temas.
+PASS: troca preserva configuração em uso, chave inválida oculta IA, reteste e desligamento em funcionamento.
+PASS: metadados no editor do livro; console limpo. Capturas: <user>\AppData\Local\Temp\bibi-ia-refino

@@ -22,96 +22,63 @@ def provider_error(error):
 @bp.route('/api/ia/config',methods=['GET','PUT'])
 @admin_required
 def settings():
-    if request.method=='PUT':
-        data=request.get_json();cfg=rt.config()
-        allowed=set(rt.DEFAULTS)|{'chave','remover_chave','senha_atual'}
-        if set(data)-allowed:
-            raise BadRequest('Configuração desconhecida.')
-        for field in ('ativa','privacidade_revisada','remover_chave'):
-            if field in data and type(data[field]) is not bool:
-                raise BadRequest('Opção inválida.')
-        for field,low,high in [('por_hora',1,500),('por_dia',1,10000),('concorrencia',1,8),('max_tokens',128,4096)]:
-            if field in data and (type(data[field]) is not int or not low<=data[field]<=high):
-                raise BadRequest('Limite inválido: '+field)
-        selected=data.get('provedor',cfg['provedor'])
-        if selected not in PROVIDERS:
-            raise BadRequest('Provedor inválido.')
-        if 'modelo' in data and (not isinstance(data['modelo'],str) or len(data['modelo'])>200):
-            raise BadRequest('Modelo inválido.')
-        key=data.get('chave')
-        if key is not None and (not isinstance(key,str) or not 1<=len(key.strip())<=4096):
-            raise BadRequest('Chave inválida.')
-        sensitive=bool(key or data.get('remover_chave') or data.get('ativa') or selected!=cfg['provedor'] or data.get('modelo',cfg['modelo'])!=cfg['modelo'])
-        if sensitive and not verificar_senha_admin(data.get('senha_atual')):
-            raise Forbidden('Confirme sua senha atual para alterar a configuração sensível.')
-        new=cfg|{k:v for k,v in data.items() if k in rt.DEFAULTS}
-        if selected!=cfg['provedor'] and 'modelo' not in data:
-            new['modelo']=''
-        store=current_app.extensions['secrets']
-        if new['ativa'] and (not new['privacidade_revisada'] or (not key and not store.get('ia_'+selected)) or data.get('remover_chave')):
-            raise BadRequest('Configure a chave e confirme a revisão institucional de privacidade.')
-        if key:
-            store.set('ia_'+selected,key.strip())
-        if data.get('remover_chave'):
-            store.set('ia_'+selected,None);new['ativa']=False
-        with db_manager.connection() as conn:
-            conn.execute("INSERT OR REPLACE INTO Configuracoes VALUES ('ia',?)",(json.dumps(new),))
-            auditar(conn,'configurar_ia',selected);conn.commit()
-        rt.runtime()['insights']=None
-        rt.runtime().pop('connection_test',None)
-    cfg=rt.config()
-    with db_manager.connection() as conn:
-        count=conn.execute('SELECT COUNT(*) FROM IAUtilizacao WHERE instante>?',(int(time.time())-86400,)).fetchone()[0]
-        tokens=conn.execute('SELECT SUM(tokens) FROM IAUtilizacao WHERE instante>?',(int(time.time())-86400,)).fetchone()[0]
-    return jsonify(**cfg,chave_configurada=bool(current_app.extensions['secrets'].get('ia_'+cfg['provedor'])),
-        provedores=[{'id':k,'nome':v[0]} for k,v in PROVIDERS.items()],solicitacoes_24h=count,
-        tokens_informados_24h=tokens,limites_provedor=rt.runtime().get('provider_limits',{}),teste=rt.runtime().get('connection_test'),
-        custo='Não calculado. Consulte o painel do provedor; listagem não garante acesso nem gratuidade.')
+    from services.ai.settings import save,view
+    if request.method=='PUT':save(request.get_json())
+    return jsonify(view())
 
 @bp.post('/api/ia/modelos')
 @admin_required
 def models():
-    cfg=rt.config()
-    if not cfg['ativa']:
-        raise ServiceUnavailable('Ative a IA com revisão institucional antes de consultar o provedor.')
+    cfg=rt.draft()
     limitar('ia-modelos',str(g.conta['id']),limite=10)
-    with rt.budget('modelos'),rt.external():
-        key=current_app.extensions['secrets'].get('ia_'+cfg['provedor'])
+    with rt.budget('modelos',preparation=True,cfg=cfg),rt.external():
+        key=rt.credential(cfg,True)
         if not key:
             raise BadRequest('Configure uma chave para consultar modelos.')
-        result=Provider(cfg['provedor'],key).models()
+        signature=rt.fingerprint(cfg,True)
+        try:result=Provider(cfg['provedor'],key).models()
+        except ProviderError as error:
+            rt.record_verification(cfg,False,str(error),True,signature)
+            raise
     return jsonify(modelos=result)
 
 @bp.post('/api/ia/testar')
 @admin_required
 def test():
+    cfg=rt.draft()
+    instance=rt.provider(cfg,True)
+    signature=rt.fingerprint(cfg,True)
+    rt.runtime().setdefault('verifying',set()).add(signature)
     try:
-        with rt.budget('teste') as cfg, rt.external():
-            text=''.join(rt.provider(cfg).stream(cfg['modelo'],'Responda apenas OK.',[{'role':'user','content':'Teste de conexão.'}],128))
+        with rt.budget('teste',preparation=True,cfg=cfg), rt.external():
+            text=''.join(instance.stream(cfg['modelo'],'Responda apenas OK.',[{'role':'user','content':'Teste de conexão.'}],128))
+            if not text:raise ProviderError('O provedor retornou uma resposta vazia.')
     except ProviderError as error:
-        rt.runtime()['connection_test']={'funcionou':False,'mensagem':str(error),'instante':int(time.time())}
+        rt.record_verification(cfg,False,str(error),True,signature)
         raise
-    if not text:
-        raise ProviderError('O provedor retornou uma resposta vazia.')
-    rt.runtime()['connection_test']={'funcionou':True,'mensagem':'Conexão e geração confirmadas no último teste; sem garantia futura.','instante':int(time.time())}
+    finally:
+        rt.runtime()['verifying'].discard(signature)
+    rt.record_verification(cfg,True,'Conexão verificada. Pronto para ativar.',True,signature)
     return jsonify(mensagem='Conexão e geração funcionaram neste teste. Solicitações futuras dependem de saldo, limites e disponibilidade.')
 
 @bp.get('/api/minha-conta/ia/estado')
 def status():
     cfg=rt.config()
-    return jsonify(ativa=cfg['ativa'],provedor=PROVIDERS[cfg['provedor']][0] if cfg['ativa'] else None,
+    return jsonify(**rt.availability(cfg),provedor=PROVIDERS[cfg['provedor']][0] if cfg['ativa'] else None,
                    aviso='Mensagens e contexto literário são processados por um provedor externo. Não compartilhe dados pessoais. Conversas locais expiram após 30 minutos de inatividade.')
 
 @bp.get('/api/minha-conta/ia/recomendacoes')
 def recommendations():
+    rt.require_ready()
     filters={k:request.args[k][:200] for k in ('genero','autor','prateleira','q') if request.args.get(k)}
     filters.update({k:request.args.get(k)=='true' for k in ('feminina','brasileira','disponivel','indisponivel')})
     return jsonify(livros=recommend(g.conta,filters),origem='Seleção personalizada por critérios do catálogo; sem geração por IA.')
 
 @bp.delete('/api/minha-conta/ia/conversa/<cid>')
 def clear(cid):
-    cid,item=rt.conversation(cid)
     with rt.runtime()['lock']:
+        item=rt.runtime()['conversations'].get(cid)
+        if not item or item['owner']!=rt.owner():raise NotFound('Conversa não encontrada.')
         del rt.runtime()['conversations'][cid]
     return jsonify(status='ok')
 
@@ -122,8 +89,7 @@ def chat():
         raise BadRequest('Envie uma mensagem de até 2000 caracteres; provedor e modelo são definidos pela biblioteca.')
     if data.get('conversa_id') is not None and not isinstance(data['conversa_id'],str):
         raise BadRequest('Conversa inválida.')
-    if not rt.config()['ativa']:
-        raise ServiceUnavailable('A inteligência artificial está desativada. Explore as sugestões do acervo.')
+    rt.require_ready()
     books=recommend(g.conta,message_filters(message))
     if data.get('livro_id') is not None:
         if type(data['livro_id']) is not int:
@@ -137,7 +103,7 @@ def chat():
         return json.dumps({'tipo':kind,**values},ensure_ascii=False)+'\n'
     @stream_with_context
     def generate():
-        answer=[];completed=False
+        answer=[];completed=False;signature=None
         try:
             with rt.budget('chat') as cfg:
                 yield event('inicio',conversa_id=cid)
@@ -149,9 +115,10 @@ def chat():
                     history=item['history'][-12:]+[{'role':'user','content':message}]
                     while len(history)>1 and sum(len(m['content']) for m in history)>12000:
                         history=history[2:]
-                    with rt.external(),closing(rt.provider(cfg).stream(cfg['modelo'],system,history,cfg['max_tokens'])) as source:
+                    instance=rt.provider(cfg);signature=rt.fingerprint(cfg)
+                    with rt.external(),closing(instance.stream(cfg['modelo'],system,history,cfg['max_tokens'])) as source:
                         for delta in source:
-                            if not rt.config()['ativa']:
+                            if not rt.availability()['disponivel'] or cid not in rt.runtime()['conversations']:
                                 raise ServiceUnavailable('A IA foi desativada pela biblioteca.')
                             answer.append(delta)
                             if sum(map(len,answer))>20000:
@@ -161,6 +128,7 @@ def chat():
                     raise ProviderError('A BIBI não recebeu uma resposta. Tente novamente mais tarde.')
                 completed=True
         except (ProviderError,ServiceUnavailable,TooManyRequests) as error:
+            if isinstance(error,ProviderError):rt.record_verification(cfg,False,str(error),signature=signature)
             yield event('erro',mensagem=str(error) if isinstance(error,ProviderError) else error.description)
         except Exception as error:
             from werkzeug.exceptions import HTTPException
@@ -178,6 +146,7 @@ def chat():
 @bp.get('/api/ia/insights')
 @admin_required
 def insights():
+    rt.require_ready()
     facts=aggregates();cfg=rt.config();state=rt.runtime()
     signature=json.dumps([facts,cfg],sort_keys=True,ensure_ascii=False)
     cached=state['insights']
@@ -191,7 +160,8 @@ def insights():
                     [{'role':'user','content':'Sugira até três ações de incentivo à leitura. Identifique possibilidades, sem repetir números.'}],active['max_tokens']))
             if text:
                 result.update(texto=text,origem='Interpretação por IA de agregados reais; sujeita a revisão')
-        except (ProviderError,ServiceUnavailable) as error:
+        except (ProviderError,ServiceUnavailable,TooManyRequests) as error:
+            if isinstance(error,ProviderError):rt.record_verification(cfg,False,str(error))
             result['aviso']='IA indisponível; resumo local preservado.'
     state['insights']={'signature':signature,'time':time.monotonic(),'result':result}
     return jsonify(result)
@@ -206,14 +176,12 @@ def metadata(id):
     if request.method=='GET':
         return jsonify(genero=row[0],pais=row[1],fonte=row[2])
     data=request.get_json()
-    if set(data)-{'genero','pais','fonte'} or data.get('genero') not in (None,'feminina','masculina','mista'):
+    if set(data)-{'genero','pais','fonte'}:
         raise BadRequest('Metadados de autoria inválidos.')
-    if any(v is not None and (not isinstance(v,str) or len(v)>500) for v in data.values()):
-        raise BadRequest('Use textos de até 500 caracteres.')
-    if (data.get('genero') or data.get('pais')) and not data.get('fonte','').strip():
-        raise BadRequest('Registre uma fonte confiável para a classificação.')
+    from services.autoria_service import validate
+    values=validate({'autoria_'+field:data.get(field) for field in ('genero','pais','fonte')})
     with db_manager.connection() as conn:
         conn.execute('UPDATE Livros SET autoria_genero=?,autoria_pais=?,autoria_fonte=? WHERE id=?',
-                     (data.get('genero'),data.get('pais'),data.get('fonte'),id))
+                     (*values,id))
         auditar(conn,'metadados_autoria',id);conn.commit()
     return jsonify(status='ok')

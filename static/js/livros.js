@@ -191,22 +191,7 @@ function criarLivroPrateleira(l) {
 function exibirPrateleiras(livros) {
     const container = document.getElementById('acervo-prateleiras');
     container.innerHTML = '';
-    const especial = document.createElement('section');
-    especial.className = 'shelf shelf-bibi';
-    especial.id = 'prateleira-bibi';
-    especial.setAttribute('aria-labelledby', 'recomendacoes-titulo');
-    especial.dataset.contentSource = 'catalogo-real';
-    especial.innerHTML = '<div class="shelf-heading"><h3 id="recomendacoes-titulo"><span class="bibi-cat-icon" aria-hidden="true"></span>Recomendações da BIBI</h3></div><p class="shelf-note" role="status">Selecionando livros do nosso acervo…</p><div class="books-grid"></div><div class="shelf-base"></div>';
-    const recommendationFilters=new URLSearchParams({q:document.getElementById('busca-acervo').value,prateleira:document.getElementById('catalog-category').value,disponivel:String(document.getElementById('catalog-availability').value==='disponivel'),indisponivel:String(document.getElementById('catalog-availability').value==='indisponivel')});
-    apiFetch('/api/minha-conta/ia/recomendacoes?'+recommendationFilters).then(r=>r.json()).then(data=>{
-        if(!especial.isConnected)return;
-        especial.querySelector('.shelf-note').textContent=data.origem;
-        const grid=especial.querySelector('.books-grid');
-        const visible=data.livros.filter(book=>livros.some(l=>l.id===book.id));
-        visible.forEach(book=>{const node=criarLivroPrateleira(book);node.title=book.motivo;grid.append(node);});
-        if(!visible.length)grid.append(textElement('p','Sem sugestões para os filtros atuais.','shelf-empty'));
-    }).catch(()=>{especial.querySelector('.shelf-note').textContent='Sugestões indisponíveis neste momento.';});
-    container.appendChild(especial);
+    if(window.bibiAIState?.disponivel) adicionarPrateleiraBibi(container,livros);
     const categorias = ['Ficção', 'Não-ficção', 'Poesia', 'Quadrinhos'];
     categorias.forEach(cat => {
         const livrosCat = livros.filter(l => (l.prateleira || l.categoria) === cat);
@@ -354,6 +339,7 @@ async function salvarLivroManual() {
         const localizacao = document.getElementById('manual-localizacao') ? document.getElementById('manual-localizacao').value : '';
         const payload = {
             manual: true,
+            ...camposAutoria('manual'),
             isbn: document.getElementById('manual-isbn').value || null,
             titulo: titulo,
             autor: autor,
@@ -377,6 +363,7 @@ async function salvarLivroManual() {
             document.getElementById('manual-isbn').value = '';
             document.getElementById('manual-titulo').value = '';
             document.getElementById('manual-autor').value = '';
+            for(const field of ['genero','pais','fonte'])document.getElementById('manual-autoria-'+field).value='';
             document.getElementById('manual-ano').value = '';
             document.getElementById('manual-paginas').value = '';
             document.getElementById('manual-descricao').value = '';
@@ -401,9 +388,14 @@ async function salvarLivroManual() {
 }
 
 
-function editarLivroSelecionado() {
+async function editarLivroSelecionado() {
     if (!isAdminGlobal) return;
     if(!livroSelecionado) return;
+    const selectedId=livroSelecionado.id;
+    let metadata;
+    try{metadata=await accountApi('/api/ia/livros/'+selectedId+'/autoria');}catch(error){showToast(error.message,'error');return;}
+    if(livroSelecionado?.id!==selectedId)return;
+    for(const field of ['genero','pais','fonte'])document.getElementById('edit-autoria-'+field).value=metadata[field]||'';
     document.getElementById('edit-id').value = livroSelecionado.id;
     document.getElementById('edit-titulo').value = livroSelecionado.titulo;
     document.getElementById('edit-autor').value = livroSelecionado.autor;
@@ -471,6 +463,7 @@ async function salvarEdicaoLivro() {
         if (!validarCampoPaginas('edit')) return;
         const id = document.getElementById('edit-id').value;
         const payload = {
+            ...camposAutoria('edit'),
             titulo: document.getElementById('edit-titulo').value,
             autor: document.getElementById('edit-autor').value,
             ano: document.getElementById('edit-ano').value,
@@ -514,4 +507,20 @@ function confirmarExclusaoLivro() {
         carregarAcervo();
         if (isAdminGlobal) carregarDashboard();
     });
+}
+
+function adicionarPrateleiraBibi(container,livros) {
+    const especial=document.createElement('section');especial.className='shelf shelf-bibi';especial.id='prateleira-bibi';
+    especial.innerHTML='<div class="shelf-heading"><h3><span class="bibi-cat-icon" aria-hidden="true"></span>Recomenda\u00e7\u00f5es da BIBI</h3></div><p class="shelf-note" role="status">Escolhas do nosso acervo para voc\u00ea</p><div class="books-grid"></div><div class="shelf-base"></div>';
+    container.prepend(especial);
+    const filters=new URLSearchParams({q:document.getElementById('busca-acervo').value,prateleira:document.getElementById('catalog-category').value,disponivel:String(document.getElementById('catalog-availability').value==='disponivel'),indisponivel:String(document.getElementById('catalog-availability').value==='indisponivel')});
+    apiFetch('/api/minha-conta/ia/recomendacoes?'+filters).then(r=>{if(!r.ok)throw Error();return r.json();}).then(data=>{
+        if(!especial.isConnected||!window.bibiAIState?.disponivel)return;
+        const grid=especial.querySelector('.books-grid');data.livros.filter(book=>livros.some(l=>l.id===book.id)).forEach(book=>{const node=criarLivroPrateleira(book);node.title=book.motivo;grid.append(node);});
+        if(!grid.children.length)especial.querySelector('.shelf-note').textContent='Sem sugest\u00f5es para os filtros atuais.';
+    }).catch(()=>{especial.remove();window.refreshBibiAvailability?.();});
+}
+
+function camposAutoria(prefix){
+    return Object.fromEntries(['genero','pais','fonte'].map(field=>['autoria_'+field,document.getElementById(prefix+'-autoria-'+field).value||null]));
 }

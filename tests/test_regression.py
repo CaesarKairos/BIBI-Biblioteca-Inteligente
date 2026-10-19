@@ -15,7 +15,10 @@ class RegressionTests(AppTest):
             if rule.rule.startswith('/api/') and '<' not in rule.rule and 'GET' in rule.methods and not rule.rule.startswith(('/api/acesso','/api/minha-conta')):
                 with self.subTest(rule=rule.rule):
                     response=self.client.get(rule.rule)
-                    self.assertLess(response.status_code,500,response.data)
+                    if rule.rule=='/api/ia/insights':
+                        self.assertEqual(response.status_code,503,response.data)  # Instalação sem IA pronta.
+                    else:
+                        self.assertLess(response.status_code,500,response.data)
                     if rule.rule!='/api/hero-image':
                         self.assertEqual(guest.get(rule.rule).status_code,401)
 
