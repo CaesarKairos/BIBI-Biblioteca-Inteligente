@@ -35,12 +35,18 @@ def csv_preview(content,kind,mapping=None):
         raise BadRequest('Mapeamento de colunas inválido.')
     results=[];identities=set()
     with db_manager.connection() as conn:
+        from services.configuracoes_service import campos_cadastro
+        fields=campos_cadastro(conn)
+        location=conn.execute("SELECT valor FROM Configuracoes WHERE chave='obrigar_localizacao_livro'").fetchone()
+        require_location=bool(location and location[0].lower()=='true')
         for number,raw in enumerate(reader,2):
             if number>2001:
                 raise BadRequest('Importe até 2000 linhas por arquivo.')
             row={key:str(raw.get(mapping.get(key,key)) or '').strip() for key in FIELDS[kind]}
             errors=[]
             if kind=='livros':
+                if require_location and not row['localizacao']:
+                    errors.append('Informe a localização física exigida pela biblioteca.')
                 if not row['titulo'] or not row['autor']:
                     errors.append('Título e autor obrigatórios.')
                 try:
@@ -55,6 +61,8 @@ def csv_preview(content,kind,mapping=None):
                     # Sem ISBN: sempre um título novo; nunca mesclar por nome.
                     row['isbn']=None
             else:
+                if fields.get('campoNumeroUsuario') and row['tipo']=='estudante' and not row['telefone']:
+                    errors.append('Informe o telefone do estudante exigido pela biblioteca.')
                 if not row['nome'] or row['tipo'] not in ('estudante','professor'):
                     errors.append('Nome e categoria estudante/professor obrigatórios.')
                 identity=row['email'].casefold()

@@ -1,5 +1,19 @@
 from flask import current_app
 from database.database import db_manager
+import json
+
+
+def campos_cadastro(conn):
+    row=conn.execute("SELECT valor FROM Configuracoes WHERE chave='campos_cadastro'").fetchone()
+    return json.loads(row[0]) if row else {}
+
+
+def validar_telefone(conn, data, tipo, anterior=None):
+    from werkzeug.exceptions import BadRequest
+    telefone=data.get('telefone',anterior)
+    if tipo=='estudante' and campos_cadastro(conn).get('campoNumeroUsuario') and not str(telefone or '').strip():
+        raise BadRequest('Informe o telefone do estudante, conforme as configurações da biblioteca.')
+    return telefone
 
 
 def is_email_blocked():
@@ -174,9 +188,15 @@ def quantidade_aulas_status():
 
 def set_quantidade_aulas_route(data):
     qtd = data.get('quantidade')
-    if qtd is None or not isinstance(qtd, int) or qtd < 1 or qtd > 20:
+    if type(qtd) is not int or qtd < 1 or qtd > 20:
         return {"erro": "Quantidade deve ser um número entre 1 e 20"}, 400
-    set_quantidade_aulas(qtd)
+    with db_manager.connection() as conn:
+        conn.execute('BEGIN IMMEDIATE')
+        from utils.datetime import get_brasilia_today
+        if conn.execute('SELECT 1 FROM Agendamento WHERE aula>? AND data>=?',(qtd,get_brasilia_today().isoformat())).fetchone():
+            return {'erro':'Existem agendamentos futuros nesses horários. Reorganize-os antes de reduzir a quantidade de aulas.'},400
+        conn.execute("INSERT OR REPLACE INTO Configuracoes VALUES ('quantidade_aulas',?)",(str(qtd),))
+        conn.commit()
     return {"status": "ok"}
 
 

@@ -4,7 +4,7 @@ BIBI administra bibliotecas **físicas**, com Python, Flask, SQLite, HTML/CSS/Ja
 
 Esta evolução preserva o acervo, circulação, agenda, Dashboard, capas uniformes, temas e painéis redimensionáveis. Inclui contas individuais, convites, perfil, reservas, avaliações, notificações, CSV e backup. A BIBI integra chat literário com streaming, insights administrativos e recomendações personalizadas com prioridade verificável a autoras brasileiras. A IA começa desativada: chat, quinta prateleira e insights de IA só aparecem após configuração, teste de conexão e ativação. As quatro prateleiras tradicionais e os detalhes dos livros funcionam normalmente sem IA.
 
-Consulte a [configuração e arquitetura de IA](docs/INTEGRACAO_IA.md), o [refinamento visual e seus testes](docs/REFINO_IA.md), o [relatório da integração inicial](docs/RELATORIO_IA.md) e o [roteiro de demonstração](docs/ROTEIRO_DEMONSTRACAO.md). Os testes usam provedores simulados: conectividade real exige configuração e verificação opcional autorizada.
+Consulte a [configuração e arquitetura de IA](docs/INTEGRACAO_IA.md), o [refinamento visual e seus testes](docs/REFINO_IA.md), a [auditoria das configurações e da agenda](docs/AUDITORIA_CONFIGURACOES.md), o [relatório da integração inicial](docs/RELATORIO_IA.md) e o [roteiro de demonstração](docs/ROTEIRO_DEMONSTRACAO.md). Os testes usam provedores simulados: conectividade real exige configuração e verificação opcional autorizada.
 
 ## Executar no Windows
 
@@ -92,7 +92,7 @@ python tests/browser_ia.py
 python tests/browser_loan_search.py
 ```
 
-Testes usam bancos temporários, dados sintéticos e provedores de IA simulados; não enviam e-mails reais nem consomem créditos. O navegador bloqueia serviços externos. O refinamento atual aprovou 83 testes, os dois fluxos Chromium e a verificação `python tests/browser_ia.py --loading-only`, que retém a resposta de disponibilidade para comprovar ausência de flash. Veja resultados, capturas e limitações no [relatório do refinamento](docs/REFINO_IA.md). [EVOLUCAO_PRODUTO.md](docs/EVOLUCAO_PRODUTO.md) registra uma etapa anterior. Conectividade real em nuvem exige configuração e execução opcional autorizada.
+Testes usam bancos temporários, dados sintéticos e provedores de IA simulados; não enviam e-mails reais nem consomem créditos. O navegador bloqueia serviços externos. O refinamento da IA aprovou 83 testes, os dois fluxos Chromium e a verificação `python tests/browser_ia.py --loading-only`, que retém a resposta de disponibilidade para comprovar ausência de flash. A auditoria posterior das configurações aprovou **92 testes** e os três cenários de `tests/browser_settings.py` (principal, `--institution-only` e `--cache-only`). Veja resultados, capturas e limitações no [relatório do refinamento](docs/REFINO_IA.md) e na [auditoria das configurações](docs/AUDITORIA_CONFIGURACOES.md). [EVOLUCAO_PRODUTO.md](docs/EVOLUCAO_PRODUTO.md) registra uma etapa anterior. Conectividade real em nuvem exige configuração e execução opcional autorizada.
 
 ## Limites relevantes
 

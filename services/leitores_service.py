@@ -39,6 +39,8 @@ def criar_leitor(data):
     if not isinstance(data,dict) or data.get('tipo') not in ('estudante','professor') or not str(data.get('nome','')).strip():
         return {'erro':'Informe nome e categoria estudante ou professor.'},400
     with db_manager.connection() as conn:
+        from services.configuracoes_service import validar_telefone
+        validar_telefone(conn,data,data['tipo'])
         cursor = conn.cursor()
         email = data.get('email')
         email = email_normalizado(email) if email else None
@@ -66,6 +68,8 @@ def editar_leitor(id, data):
         previous=conn.execute('SELECT email,tipo FROM Usuarios WHERE id=? AND arquivado=0',(id,)).fetchone()
         if not previous:
             return {'erro':'Leitor não encontrado.'},404
+        from services.configuracoes_service import validar_telefone
+        validar_telefone(conn,data,data['tipo'],conn.execute('SELECT telefone FROM Usuarios WHERE id=?',(id,)).fetchone()[0])
         if email and conn.execute('SELECT 1 FROM Usuarios WHERE lower(email)=? AND id!=?',(email,id)).fetchone():
             return {'erro':'Este e-mail já está vinculado a outro leitor.'},409
         account=conn.execute('SELECT id FROM Contas WHERE leitor_id=?',(id,)).fetchone()
@@ -79,7 +83,7 @@ def editar_leitor(id, data):
             SET nome = ?, tipo = ?, email = ?, sala = ?, periodo = ?, materia = ?, telefone = ?
             WHERE id = ?
         ''', (data['nome'], data['tipo'], email, data.get('sala'),
-              data.get('periodo'), data.get('materia'), data.get('telefone'), id))
+              data.get('periodo'), data.get('materia'), data.get('telefone', conn.execute('SELECT telefone FROM Usuarios WHERE id=?',(id,)).fetchone()[0]), id))
         conn.execute('UPDATE Contas SET nome=? WHERE leitor_id=?',(data['nome'],id))
         auditar(conn,'editar_leitor',id,motivo='categoria alterada' if previous[1]!=data['tipo'] else 'dados administrativos')
         conn.commit()

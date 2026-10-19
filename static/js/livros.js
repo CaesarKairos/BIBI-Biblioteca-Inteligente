@@ -444,15 +444,18 @@ async function verificarObrigarLocalizacao() {
     const res = await apiFetch('/api/config/obrigar_localizacao_livro/status');
     const data = await res.json();
     const obrigar = data.ativo;
+    document.getElementById('manual-localizacao').required=obrigar;
+    document.getElementById('edit-localizacao').required=obrigar;
     const manualField = document.getElementById('campo-localizacao-manual');
     const editField = document.getElementById('campo-localizacao-edit');
-    if (manualField) manualField.style.display = obrigar ? 'block' : 'none';
-    if (editField) editField.style.display = obrigar ? 'block' : 'none';
+    if (manualField) manualField.style.display = 'block';
+    if (editField) editField.style.display = 'block';
     if (obrigar) {
         if (manualField) manualField.querySelector('label').innerHTML = 'Localização (Prateleira) *';
-        if (editField) editField.querySelector('label').innerHTML = 'Localização (Prateleira)';
+        if (editField) editField.querySelector('label').textContent = 'Localização (Prateleira) *';
     } else {
         if (manualField) manualField.querySelector('label').innerHTML = 'Localização (Prateleira)';
+        if (editField) editField.querySelector('label').textContent = 'Localização (Prateleira)';
     }
 }
 

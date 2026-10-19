@@ -3,7 +3,9 @@ window.addEventListener('bibi-settings-changed',async event=>{
     const paths=event.detail,scroll=document.querySelector('.content-area').scrollTop;
     try{
         if(paths.some(path=>path.startsWith('/api/config/'))){
+            const configuracoesAtualizadas=aplicarConfigCadastro(await accountApi('/api/config/cadastro'));
             aplicarVisibilidadeCamposLivro(true);aplicarVisibilidadeCamposLivro(false);aplicarVisibilidadeCamposEmprestimo();
+            if(livroSelecionado)document.getElementById('btn-excluir-livro').style.display=configuracoesAtualizadas.bloquearExcluirLivro?'none':'block';
             await verificarObrigarLocalizacao();await carregarConfigAgenda();if(isAdminGlobal)await carregarAgenda();
         }
         if(paths.some(path=>path.includes('/csv/livros/importar')||path.includes('/ocorrencias')||path.includes('/reservas/')||path.startsWith('/api/emprestimos/')))await carregarAcervo();
@@ -89,11 +91,11 @@ window.onload = async () => {
     prepararAcessibilidade();
     verificarAdmin();
     const config = carregarConfig();
-    if(isAdminGlobal){try{Object.assign(config,await (await apiFetch('/api/config/cadastro')).json());salvarConfig(config);}catch{}}
+    if(isAdminGlobal){try{Object.assign(config,aplicarConfigCadastro(await accountApi('/api/config/cadastro')));}catch(error){showToast(error.message,'error');}}
     if (config.darkMode) toggleTheme(true);
     else toggleTheme(false);
     initCustomSelects();
-    carregarConfigAgenda();
+    await carregarConfigAgenda();
     if (isAdminGlobal) initFlatpickr();
     carregarAcervo();
     if (isAdminGlobal) {

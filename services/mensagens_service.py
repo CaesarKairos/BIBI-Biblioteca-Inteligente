@@ -20,6 +20,9 @@ def smtp_config():
 
 
 def enviar(destinatario,assunto,corpo,html=None,capa=None):
+    from services.configuracoes_service import is_email_blocked
+    if is_email_blocked():
+        return False
     cfg=smtp_config()
     if not cfg['email'] or not cfg['senha']:
         return False

@@ -10,7 +10,7 @@ async function carregarAgenda() {
     tabela.innerHTML = '';
     const config = carregarConfig();
     const mostrarColunaAula = config.mostrarColunaAula !== false;
-    const qtdAulas = configAgenda.aulas;
+    const qtdAulas = Math.max(configAgenda.aulas,...agendamentos.map(ag=>ag.aula));
     const head = document.createElement('thead');
     const header = document.createElement('tr');
     if (mostrarColunaAula) header.appendChild(textElement('th', 'Aula'));

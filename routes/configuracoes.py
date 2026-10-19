@@ -30,9 +30,12 @@ def cadastro():
     with db_manager.connection() as conn:
         if request.method=='PUT':
             data=request.get_json()
-            if set(data)-keys or any(type(v) is not bool for v in data.values()):
+            if not isinstance(data,dict) or set(data)-keys or any(type(v) is not bool for v in data.values()):
                 raise BadRequest('Preferências de cadastro inválidas.')
-            conn.execute("INSERT OR REPLACE INTO Configuracoes VALUES ('campos_cadastro',?)",(json.dumps(data),))
+            conn.execute('BEGIN IMMEDIATE')
+            previous=conn.execute("SELECT valor FROM Configuracoes WHERE chave='campos_cadastro'").fetchone()
+            merged=(json.loads(previous[0]) if previous else {}) | data
+            conn.execute("INSERT OR REPLACE INTO Configuracoes VALUES ('campos_cadastro',?)",(json.dumps(merged),))
             auditar(conn,'campos_cadastro','biblioteca');conn.commit()
         row=conn.execute("SELECT valor FROM Configuracoes WHERE chave='campos_cadastro'").fetchone()
         return jsonify(json.loads(row[0]) if row else {})

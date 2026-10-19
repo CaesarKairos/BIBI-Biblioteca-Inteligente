@@ -35,9 +35,17 @@ async function verificarExigirSenhaEmprestimo() {
 }
 
 
-function emprestarSelecionado() {
+async function emprestarSelecionado() {
     if (!isAdminGlobal) return;
     if(!livroSelecionado) return;
+    let regras;
+    try {
+        regras=(await accountApi('/api/gestao/configuracao')).circulacao;
+        const prazo=String(regras.estudante.prazo);
+        prazoRapidoSelect.options=[...new Set([prazo,'7','14','21','28'])].map(value=>({value,text:`${value} dias${value===prazo?' (padrão da biblioteca)':''}`}));
+        prazoRapidoSelect.render();
+        document.querySelector('#rapido-professor p').textContent=regras.professor.prazo===0?'Devolução no mesmo dia.':`Prazo para professores: ${regras.professor.prazo} dias.`;
+    } catch(error) { showToast(error.message,'error'); return; }
     if(livroSelecionado.disponivel <= 0) showToast("Sem exemplares livres. Só será possível confirmar se houver exemplar separado para o leitor selecionado.", "warning");
     leitorSelecionadoEmprestimo = null;
     verificarExigirSenhaEmprestimo().then(senha => {
@@ -53,7 +61,7 @@ function emprestarSelecionado() {
         document.getElementById('rapido-materia').value = '';
         document.getElementById('rapido-telefone').value = '';
         tipoRapidoSelect.setValue('estudante');
-        prazoRapidoSelect.setValue('7');
+        prazoRapidoSelect.setValue(String(regras.estudante.prazo));
         document.getElementById('rapido-aluno').style.display = 'block';
         document.getElementById('rapido-professor').style.display = 'none';
         document.getElementById('rapido-nome-suggestions').style.display = 'none';
@@ -76,7 +84,7 @@ async function confirmarEmprestimoRapido() {
             payload.periodo = document.getElementById('rapido-periodo').value;
             payload.email = document.getElementById('rapido-email').value;
             payload.prazo = document.getElementById('rapido-prazo').value;
-            const telefone = document.getElementById('rapido-telefone').value;
+            const telefone = carregarConfig().campoNumeroUsuario ? document.getElementById('rapido-telefone').value.trim() : '';
             if (telefone) payload.telefone = telefone;
             if (!leitorSelecionadoEmprestimo && (!payload.nome || !payload.sala || !payload.periodo)) {
                 return showToast("Preencha todos os campos do estudante.", "warning");
@@ -249,6 +257,8 @@ async function renovarEmprestimo(id) {
 
 function aplicarVisibilidadeCamposEmprestimo() {
     const config = carregarConfig();
-    const campoTelefone = document.querySelector('.campo-telefone-aluno');
-    if (campoTelefone) campoTelefone.style.display = config.campoNumeroUsuario ? 'block' : 'none';
+    document.querySelectorAll('.campo-telefone-aluno').forEach(field => {
+        field.hidden = !config.campoNumeroUsuario;
+        field.querySelector('input').required = !!config.campoNumeroUsuario;
+    });
 }

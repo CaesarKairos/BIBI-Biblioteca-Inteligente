@@ -1,7 +1,7 @@
 {% extends 'shell.html' %}
 {% block content %}
                 <div id="dash" class="section">
-                    <section class="bibi-message" aria-labelledby="bibi-heading" data-content-source="local">
+                    <section class="bibi-summary" aria-labelledby="bibi-heading" data-content-source="local">
                         <span class="eyebrow" id="bibi-heading"><span class="bibi-cat-icon" aria-hidden="true"></span>BIBI</span>
                         <h2 id="bibi-greeting">Boas-vindas à biblioteca.</h2>
                         <p id="bibi-message-text">Aqui está o que está acontecendo na biblioteca.</p>
@@ -217,7 +217,7 @@
                         <small class="instrucao-ordinal">(Para digitar º use AltGr + °)</small>
                         <label>Período</label><input type="text" id="leitor-periodo" placeholder="Manhã / Tarde">
                         <label>E-mail</label><input type="email" id="leitor-email" placeholder="email@escola.com">
-                        <label>Telefone do Aluno</label><input type="text" id="leitor-telefone" placeholder="(11) 99999-9999" data-bibi-oninput="h34">
+                        <div class="campo-telefone-aluno"><label>Telefone do Aluno</label><input type="text" id="leitor-telefone" placeholder="(11) 99999-9999" data-bibi-oninput="h34"></div>
                     </div>
                     <div id="leitor-prof" data-bibi-style="s14">
                         <label>Nome</label><input type="text" id="leitor-nome-prof" placeholder="Nome do professor">

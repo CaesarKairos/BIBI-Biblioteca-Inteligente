@@ -6,7 +6,7 @@
         '[data-setting="campoAnoVisivel"]': 'Mostra o ano de publicação no cadastro e na edição dos livros.',
         '[data-setting="campoCategoriaVisivel"]': 'Mostra a seleção de categoria no cadastro e na edição dos livros.',
         '[data-setting="bloquearExcluirLivro"]': 'Oculta o botão de excluir nos detalhes do livro. Os livros já cadastrados permanecem no acervo.',
-        '[data-setting="campoNumeroUsuario"]': 'Exibe e exige o telefone do estudante no formulário de empréstimo rápido.',
+        '[data-setting="campoNumeroUsuario"]': 'Exibe e exige o telefone do estudante no cadastro de leitores e no empréstimo rápido. Desativar não apaga telefones já salvos.',
         '[data-setting="mostrarColunaAula"]': 'Exibe a coluna com a numeração dos horários: 1ª aula, 2ª aula e assim por diante.',
         '[data-setting="obrigar_localizacao_livro"]': 'Exige informar a prateleira ou localização física ao cadastrar um livro.',
         '[data-setting="bloquear_excluir_agendamento"]': 'Impede excluir agendamentos já registrados. Novos agendamentos continuam disponíveis.',

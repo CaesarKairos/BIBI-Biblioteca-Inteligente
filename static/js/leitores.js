@@ -182,7 +182,10 @@ async function salvarLeitor() {
             payload.sala = document.getElementById('leitor-sala').value;
             payload.periodo = document.getElementById('leitor-periodo').value;
             payload.email = document.getElementById('leitor-email').value;
-            payload.telefone = document.getElementById('leitor-telefone').value;
+            if (carregarConfig().campoNumeroUsuario) {
+                payload.telefone = document.getElementById('leitor-telefone').value.trim();
+                if (!payload.telefone) return showToast('Informe o telefone do estudante.', 'warning');
+            }
             if(!payload.nome || !payload.sala || !payload.periodo) return showToast("Preencha todos os campos.", "warning");
         } else {
             payload.nome = document.getElementById('leitor-nome-prof').value;

@@ -159,6 +159,9 @@ def settings():
 @bp.post('/api/gestao/email/testar')
 def test_email():
     from services.mensagens_service import enviar
+    from services.configuracoes_service import is_email_blocked
+    if is_email_blocked():
+        raise BadRequest('O envio de e-mail está bloqueado nas configurações. Desative o bloqueio antes de testar o remetente.')
     limitar('teste_smtp',str(g.conta['id']),limite=4,janela=3600)
     success=enviar(g.conta['email'],'BIBI — Teste de remetente','Conexão, autenticação e envio de teste solicitados na biblioteca. Confirme se esta mensagem chegou à sua caixa de entrada.')
     with db_manager.connection() as conn:

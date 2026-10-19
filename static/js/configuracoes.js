@@ -22,6 +22,14 @@ function salvarConfig(config) {
     localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
 }
 
+function aplicarConfigCadastro(valores) {
+    const config=carregarConfig();
+    const defaults={mostrarColunaAula:true,campoDescricaoVisivel:true,campoTemasVisivel:true,campoAnoVisivel:true,campoCategoriaVisivel:true,campoNumeroUsuario:false,bloquearExcluirLivro:false};
+    for(const [key,value] of Object.entries(defaults))config[key]=valores[key]??value;
+    salvarConfig(config);
+    return config;
+}
+
 
 async function carregarConfigAgenda() {
     configAgenda.aulas = quantidadeAulasGlobal;

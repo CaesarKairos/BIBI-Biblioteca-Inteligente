@@ -106,6 +106,9 @@ def agendamentos_passados():
 
 
 def criar_agendamento(data):
+    from services.configuracoes_service import get_quantidade_aulas
+    if type(data.get('aula')) is not int or not 1<=data['aula']<=get_quantidade_aulas():
+        return {'erro':'Selecione uma aula dentro dos horários configurados.'},400
     data_ag = data.get('data')
     if data_ag:
         data_date = datetime.strptime(data_ag, "%Y-%m-%d").date()

@@ -29,6 +29,7 @@ function showToast(message, type = 'info') {
 const modalFocus = new Map();
 const modalStack = [];
 function openModal(id) {
+    if(id==='modalLeitor')aplicarVisibilidadeCamposEmprestimo();
     const modal = document.getElementById(id);
     modalFocus.set(id, document.activeElement);
     const previousIndex = modalStack.indexOf(id);

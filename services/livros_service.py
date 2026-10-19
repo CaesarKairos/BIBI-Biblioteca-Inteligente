@@ -365,6 +365,8 @@ def api_livros(admin, data, method):
 
 
 def editar_livro(id, data):
+    if isinstance(data,dict) and is_obrigar_localizacao_livro() and not str(data.get('localizacao') or '').strip():
+        return {'erro':'Informe a localização física do livro.'},400
     from services.autoria_service import validate
     authorship=validate(data) if isinstance(data,dict) else None
     if not isinstance(data, dict):

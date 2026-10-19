@@ -120,10 +120,14 @@ def emprestar(data):
             if not verificar_senha_admin(data.get('senha')):
                 raise BadRequest('Confirme a senha atual da sua conta para registrar o empréstimo.')
         if leitor is not None:
-            row=conn.execute('SELECT nome,tipo,email FROM Usuarios WHERE id=? AND arquivado=0',(leitor,)).fetchone()
+            row=conn.execute('SELECT nome,tipo,email,telefone FROM Usuarios WHERE id=? AND arquivado=0',(leitor,)).fetchone()
             if not row:
                 raise BadRequest('Selecione um leitor ativo.')
-            nome,tipo,email=row
+            nome,tipo,email,telefone=row
+            from services.configuracoes_service import validar_telefone
+            telefone=validar_telefone(conn,data,tipo,telefone)
+            if 'telefone' in data:
+                conn.execute('UPDATE Usuarios SET telefone=? WHERE id=?',(telefone,leitor))
         else:
             nome=str(data.get('nome','')).strip(); tipo=data.get('tipo'); email=str(data.get('email') or '').strip().casefold() or None
             if not nome or tipo not in ('estudante','professor'):
@@ -131,7 +135,9 @@ def emprestar(data):
             email=email_normalizado(email) if email else None
             if email and conn.execute('SELECT 1 FROM Usuarios WHERE lower(email)=?',(email,)).fetchone():
                 raise BadRequest('Este e-mail já está cadastrado. Selecione o leitor na pesquisa.')
-            cur=conn.execute('INSERT INTO Usuarios(nome,tipo,email,sala,periodo,materia,telefone) VALUES (?,?,?,?,?,?,?)',(nome,tipo,email,data.get('sala'),data.get('periodo'),data.get('materia'),data.get('telefone')))
+            from services.configuracoes_service import validar_telefone
+            telefone=validar_telefone(conn,data,tipo)
+            cur=conn.execute('INSERT INTO Usuarios(nome,tipo,email,sala,periodo,materia,telefone) VALUES (?,?,?,?,?,?,?)',(nome,tipo,email,data.get('sala'),data.get('periodo'),data.get('materia'),telefone))
             leitor=cur.lastrowid
             auditar(conn,'criar_leitor',leitor)
         policy=regras(conn)[tipo]

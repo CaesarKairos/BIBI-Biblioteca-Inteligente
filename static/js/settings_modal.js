@@ -22,6 +22,8 @@
     }
     const script=src=>new Promise((resolve,reject)=>{const el=document.createElement('script');el.src=src;el.onload=resolve;el.onerror=()=>reject(new Error('Não foi possível carregar Configurações.'));document.body.append(el);});
     async function load(){
+        content.inert=true;
+        content.setAttribute('aria-busy','true');
         const response=await fetch('/configuracoes?fragmento=1');
         if(!response.ok)throw new Error('Não foi possível abrir Configurações.');
         content.innerHTML=await response.text();
@@ -45,6 +47,8 @@
         document.getElementById('cadastro')?.prepend(note);
         window.descreverConfiguracoes(content);
         snapshot();
+        content.inert=false;
+        content.setAttribute('aria-busy','false');
     }
     window.abrirConfiguracoesCompartilhadas=async(key='minha-conta')=>{
         if(typeof key!=='string')key='minha-conta';
@@ -52,7 +56,7 @@
         if(!dialog.open){opener=document.activeElement;dialog.showModal();}
         status.textContent='Carregando…';
         try{ready??=load();await ready;document.getElementById('settings-theme').value=document.body.classList.contains('dark-mode')?'escuro':'claro';section(selectedKey);}
-        catch(error){status.textContent=error.message;ready=null;}
+        catch(error){status.textContent=error.message;content.replaceChildren();content.inert=false;content.setAttribute('aria-busy','false');ready=null;}
     };
     function close(){
         if(pending){status.textContent="Aguarde a operação em andamento.";return;}
