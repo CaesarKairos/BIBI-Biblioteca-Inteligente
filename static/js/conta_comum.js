@@ -1,7 +1,9 @@
 try { if (JSON.parse(localStorage.getItem('bibiConfig') || '{}').darkMode) document.body.classList.add('dark-mode'); } catch {}
 function accountText(tag,text,className) { const e=document.createElement(tag); e.textContent=text; if(className) e.className=className; return e; }
 async function accountApi(path,method='GET',data) {
-    const response=await fetch(path,{method,headers:{'Content-Type':'application/json','X-CSRF-Token':document.querySelector('meta[name=csrf-token]').content},body:data===undefined?undefined:JSON.stringify(data)});
+    const headers={'X-CSRF-Token':document.querySelector('meta[name=csrf-token]').content};
+    if(data!==undefined)headers['Content-Type']='application/json';
+    const response=await fetch(path,{method,headers,body:data===undefined?undefined:JSON.stringify(data)});
     const result=await response.json();
     if(!response.ok) throw new Error(result.erro || 'Não foi possível concluir.');
     if(method!=='GET')window.settingsMutation?.(path);

@@ -4,6 +4,11 @@
 venv/
 
 # Python
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.zip
 __pycache__/
 *.py[cod]
 

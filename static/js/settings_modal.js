@@ -5,8 +5,14 @@
     const warning=document.getElementById('settings-discard');
     let ready, opener, snapshots=new Map(),pending=0,selectedKey='minha-conta';
     const changes=new Set();
+    const operations=new WeakMap();
     window.settingsMutation=path=>{if(dialog.open)changes.add(path);};
-    window.settingsOperation=(source,delta)=>{if(!content.contains(source))return;pending=Math.max(0,pending+delta);document.getElementById("settings-close").disabled=pending>0;};
+    window.settingsOperation=(source,delta)=>{
+        const active=operations.get(source)||0;
+        if(delta>0){if(!content.contains(source))return;operations.set(source,active+delta);pending+=delta;}
+        else {if(!active)return;const completed=Math.min(active,-delta);operations.set(source,active-completed);pending=Math.max(0,pending-completed);}
+        document.getElementById("settings-close").disabled=pending>0;
+    };
     const fingerprint=form=>JSON.stringify([...form.elements].filter(e=>e.matches('input,select,textarea')&&!e.readOnly).map(e=>[e.name||e.id,e.type==='checkbox'?e.checked:e.type==='file'?[...e.files].map(f=>f.name):e.value]));
     function snapshot(){content.querySelectorAll('form:not([method=get])').forEach(form=>snapshots.set(form,fingerprint(form)));}
     function dirty(){return [...snapshots].some(([form,value])=>form.isConnected&&fingerprint(form)!==value);}

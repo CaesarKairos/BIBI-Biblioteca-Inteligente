@@ -1,0 +1,17 @@
+{
+  "resultado": "aprovado",
+  "cenarios": [
+    "Primeiro cadastro após importação; 32 livros e 32 capas HTTP 200; quatro prateleiras sem IA",
+    "Convite e ativação de duas contas; seleção e desmarcação; Quero ler; livro lido privado; avaliação visível por outra conta sem identidade",
+    "Cadastros de leitores e convites por UI; favorito, avatar, empréstimo, pedido e aprovação de renovação, devolução por UI; histórico/estoque conferidos",
+    "Exclusão da própria avaliação preserva a opinião publicada pela outra conta",
+    "Reserva em fila, separação após devolução, cancelamento, notificação e leitura; edição sinalizada, invisibilidade pública e revisão administrativa",
+    "Backup gerado e baixado pelo botão nas Configurações",
+    "Cadastro manual e edição de livro por UI, com estado final persistido",
+    "Logout, novo login e persistência das leituras da conta",
+    "Acervo, detalhes/avaliações, perfil/listas/histórico, Dashboard e Configurações: 4 resoluções × claro/escuro; sem transbordamento horizontal ou erros JavaScript"
+  ],
+  "rede_externa": "bloqueada",
+  "banco": "temporário",
+  "smtp": "mock"
+}

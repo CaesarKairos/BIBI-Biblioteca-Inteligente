@@ -98,6 +98,7 @@ def cancelar_reserva(reserva,leitor=None):
             if row[2]=='retirada':
                 conn.execute('UPDATE Livros SET quantidade_disponivel=quantidade_disponivel+1 WHERE id=?',(row[1],))
             distribuir(conn,row[1])
+            notificar(conn,row[0],f'reserva-cancelada:{reserva}','Sua reserva foi cancelada.')
             auditar(conn,'cancelar_reserva',reserva)
         conn.commit()
     return {'status':'ok'}

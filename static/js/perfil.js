@@ -24,20 +24,29 @@ async function loadProfile() {
     if(profile.papel!=='leitor'||!profile.leitor_id) return;
     await loadFavorites();
     document.getElementById('profile-history').replaceChildren();
-    const sections=[['emprestimos','profile-loans'],['quero-ler','profile-wishes'],['reservas','profile-reservations'],['notificacoes','profile-notifications'],['avaliacoes','profile-reviews']];
+    const sections=[['emprestimos','profile-loans'],['quero-ler','profile-wishes'],['lidos','profile-read'],['reservas','profile-reservations'],['notificacoes','profile-notifications'],['avaliacoes','profile-reviews']];
     for(const [path,id] of sections) {
         const rows=await accountApi('/api/minha-conta/'+path), container=document.getElementById(id); container.replaceChildren();
         if(!rows.length) container.append(accountText('p','Nenhum registro nesta seção.'));
         for(const row of rows) {
             const card=accountText('article','','profile-row');
+            if(path!=='notificacoes') {
+                card.classList.add('profile-book-card');
+                const cover=accountText('a','','profile-cover-link');cover.href='/app?livro='+(row.livro_id||row.id);cover.setAttribute('aria-label','Abrir '+(row.livro||row.nome));
+                const image=document.createElement('img');image.src=row.capa||row.capa_url||'/static/images/placeholder.png';image.alt='';image.loading='lazy';cover.append(image);card.append(cover);
+            }
+            const content=accountText('div','','profile-book-content');card.append(content);
             if(path==='emprestimos') {
-                card.append(accountText('strong',row.livro),accountText('p',`${row.encerramento || row.status} · Prazo: ${row.data_vencimento}${row.pedido?' · Renovação: '+row.pedido:''}`));
+                content.append(accountText('strong',row.livro),accountText('p',`${row.encerramento || row.status} · Prazo: ${row.data_vencimento}${row.pedido?' · Renovação: '+row.pedido:''}`));
                 if(['Aprovado','Atrasado'].includes(row.status)&&!row.encerramento&&row.pedido!=='pendente') card.append(accountButton('Solicitar renovação',async()=>{const r=await accountApi(`/api/minha-conta/emprestimos/${row.id}/renovacao`,'POST',{});document.getElementById('account-status').textContent=r.mensagem;await loadProfile();}));
             } else if(path==='quero-ler') {
                 card.append(accountText('strong',row.nome),accountText('p',row.arquivado?'Arquivado':`${row.disponivel} exemplares disponíveis`));
                 const link=accountText('a','Abrir detalhes');link.href='/app?livro='+row.id;card.append(link);
                 card.append(accountButton('Remover',async()=>{await accountApi('/api/minha-conta/quero-ler/'+row.id,'DELETE');await loadProfile();}));
                 if(!row.arquivado&&row.disponivel===0) card.append(accountButton('Reservar',async()=>{await accountApi('/api/minha-conta/reservas/'+row.id,'POST',{});await loadProfile();}));
+            } else if(path==='lidos') {
+                content.append(accountText('strong',row.nome),accountText('p',row.autor),accountText('small','Marcado como lido em '+new Date(row.concluida_em.replace(' ','T')+'Z').toLocaleDateString('pt-BR')));
+                card.append(accountButton('Desmarcar como lido',async()=>{await accountApi('/api/minha-conta/lidos/'+row.id,'DELETE');await loadProfile();}));
             } else if(path==='reservas') {
                 card.append(accountText('strong',row.nome),accountText('p',row.estado==='fila'?`Posição na fila: ${row.posicao}`:row.estado==='retirada'?`Retire até ${new Date(row.expira*1000).toLocaleString('pt-BR')}`:row.estado));
                 if(['fila','retirada'].includes(row.estado)) card.append(accountButton('Cancelar reserva',async()=>{await accountApi('/api/minha-conta/reservas/'+row.id,'DELETE');await loadProfile();}));
@@ -49,10 +58,13 @@ async function loadProfile() {
                 const link=accountText('a','Editar no livro');link.href='/app?livro='+row.livro_id;card.append(link);
                 card.append(accountButton('Remover avaliação',async()=>{await accountApi('/api/minha-conta/avaliacoes/'+row.livro_id,'DELETE');await loadProfile();}));
             }
+            // Mantém capa e conteúdo juntos, inclusive ações adicionadas pelos fluxos existentes.
+            Array.from(card.children).filter(child=>child!==content&&!child.classList.contains('profile-cover-link')).forEach(child=>content.append(child));
             if(path==='emprestimos' && (row.encerramento || row.status==='Devolvido')) document.getElementById('profile-history').append(card);
             else container.append(card);
         }
     }
+    for(const id of ['profile-loans','profile-history'])if(!document.getElementById(id).children.length)document.getElementById(id).append(accountText('p','Nenhum empréstimo nesta seção.'));
 }
 function markAvatarChoices(){
  document.querySelectorAll('[data-avatar-value]').forEach(button=>{

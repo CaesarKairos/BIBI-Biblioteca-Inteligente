@@ -1,0 +1,22 @@
+{
+  "comando": "python -m unittest discover -s tests -p test_*.py -v",
+  "resultado": "OK",
+  "testes": 116,
+  "duracao_segundos": 462.165,
+  "bancos": "temporários",
+  "smtp": "simulado",
+  "ia": "simulada",
+  "executavel": {
+    "resultado": "aprovado",
+    "destino": "dist/BIBI-pre-apresentacao/BIBI.exe",
+    "verificacoes": [
+      "inicialização",
+      "cadastro inicial",
+      "32 livros",
+      "32 capas HTTP 200",
+      "LOCALAPPDATA temporário"
+    ],
+    "instalador": "não construído",
+    "outro_dispositivo": "não testado"
+  }
+}

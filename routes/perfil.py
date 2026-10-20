@@ -175,7 +175,7 @@ def wish(id):
 @bp.get('/api/minha-conta/reservas')
 def reservations():
     with db_manager.connection() as conn:
-        return jsonify(records(conn,"""SELECT r.id,r.livro_id,l.nome,r.estado,r.expira,
+        return jsonify(records(conn,"""SELECT r.id,r.livro_id,l.nome,l.capa_url,r.estado,r.expira,
             (SELECT COUNT(*) FROM Reservas q WHERE q.livro_id=r.livro_id AND q.estado='fila' AND (q.criada_em<r.criada_em OR (q.criada_em=r.criada_em AND q.id<=r.id))) AS posicao
             FROM Reservas r JOIN Livros l ON l.id=r.livro_id WHERE r.leitor_id=? ORDER BY r.id DESC""",(leitor(),)))
 
@@ -207,7 +207,29 @@ def read_notification(id):
 @bp.get('/api/minha-conta/avaliacoes')
 def reviews():
     with db_manager.connection() as conn:
-        return jsonify(records(conn,'SELECT a.*,l.nome FROM Avaliacoes a JOIN Livros l ON l.id=a.livro_id WHERE a.leitor_id=? ORDER BY atualizada_em DESC',(leitor(),)))
+        return jsonify(records(conn,'SELECT a.*,l.nome,l.capa_url FROM Avaliacoes a JOIN Livros l ON l.id=a.livro_id WHERE a.leitor_id=? ORDER BY atualizada_em DESC',(leitor(),)))
+
+
+@bp.get('/api/minha-conta/lidos')
+def read_books():
+    with db_manager.connection() as conn:
+        return jsonify(records(conn,'''SELECT l.id,l.nome,l.autor,l.capa_url,l.arquivado,r.concluida_em
+            FROM LeiturasConcluidas r JOIN Livros l ON l.id=r.livro_id
+            WHERE r.leitor_id=? ORDER BY r.concluida_em DESC,l.id DESC''',(leitor(),)))
+
+
+@bp.route('/api/minha-conta/lidos/<int:id>',methods=['POST','DELETE'])
+def mark_read(id):
+    with db_manager.connection() as conn:
+        owner=leitor()
+        if request.method=='POST':
+            if not conn.execute('SELECT 1 FROM Livros WHERE id=? AND arquivado=0',(id,)).fetchone():
+                raise NotFound('Livro não encontrado.')
+            conn.execute('INSERT OR IGNORE INTO LeiturasConcluidas(leitor_id,livro_id) VALUES (?,?)',(owner,id))
+        else:
+            conn.execute('DELETE FROM LeiturasConcluidas WHERE leitor_id=? AND livro_id=?',(owner,id))
+        conn.commit()
+    return jsonify(status='ok')
 
 
 @bp.route('/api/minha-conta/avaliacoes/<int:livro_id>',methods=['POST','DELETE','GET'])

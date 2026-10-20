@@ -73,6 +73,10 @@ Dependências testadas estão fixadas em `requirements.txt`. Chart.js e Flatpick
 
 ## Dados e segredos
 
+Para recuperar um catálogo legado com suas capas, use `python tools/importar_acervo.py --zip "C:\caminho\acervo.zip"` para examinar e acrescente `--aplicar` para importar, com a BIBI fechada. O processo adiciona livros, ajusta as URLs das capas para o armazenamento persistente e cria backup; não importa leitores ou empréstimos nem substitui contas ou credenciais. O catálogo não acompanha a distribuição. Consulte o [relatório e roteiro de apresentação](docs/FINAL_PRE_APRESENTACAO.md).
+
+O perfil distingue empréstimos atuais, histórico, favoritos, Quero ler, livros marcados voluntariamente como lidos e avaliações. Marcar uma leitura não altera o estoque nem registra uma devolução. Comentários publicados aparecem sem nome ou contato do leitor; conteúdos sinalizados continuam sujeitos à moderação da biblioteca.
+
 Dados permanecem em `%LOCALAPPDATA%\BIBI`: `Biblioteca.db`, capas e `backups`. Não copie apenas o `.db` enquanto o sistema está aberto: use **Configurações → Backup e restauração** para incluir WAL de maneira consistente.
 
 Senha SMTP, chaves de API de IA e chave da sessão ficam em `segredos.dpapi`, protegidas pelo usuário Windows. Não são exportadas no backup portátil. Senhas de contas usam hash adaptativo; códigos temporários ficam somente como hash. O backup contém dados pessoais e hashes e precisa ser guardado com acesso restrito. Ao restaurar, sessões/códigos são invalidados, o vínculo local de recuperação é renovado, a IA é desativada e as credenciais SMTP e IA devem ser reconfiguradas.
@@ -83,7 +87,7 @@ Senha SMTP, chaves de API de IA e chave da sessão ficam em `segredos.dpapi`, pr
 python -m PyInstaller --noconfirm packaging/BIBI.spec
 ```
 
-O spec versionado inclui templates, schema, migrações, assets, bibliotecas nativas e dados do DiceBear; não inclui `.env`, bancos nem segredos. Distribua **a pasta inteira** `dist/BIBI`, incluindo `_internal`, não apenas o executável. `setup.iss.example` é o modelo Inno Setup atualizado. O build da etapa anterior foi executado em Windows; esta integração não foi empacotada novamente. instalação/desinstalação e a janela nativa em computador limpo ainda exigem homologação. Não confunda o build com essa homologação.
+O spec versionado inclui templates, schema, migrações, assets, bibliotecas nativas e dados do DiceBear; não inclui `.env`, bancos nem segredos. Distribua **a pasta inteira** `dist/BIBI`, incluindo `_internal`, não apenas o executável. `setup.iss.example` é o modelo Inno Setup atualizado. O build desta etapa foi gerado em Windows e passou por um teste de inicialização com dados temporários, primeiro cadastro, 32 livros e 32 capas. Instalação/desinstalação, comportamento da bandeja e janela nativa em computador limpo ainda exigem homologação. Veja o [relatório da preparação](docs/FINAL_PRE_APRESENTACAO.md); o build não equivale a essa homologação.
 
 ## Verificação
 
@@ -94,11 +98,15 @@ python -m playwright install chromium
 python tests/browser_check.py
 python tests/browser_ia.py
 python tests/browser_loan_search.py
+# Opcional, com um ZIP legado local; não usa a instalação real
+python tests/browser_pre_apresentacao.py --zip "C:\caminho\acervo.zip"
 ```
 
 Testes usam bancos temporários, dados sintéticos e provedores de IA simulados; não enviam e-mails reais nem consomem créditos. O navegador bloqueia serviços externos. O refinamento da IA aprovou 83 testes, os dois fluxos Chromium e a verificação `python tests/browser_ia.py --loading-only`, que retém a resposta de disponibilidade para comprovar ausência de flash. A auditoria posterior das configurações aprovou **92 testes** e os três cenários de `tests/browser_settings.py` (principal, `--institution-only` e `--cache-only`). Veja resultados, capturas e limitações no [relatório do refinamento](docs/REFINO_IA.md) e na [auditoria das configurações](docs/AUDITORIA_CONFIGURACOES.md). [EVOLUCAO_PRODUTO.md](docs/EVOLUCAO_PRODUTO.md) registra uma etapa anterior. Conectividade real em nuvem exige configuração e execução opcional autorizada.
 
 ## Limites relevantes
+
+A preparação do acervo aprovou **116 testes de serviços**, o fluxo completo de navegador com catálogo importado e contas sintéticas e o teste isolado do executável. Foram registradas 60 capturas em quatro resoluções, nos temas claro/escuro. Comandos, resultados, correções e limites estão em [FINAL_PRE_APRESENTACAO.md](docs/FINAL_PRE_APRESENTACAO.md). O executável desta entrega está em `dist/BIBI-pre-apresentacao/BIBI.exe`; mantenha toda a pasta `_internal` junto dele.
 
 O servidor HTTPS local exibe automaticamente o IP em Configurações → Biblioteca. Cada dispositivo precisa confiar no certificado desta instalação; o firewall pode exigir liberação na rede privada. Veja [Rede local](docs/REDE_LOCAL.md). O servidor precisa permanecer ligado para acesso e envio. Reservas exigem que a biblioteca defina seu prazo de retirada; regras anteriores são mantidas até a configuração explícita. O filtro de comentários é apoio determinístico à moderação humana. Termos e aviso de privacidade precisam ser revisados pela instituição; não representam certificação jurídica.
 
