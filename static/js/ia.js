@@ -10,7 +10,7 @@
         if(sequence!==stateRequest)return;
         const changed=window.bibiAIState.disponivel!==data.disponivel;
         window.bibiAIState=data;
-        const chat=document.getElementById('bibi-chat');if(chat)chat.hidden=!data.disponivel;
+        window.updateBibiChatVisibility();
         if(!data.disponivel){document.getElementById('prateleira-bibi')?.remove();document.querySelector('.bibi-insights')?.remove();window.abortBibiResponse?.();}
         if(data.disponivel){
             const privacy=document.getElementById('bibi-privacy');if(privacy)privacy.textContent=`${data.provedor}. ${data.aviso}`;
@@ -18,6 +18,12 @@
             window.refreshBibiInsights?.();
         }
         window.dispatchEvent(new CustomEvent('bibi-ai-state',{detail:data}));
+    };
+    window.updateBibiChatVisibility=()=>{
+        const selected=typeof livroSelecionado!=='undefined'&&livroSelecionado;
+        const chat=document.getElementById('bibi-chat');
+        if(chat)chat.hidden=!window.bibiAIState.disponivel||Boolean(selected);
+        if(selected)window.abortBibiResponse?.();
     };
     window.refreshBibiAvailability();
     setInterval(()=>{if(!document.hidden)window.refreshBibiAvailability(false);},5000);
@@ -30,6 +36,7 @@
     messages.addEventListener('scroll',()=>{followTail=messages.scrollHeight-messages.scrollTop-messages.clientHeight<50;});
     form.elements.mensagem.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();form.requestSubmit();}});
     function questions(){
+        window.updateBibiChatVisibility();
         suggestions.replaceChildren();
         const selected=typeof livroSelecionado!=='undefined'&&livroSelecionado;
         document.getElementById('bibi-context').textContent=selected?`Vamos conversar sobre “${selected.titulo}”?`:'Um novo livro, uma personagem, uma ideia…';
