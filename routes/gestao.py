@@ -266,7 +266,8 @@ def health():
         emails=records(conn,'SELECT estado,COUNT(*) AS quantidade FROM FilaEmail GROUP BY estado')
     backups=sorted((Path(current_app.config['DATA_DIR'])/'backups').glob('*'),key=lambda p:p.stat().st_mtime)
     worker=current_app.extensions.get('notification_worker')
-    return jsonify(banco=integrity,versao='2.0-dev',espaco_livre=shutil.disk_usage(current_app.config['DATA_DIR']).free,
+    from version import VERSION
+    return jsonify(banco=integrity,versao=VERSION,espaco_livre=shutil.disk_usage(current_app.config['DATA_DIR']).free,
         migracoes=migrations,email=emails,ultimo_backup=backups[-1].name if backups else None,
         worker='executando' if worker and worker.is_alive() else 'não iniciado',metadados=current_app.extensions.get('metadata_health',{'estado':'Nenhuma consulta nesta execução. Fontes consultadas sob demanda.'}),
         rede=(current_app.extensions['network_runtime'].status() if current_app.extensions.get('network_runtime')

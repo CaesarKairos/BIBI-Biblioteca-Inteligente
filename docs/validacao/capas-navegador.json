@@ -1,0 +1,43 @@
+{
+  "banco": "temporário; somente campos bibliográficos e arquivos de capas; conta sintética",
+  "total": 76,
+  "renderizadas": 69,
+  "pendencias": [
+    {
+      "id": 44,
+      "titulo": "The Age of Alexander (Penguin Classics)",
+      "estado": "placeholder remoto"
+    },
+    {
+      "id": 53,
+      "titulo": "The Dhammapada",
+      "estado": "placeholder remoto"
+    },
+    {
+      "id": 61,
+      "titulo": "Maus",
+      "estado": "sem referência"
+    },
+    {
+      "id": 72,
+      "titulo": "Uma Breve História do Tempo",
+      "estado": "sem referência"
+    },
+    {
+      "id": 73,
+      "titulo": "O Mundo Assombrado pelos Demônios",
+      "estado": "sem referência"
+    },
+    {
+      "id": 75,
+      "titulo": "Eu",
+      "estado": "sem referência"
+    },
+    {
+      "id": 76,
+      "titulo": "Laços",
+      "estado": "sem referência"
+    }
+  ],
+  "detalhes": "Primeira obra, ID 44 e ID 53: fundo de capa/placeholder presente."
+}

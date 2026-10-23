@@ -1,5 +1,6 @@
 """DiceBear Adventurer Neutral 10.6.0, gerado localmente, sem serviço externo."""
 from importlib.resources import files
+from functools import lru_cache
 import json
 import re
 import secrets
@@ -34,4 +35,10 @@ def validate(data):
 
 def render(data):
     data=validate(data)
+    return _render_cached(json.dumps(data,sort_keys=True))
+
+
+@lru_cache(maxsize=256)
+def _render_cached(serialized):
+    data=json.loads(serialized)
     return Avatar(STYLE,{'seed':data['seed'],'size':160,**data['opcoes']}).to_data_uri()

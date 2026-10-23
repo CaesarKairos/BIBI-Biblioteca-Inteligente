@@ -1,0 +1,261 @@
+{
+  "data": "2026-10-22",
+  "total": 76,
+  "validas_antes": 54,
+  "corrigidas": [
+    {
+      "id": 57,
+      "titulo": "Watchmen",
+      "isbn": "9781401208449",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "corrigida",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401208449.json",
+      "nova": "https://covers.openlibrary.org/b/id/7774899-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/works/OL2897798W",
+      "edicao": "Obra e autoria conferidas; edição física não confirmada. ISBN original preservado."
+    },
+    {
+      "id": 58,
+      "titulo": "V de Vinganca",
+      "isbn": "9781401207657",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "corrigida",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401207657.json",
+      "nova": "https://covers.openlibrary.org/b/id/13110427-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/books/OL44707955M",
+      "edicao": "Obra e autoria conferidas; edição física não confirmada. ISBN original preservado."
+    },
+    {
+      "id": 59,
+      "titulo": "Batman: Ano Um",
+      "isbn": "9781401237586",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "corrigida",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401237586.json",
+      "nova": "https://covers.openlibrary.org/b/id/6462744-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/works/OL15016298W",
+      "edicao": "Obra e autoria conferidas; edição física não confirmada. ISBN original preservado."
+    },
+    {
+      "id": 60,
+      "titulo": "Sandman Vol. 1",
+      "isbn": "9781401233465",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "corrigida",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401233465.json",
+      "nova": "https://covers.openlibrary.org/b/id/7508162-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/works/OL9200964W",
+      "edicao": "Obra e autoria conferidas; edição física não confirmada. ISBN original preservado."
+    },
+    {
+      "id": 62,
+      "titulo": "Sandman Vol. 2",
+      "isbn": "9781401264537",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "corrigida",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401264537.json",
+      "nova": "https://covers.openlibrary.org/b/id/14416396-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/works/OL15449786W",
+      "edicao": "Obra e autoria conferidas; edição física não confirmada. ISBN original preservado."
+    },
+    {
+      "id": 63,
+      "titulo": "Batman: Cavaleiro das Trevas",
+      "isbn": "9781401235155",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "corrigida",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401235155.json",
+      "nova": "https://covers.openlibrary.org/b/id/798170-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/works/OL3577222W",
+      "edicao": "Obra e autoria conferidas; edição física não confirmada. ISBN original preservado."
+    },
+    {
+      "id": 64,
+      "titulo": "Maus Volume 2",
+      "isbn": "9781401223032",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "corrigida",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401223032.json",
+      "nova": "https://covers.openlibrary.org/b/id/12606590-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/works/OL2056808W",
+      "edicao": "Obra e autoria conferidas; edição física não confirmada. ISBN original preservado."
+    },
+    {
+      "id": 65,
+      "titulo": "A Hora da Estrela",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "corrigida",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária.",
+      "nova": "https://covers.openlibrary.org/b/id/15249744-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/books/OL62501777M",
+      "edicao": "Obra e autoria conferidas em português; registro local sem ISBN. Edição física a confirmar."
+    },
+    {
+      "id": 66,
+      "titulo": "O Alienista",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "corrigida",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária.",
+      "nova": "https://covers.openlibrary.org/b/id/15171781-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/books/OL61352956M",
+      "edicao": "Obra e autoria conferidas em português; registro local sem ISBN. Edição física a confirmar."
+    },
+    {
+      "id": 67,
+      "titulo": "Capitães da Areia",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "corrigida",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária.",
+      "nova": "https://covers.openlibrary.org/b/id/15236135-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/books/OL62256210M",
+      "edicao": "Obra e autoria conferidas em português; registro local sem ISBN. Edição física a confirmar."
+    },
+    {
+      "id": 68,
+      "titulo": "Vidas Secas",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "corrigida",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária.",
+      "nova": "https://covers.openlibrary.org/b/id/12369687-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/books/OL35663964M",
+      "edicao": "Obra e autoria conferidas em português; registro local sem ISBN. Edição física a confirmar."
+    },
+    {
+      "id": 69,
+      "titulo": "A Ilha do Tesouro",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "corrigida",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária.",
+      "nova": "https://covers.openlibrary.org/b/id/9221290-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/books/OL27826858M",
+      "edicao": "Obra e autoria conferidas em português; registro local sem ISBN. Edição física a confirmar."
+    },
+    {
+      "id": 70,
+      "titulo": "A Volta ao Mundo em Oitenta Dias",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "corrigida",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária.",
+      "nova": "https://covers.openlibrary.org/b/id/13689116-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/works/OL30822201W",
+      "edicao": "Obra e autoria conferidas em português; registro local sem ISBN. Edição física a confirmar."
+    },
+    {
+      "id": 71,
+      "titulo": "Quarto de Despejo",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "corrigida",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária.",
+      "nova": "https://covers.openlibrary.org/b/id/12769759-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/books/OL38221997M",
+      "edicao": "Obra e autoria conferidas em português; registro local sem ISBN. Edição física a confirmar."
+    },
+    {
+      "id": 74,
+      "titulo": "Marília de Dirceu",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "corrigida",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária.",
+      "nova": "https://covers.openlibrary.org/b/id/7246712-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/books/OL16737554M",
+      "edicao": "Obra e autoria conferidas em português; registro local sem ISBN. Edição física a confirmar."
+    }
+  ],
+  "pendentes": [
+    {
+      "id": 44,
+      "titulo": "The Age of Alexander (Penguin Classics)",
+      "isbn": "9780140449358",
+      "motivo": "Imagem vazia ou placeholder remoto",
+      "anterior": "https://covers.openlibrary.org/b/isbn/9780140449358-L.jpg",
+      "estado": "pendente",
+      "titulo_fonte": "The Age of Alexander (Penguin Classics)",
+      "fonte": "https://openlibrary.org/isbn/9780140449358",
+      "edicao": "/books/OL7355490M",
+      "similaridade": 1.0
+    },
+    {
+      "id": 53,
+      "titulo": "The Dhammapada",
+      "isbn": "9780140449419",
+      "motivo": "Imagem vazia ou placeholder remoto",
+      "anterior": "https://covers.openlibrary.org/b/isbn/9780140449419-L.jpg",
+      "estado": "pendente",
+      "titulo_fonte": "The Dhammapada",
+      "fonte": "https://openlibrary.org/isbn/9780140449419",
+      "edicao": "/books/OL10097379M",
+      "similaridade": 1.0
+    },
+    {
+      "id": 61,
+      "titulo": "Maus",
+      "isbn": "9781401223025",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "pendente",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401223025.json"
+    },
+    {
+      "id": 72,
+      "titulo": "Uma Breve História do Tempo",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    },
+    {
+      "id": 73,
+      "titulo": "O Mundo Assombrado pelos Demônios",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    },
+    {
+      "id": 75,
+      "titulo": "Eu",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    },
+    {
+      "id": 76,
+      "titulo": "Laços",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    }
+  ],
+  "backup_local": "antes-capas-distribuicao-1792706908950613400.db",
+  "armazenamento": "URLs persistidas no SQLite. Nenhuma capa de terceiro adicionada ao repositório ou instalador. Open Library orienta exibição direta pela URL.",
+  "termos": "https://openlibrary.org/dev/docs/api/covers"
+}

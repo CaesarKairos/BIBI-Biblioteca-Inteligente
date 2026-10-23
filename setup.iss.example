@@ -1,55 +1,41 @@
-; BIBI - Biblioteca Inteligente
-; Exemplo de script para Inno Setup.
-; Copie este arquivo para setup.iss e ajuste conforme necessário.
-
+﻿; Compilar na raiz: ISCC.exe setup.iss.example
 #define MyAppName "BIBI - Biblioteca Inteligente"
-#define MyAppPublisher "BIBI Project"
+#define MyAppVersion "1.1.0"
+#define MyAppPublisher "Philocode"
 #define MyAppURL "https://github.com/CaesarKairos/BIBI-Biblioteca-Inteligente"
-#define MyAppExeName "BIBI.exe"
-#define MyAppAssocName MyAppName + " File"
-#define MyAppAssocExt ".bibi"
-#define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
-
 [Setup]
-AppId={{BIBI-Biblioteca-Inteligente}
+AppId={{A1C73E9E-7B78-4E41-9F7A-8D7B2A3F9E11}
 AppName={#MyAppName}
-AppVersion=1.0
+AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 DefaultDirName={autopf}\BIBI
-DefaultGroupName={#MyAppName}
+DefaultGroupName=BIBI
 DisableProgramGroupPage=yes
-OutputDir=.\dist
-OutputBaseFilename=BIBI-Setup
-Compression=lzma
+PrivilegesRequired=admin
+PrivilegesRequiredOverridesAllowed=dialog
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
+MinVersion=10.0
+OutputDir=dist\release
+OutputBaseFilename=BIBI-1.1.0-Windows-x64-Setup
+Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
 LicenseFile=LICENSE
 SetupIconFile=static\images\icon.ico
-UninstallDisplayIcon={app}\{#MyAppExeName}
+UninstallDisplayIcon={app}\BIBI.exe
 UninstallDisplayName={#MyAppName}
-
+[Languages]
+Name: "portuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
 [Files]
-Source: "dist\BIBI\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-
+Source: "dist\Windows-1.1.0\BIBI\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-Name: "{autostart}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: autostart
-
+Name: "{group}\BIBI"; Filename: "{app}\BIBI.exe"
+Name: "{autodesktop}\BIBI"; Filename: "{app}\BIBI.exe"; Tasks: desktopicon
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
-Name: "autostart"; Description: "Iniciar BIBI automaticamente com o Windows"; GroupDescription: "Inicializa\xe7\xe3o"
-
+Name: "desktopicon"; Description: "Criar atalho na Área de Trabalho"; Flags: unchecked
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
-
-[Code]
-// Initialize the application directories on first run
-function InitializeSetup(): Boolean;
-var
-  ResultCode: Integer;
-begin
-  Result := true;
-end;
+Filename: "{app}\BIBI.exe"; Description: "Abrir a BIBI"; Flags: nowait postinstall skipifsilent
+; Preserva os dados em LOCALAPPDATA na desinstalação.

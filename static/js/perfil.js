@@ -2,6 +2,7 @@ const onboarding=document.getElementById('profile-content').dataset.onboarding==
 let savedAvatar, savedAvatarImage, draftAvatar, avatarFields, previewSequence=0;
 const avatarCache=new Map();
 const avatarQueue=[];let activePreviews=0;
+let avatarObserver;
 function avatarImage(config,priority=false){
  const key=JSON.stringify(config);
  if(!avatarCache.has(key))avatarCache.set(key,new Promise((resolve,reject)=>{avatarQueue[priority?'unshift':'push']({config,resolve,reject});pumpAvatars();}).catch(error=>{avatarCache.delete(key);throw error;}));
@@ -74,6 +75,11 @@ function markAvatarChoices(){
  });
 }
 async function openAvatarEditor(){
+ avatarObserver?.disconnect();
+ avatarObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{
+  if(!entry.isIntersecting)return;
+  avatarObserver.unobserve(entry.target);entry.target.loadPreview?.();
+ }),{rootMargin:'80px'});
  draftAvatar=structuredClone(savedAvatar);document.getElementById('preview-avatar').src=savedAvatarImage;
  const initialPreview=previewAvatar();
  const fields=document.getElementById('avatar-options');fields.replaceChildren();
@@ -93,7 +99,8 @@ async function openAvatarEditor(){
    const img=document.createElement('img');img.alt='';img.width=72;img.height=72;button.prepend(img);grid.append(button);
    const config=structuredClone(comparison);
    if(value!=='none'){config.opcoes[name]=value;if(name==='glassesVariant')config.opcoes.glassesProbability=100;}
-   avatarImage(config).then(image=>{if(button.isConnected){img.src=image;button.removeAttribute('aria-busy');}}).catch(()=>{button.removeAttribute('aria-busy');button.title='Prévia indisponível. Clique para experimentar.';});
+   button.loadPreview=()=>avatarImage(config).then(image=>{if(button.isConnected){img.src=image;button.removeAttribute('aria-busy');}}).catch(()=>{button.removeAttribute('aria-busy');button.title='Prévia indisponível. Clique para experimentar.';});
+   avatarObserver.observe(button);
   });
  }
  const advanced=document.createElement('details');advanced.append(accountText('summary','Cores avançadas'));

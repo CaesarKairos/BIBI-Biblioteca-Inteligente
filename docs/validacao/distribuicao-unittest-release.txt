@@ -1,0 +1,301 @@
+.\.venv\Scripts\python.exe : test_catalog_rejects_unknown_and_internal_routers_without_inventing_quality
+(test_ai_routing.RoutingTests.test_catalog_rejects_unknown_and_internal_routers_without_inventing_quality) ... ok
+No linha:2 caractere:1
++ .\.venv\Scripts\python.exe -m unittest discover -s tests -v > docs/va ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (test_catalog_re...quality) ... ok:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+test_costs_unknown_and_paid_are_not_implicitly_authorized
+(test_ai_routing.RoutingTests.test_costs_unknown_and_paid_are_not_implicitly_authorized) ... ok
+test_fallback_is_bounded_to_two_network_calls
+(test_ai_routing.RoutingTests.test_fallback_is_bounded_to_two_network_calls) ... ok
+test_insights_cache_survives_health_and_latency_updates
+(test_ai_routing.RoutingTests.test_insights_cache_survives_health_and_latency_updates) ... ok
+test_limits_and_current_request_at_daily_boundary
+(test_ai_routing.RoutingTests.test_limits_and_current_request_at_daily_boundary) ... ok
+test_migration_preserves_active_and_unused_credentials_without_network
+(test_ai_routing.RoutingTests.test_migration_preserves_active_and_unused_credentials_without_network) ... ok
+test_no_fallback_after_partial_output_or_uncertain_network
+(test_ai_routing.RoutingTests.test_no_fallback_after_partial_output_or_uncertain_network) ... ok
+test_paid_service_is_not_used_as_fallback_without_permission
+(test_ai_routing.RoutingTests.test_paid_service_is_not_used_as_fallback_without_permission) ... ok
+test_permissions_confirmation_expiration_and_no_secret_in_responses
+(test_ai_routing.RoutingTests.test_permissions_confirmation_expiration_and_no_secret_in_responses) ... ok
+test_replacement_is_staged_and_removal_destroys_only_requested_key
+(test_ai_routing.RoutingTests.test_replacement_is_staged_and_removal_destroys_only_requested_key) ... ok
+test_revocation_interrupts_stream_without_authorization_cache_leak
+(test_ai_routing.RoutingTests.test_revocation_interrupts_stream_without_authorization_cache_leak) ... ok
+test_safe_rejection_fallback_records_both_attempts
+(test_ai_routing.RoutingTests.test_safe_rejection_fallback_records_both_attempts) ... ok
+test_school_portuguese_review_is_recorded_and_controls_eligibility
+(test_ai_routing.RoutingTests.test_school_portuguese_review_is_recorded_and_controls_eligibility) ... ok
+test_single_service_no_model_selection_and_global_disable
+(test_ai_routing.RoutingTests.test_single_service_no_model_selection_and_global_disable) ... ok
+test_task_specific_ranking_and_school_preference
+(test_ai_routing.RoutingTests.test_task_specific_ranking_and_school_preference) ... ok
+test_atomic_setup (test_contas.ContaTests.test_atomic_setup) ... ok
+test_csrf_origin_logout_and_rate (test_contas.ContaTests.test_csrf_origin_logout_and_rate) ... ok
+test_initial_terms_required_available_and_recorded
+(test_contas.ContaTests.test_initial_terms_required_available_and_recorded) ... ok
+test_invite_identity_permissions_and_reissue (test_contas.ContaTests.test_invite_identity_permissions_and_reissue) ...
+ok
+test_last_librarian (test_contas.ContaTests.test_last_librarian) ... ok
+test_setup_guard_and_offline (test_contas.ContaTests.test_setup_guard_and_offline) ... ok
+test_book_authorship_is_optional_atomic_and_preserved
+(test_ia.AITests.test_book_authorship_is_optional_atomic_and_preserved) ... ok
+test_chat_context_stream_isolation_and_policy (test_ia.AITests.test_chat_context_stream_isolation_and_policy) ... ok
+test_concurrent_cloud_does_not_block_catalog_or_disable
+(test_ia.AITests.test_concurrent_cloud_does_not_block_catalog_or_disable) ... ok
+test_configuration_permissions_secret_and_disable_no_network
+(test_ia.AITests.test_configuration_permissions_secret_and_disable_no_network) ... ok
+test_conversation_expiry_and_concurrency (test_ia.AITests.test_conversation_expiry_and_concurrency) ... ok
+test_draft_failure_does_not_replace_working_provider
+(test_ia.AITests.test_draft_failure_does_not_replace_working_provider) ... ok
+test_expired_confirmation_and_failed_active_connection
+(test_ia.AITests.test_expired_confirmation_and_failed_active_connection) ... ok
+test_explicit_chat_preferences_limit_candidates (test_ia.AITests.test_explicit_chat_preferences_limit_candidates) ...
+ok
+test_failure_limit_and_cancel_release (test_ia.AITests.test_failure_limit_and_cancel_release) ... ok
+test_insights_real_aggregates_cache_no_personal_data
+(test_ia.AITests.test_insights_real_aggregates_cache_no_personal_data) ... ok
+test_legacy_saved_key_does_not_imply_ready_after_upgrade
+(test_ia.AITests.test_legacy_saved_key_does_not_imply_ready_after_upgrade) ... ok
+test_model_listing_connection_and_removal (test_ia.AITests.test_model_listing_connection_and_removal) ... ok
+test_personalization_uses_favorites_ratings_loans (test_ia.AITests.test_personalization_uses_favorites_ratings_loans)
+... ok
+test_preparation_then_activation_and_persistent_readiness
+(test_ia.AITests.test_preparation_then_activation_and_persistent_readiness) ... ok
+test_priority_filters_unknown_and_invalidation (test_ia.AITests.test_priority_filters_unknown_and_invalidation) ... ok
+test_review_author_edit_delete_published_privacy_and_local_moderation
+(test_ia.AITests.test_review_author_edit_delete_published_privacy_and_local_moderation) ... ok
+test_usage_persistence_restart_and_backup_excludes_keys
+(test_ia.AITests.test_usage_persistence_restart_and_backup_excludes_keys) ... ok
+test_all_provider_auth_model_listing_and_stream_contracts
+(test_ia.ProviderContracts.test_all_provider_auth_model_listing_and_stream_contracts) ... ok
+test_errors_redact_credentials_and_do_not_retry
+(test_ia.ProviderContracts.test_errors_redact_credentials_and_do_not_retry) ... ok
+test_truncated_stream_is_not_success_and_thinking_is_hidden
+(test_ia.ProviderContracts.test_truncated_stream_is_not_success_and_thinking_is_hidden) ... ok
+test_catalog_only_preserves_account_reconciles_stock_and_is_idempotent
+(test_importacao_acervo.CatalogImportTests.test_catalog_only_preserves_account_reconciles_stock_and_is_idempotent) ...
+ok
+test_conflicting_isbn_is_reported_without_overwriting
+(test_importacao_acervo.CatalogImportTests.test_conflicting_isbn_is_reported_without_overwriting) ... ok
+test_filename_collision_does_not_overwrite_a_different_cover
+(test_importacao_acervo.CatalogImportTests.test_filename_collision_does_not_overwrite_a_different_cover) ... ok
+test_insert_failure_rolls_back_books_and_new_files
+(test_importacao_acervo.CatalogImportTests.test_insert_failure_rolls_back_books_and_new_files) ... ok
+test_unsafe_cover_reference_is_rejected_before_any_mutation
+(test_importacao_acervo.CatalogImportTests.test_unsafe_cover_reference_is_rejected_before_any_mutation) ... ok
+test_archive_and_stock_consistency (test_improvements.ImprovementTests.test_archive_and_stock_consistency) ... ok
+test_cascade_precedence_and_fallback (test_improvements.ImprovementTests.test_cascade_precedence_and_fallback) ... ok
+test_concurrent_loans_and_idempotent_return
+(test_improvements.ImprovementTests.test_concurrent_loans_and_idempotent_return) ... ok
+test_http_errors_do_not_expose_details (test_improvements.ImprovementTests.test_http_errors_do_not_expose_details) ...
+[2026-10-22 19:25:29,640] ERROR in __init__: Falha em /api/livros
+Traceback (most recent call last):
+  File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\.venv\Lib\site-packages\flask\app.py", line
+917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\.venv\Lib\site-packages\flask\app.py", line
+902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\routes\livros.py", line 22, in api_livros
+    return json_response(livros_service.api_livros(admin=is_admin(), data=request.json if request.method == 'POST' and
+is_admin() else None, method=request.method))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\AppData\Local\Programs\Python\Python311\Lib\unittest\mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\AppData\Local\Programs\Python\Python311\Lib\unittest\mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\AppData\Local\Programs\Python\Python311\Lib\unittest\mock.py", line 1183, in _execute_mock_call
+    raise effect
+RuntimeError: PRIVATE-DETAIL
+ok
+test_invalid_loan_inputs_never_write (test_improvements.ImprovementTests.test_invalid_loan_inputs_never_write) ... ok
+test_invalid_upload_and_image_content (test_improvements.ImprovementTests.test_invalid_upload_and_image_content) ... ok
+test_loss_is_not_a_return (test_improvements.ImprovementTests.test_loss_is_not_a_return) ... ok
+test_reader_id_not_silent_identity_update
+(test_improvements.ImprovementTests.test_reader_id_not_silent_identity_update) ... ok
+test_transaction_rolls_back_all_books_and_reader
+(test_improvements.ImprovementTests.test_transaction_rolls_back_all_books_and_reader) ... [2026-10-22 19:25:33,967]
+WARNING in __init__: Conflito de integridade em /api/emprestimos
+Traceback (most recent call last):
+  File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\.venv\Lib\site-packages\flask\app.py", line
+917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\.venv\Lib\site-packages\flask\app.py", line
+902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\utils\auth.py", line 19, in decorated
+    return f(*args,**kwargs)
+           ^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\routes\emprestimos.py", line 15, in
+realizar_emprestimo
+    return json_response(circulacao_service.emprestar(data=request.json))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\services\circulacao_service.py", line 169, in
+emprestar
+    cur=conn.execute("INSERT INTO Emprestimo(usuarios_id,livros_id,data_emprestimo,data_vencimento,quantidade,status)
+VALUES (?,?,?,?,?,'Aprovado')",(leitor,livro,hoje.isoformat(),(hoje+timedelta(days=prazo)).isoformat(),qtd))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: test failure
+ok
+test_desktop_capability_session_expiry_once_and_no_logs
+(test_integracao_bibi.IntegracaoBibiTests.test_desktop_capability_session_expiry_once_and_no_logs) ... ok
+test_favorites_order_limits_archive_and_isolation
+(test_integracao_bibi.IntegracaoBibiTests.test_favorites_order_limits_archive_and_isolation) ... ok
+test_old_accounts_migration_preserves_dates_avatar_and_recovery
+(test_integracao_bibi.IntegracaoBibiTests.test_old_accounts_migration_preserves_dates_avatar_and_recovery) ... ok
+test_onboarding_only_once (test_integracao_bibi.IntegracaoBibiTests.test_onboarding_only_once) ... ok
+test_recovery_rate_and_pin_rejected (test_integracao_bibi.IntegracaoBibiTests.test_recovery_rate_and_pin_rejected) ...
+ok
+test_restore_previous_version_migrates_without_manual_secret
+(test_integracao_bibi.IntegracaoBibiTests.test_restore_previous_version_migrates_without_manual_secret) ... ok
+test_settings_fragment_roles_and_legacy_context
+(test_integracao_bibi.IntegracaoBibiTests.test_settings_fragment_roles_and_legacy_context) ... ok
+test_shell_roles_and_preferences (test_integracao_bibi.IntegracaoBibiTests.test_shell_roles_and_preferences) ... ok
+test_smtp_single_contract_keeps_and_removes_protected_secret
+(test_integracao_bibi.IntegracaoBibiTests.test_smtp_single_contract_keeps_and_removes_protected_secret) ... ok
+test_desktop_explicit_start_and_close
+(test_integracao_seguranca.IntegrationTests.test_desktop_explicit_start_and_close) ... ok
+test_expired_revoked_and_concurrent_invite
+(test_integracao_seguranca.IntegrationTests.test_expired_revoked_and_concurrent_invite) ... ok
+test_network_host_https_cookie_and_public_text
+(test_integracao_seguranca.IntegrationTests.test_network_host_https_cookie_and_public_text) ... ok
+test_real_password_enforced_server_side
+(test_integracao_seguranca.IntegrationTests.test_real_password_enforced_server_side) ... ok
+test_restore_failure_rolls_back_database
+(test_integracao_seguranca.IntegrationTests.test_restore_failure_rolls_back_database) ... [2026-10-22 19:25:49,911]
+ERROR in __init__: Falha em /api/gestao/restaurar
+Traceback (most recent call last):
+  File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\.venv\Lib\site-packages\flask\app.py", line
+917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\.venv\Lib\site-packages\flask\app.py", line
+902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\routes\gestao.py", line 92, in restore_backup
+    return jsonify(restore(upload.stream))
+                   ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\services\dados_service.py", line 242, in
+restore
+    auditar(target,'restaurar',safety.name,ator=g.conta['id']);target.commit()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\AppData\Local\Programs\Python\Python311\Lib\unittest\mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\AppData\Local\Programs\Python\Python311\Lib\unittest\mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\AppData\Local\Programs\Python\Python311\Lib\unittest\mock.py", line 1189, in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\tests\test_integracao_seguranca.py", line 86,
+in fail
+    raise RuntimeError('Falha simulada')
+RuntimeError: Falha simulada
+ok
+test_restore_invalidates_codes_without_new_manual_code
+(test_integracao_seguranca.IntegrationTests.test_restore_invalidates_codes_without_new_manual_code) ... ok
+test_role_change_and_block_revoke_current_sessions
+(test_integracao_seguranca.IntegrationTests.test_role_change_and_block_revoke_current_sessions) ... ok
+test_slow_worker_does_not_block_normal_requests
+(test_integracao_seguranca.IntegrationTests.test_slow_worker_does_not_block_normal_requests) ... ok
+test_due_late_return_renewal_and_moderation_notifications_without_smtp
+(test_leituras.ReadingTests.test_due_late_return_renewal_and_moderation_notifications_without_smtp) ... ok
+test_read_marker_is_voluntary_private_and_idempotent
+(test_leituras.ReadingTests.test_read_marker_is_voluntary_private_and_idempotent) ... ok
+test_read_marker_survives_restart_and_portable_backup
+(test_leituras.ReadingTests.test_read_marker_survives_restart_and_portable_backup) ... ok
+test_reservation_cancellation_notifies_once_without_smtp
+(test_leituras.ReadingTests.test_reservation_cancellation_notifies_once_without_smtp) ... ok
+test_create_with_and_without_pages_and_public_api
+(test_pages.PageTests.test_create_with_and_without_pages_and_public_api) ... ok
+test_edit_clear_omit_and_invalid_are_atomic (test_pages.PageTests.test_edit_clear_omit_and_invalid_are_atomic) ... ok
+test_external_failure_does_not_discard_earlier_metadata
+(test_pages.PageTests.test_external_failure_does_not_discard_earlier_metadata) ... ok
+test_invalid_pages_never_write (test_pages.PageTests.test_invalid_pages_never_write) ... ok
+test_isbn_cascade_saves_pages_and_all_sources_without_pages
+(test_pages.PageTests.test_isbn_cascade_saves_pages_and_all_sources_without_pages) ... ok
+test_non_admin_cannot_mutate_pages (test_pages.PageTests.test_non_admin_cannot_mutate_pages) ... ok
+test_old_database_migration_idempotent_preserves_data
+(test_pages.PageTests.test_old_database_migration_idempotent_preserves_data) ... ok
+test_real_provider_field_names_and_optional_fallback
+(test_pages.PageTests.test_real_provider_field_names_and_optional_fallback) ... ok
+test_backup_restoration_and_bad_paths (test_recursos.ResourceTests.test_backup_restoration_and_bad_paths) ... ok
+test_csv_preview_import_duplicates_and_safe_export
+(test_recursos.ResourceTests.test_csv_preview_import_duplicates_and_safe_export) ... ok
+test_email_invite_failure_revokes_without_claiming_success
+(test_recursos.ResourceTests.test_email_invite_failure_revokes_without_claiming_success) ... ok
+test_email_verified_only_persistent_queue_and_retry
+(test_recursos.ResourceTests.test_email_verified_only_persistent_queue_and_retry) ... ok
+test_local_avatar_validated_and_persistent (test_recursos.ResourceTests.test_local_avatar_validated_and_persistent)
+... ok
+test_personal_history_and_manual_renewal (test_recursos.ResourceTests.test_personal_history_and_manual_renewal) ... ok
+test_policies_preserve_dates_and_skip_ineligible_queue
+(test_recursos.ResourceTests.test_policies_preserve_dates_and_skip_ineligible_queue) ... ok
+test_reservation_queue_multiple_expiration_and_pickup
+(test_recursos.ResourceTests.test_reservation_queue_multiple_expiration_and_pickup) ... ok
+test_reviews_moderation_and_safe_public_fields
+(test_recursos.ResourceTests.test_reviews_moderation_and_safe_public_fields) ... ok
+test_smtp_secret_not_plaintext_and_restart_key_stable
+(test_recursos.ResourceTests.test_smtp_secret_not_plaintext_and_restart_key_stable) ... ok
+test_verified_email_and_reset_are_separate_flows
+(test_recursos.ResourceTests.test_verified_email_and_reset_are_separate_flows) ... ok
+test_wishlist_does_not_change_stock_and_is_private
+(test_recursos.ResourceTests.test_wishlist_does_not_change_stock_and_is_private) ... ok
+test_bind_failure_preserves_local_app (test_rede.NetworkTests.test_bind_failure_preserves_local_app) ... ok
+test_ca_persistence_and_ip_change (test_rede.NetworkTests.test_ca_persistence_and_ip_change) ... ok
+test_network_authorization_and_forwarded_headers
+(test_rede.NetworkTests.test_network_authorization_and_forwarded_headers) ... ok
+test_real_tls_and_shutdown (test_rede.NetworkTests.test_real_tls_and_shutdown) ... Client ('127.0.0.1', 61505) lost —
+peer dropped the TLS connection suddenly, during handshake: (1, '[SSL: TLSV1_ALERT_UNKNOWN_CA] tlsv1 alert unknown ca
+(_ssl.c:1006)')
+ok
+test_all_administrative_get_routes (test_regression.RegressionTests.test_all_administrative_get_routes) ... ok
+test_configuration_and_agenda_contracts (test_regression.RegressionTests.test_configuration_and_agenda_contracts) ...
+ok
+test_import_has_no_desktop_or_workers (test_regression.RegressionTests.test_import_has_no_desktop_or_workers) ... ok
+test_migration_does_not_delete_orphans (test_regression.RegressionTests.test_migration_does_not_delete_orphans) ... ok
+test_migration_preserves_history_and_backs_up
+(test_regression.RegressionTests.test_migration_preserves_history_and_backs_up) ... ok
+test_search_unknown_category_and_combined_filters
+(test_regression.RegressionTests.test_search_unknown_category_and_combined_filters) ... ok
+test_templates_keep_dom_contracts (test_regression.RegressionTests.test_templates_keep_dom_contracts) ... ok
+test_circulation_settings_change_actual_deadlines_limits_and_renewals
+(test_settings_effects.SettingsEffectsTests.test_circulation_settings_change_actual_deadlines_limits_and_renewals) ...
+ok
+test_csv_respects_required_fields_in_preview_and_confirmation
+(test_settings_effects.SettingsEffectsTests.test_csv_respects_required_fields_in_preview_and_confirmation) ... ok
+test_email_block_covers_direct_messages_and_no_smtp_calls
+(test_settings_effects.SettingsEffectsTests.test_email_block_covers_direct_messages_and_no_smtp_calls) ... ok
+test_lesson_count_enforced_and_future_appointments_not_hidden
+(test_settings_effects.SettingsEffectsTests.test_lesson_count_enforced_and_future_appointments_not_hidden) ... ok
+test_location_required_on_create_and_edit_and_optional_when_disabled
+(test_settings_effects.SettingsEffectsTests.test_location_required_on_create_and_edit_and_optional_when_disabled) ...
+ok
+test_partial_changes_preserve_other_settings_and_validate_types
+(test_settings_effects.SettingsEffectsTests.test_partial_changes_preserve_other_settings_and_validate_types) ... ok
+test_password_confirmation_on_agenda_is_applied_and_reversible
+(test_settings_effects.SettingsEffectsTests.test_password_confirmation_on_agenda_is_applied_and_reversible) ... ok
+test_phone_enforced_in_loan_backend_and_saved_for_existing_reader
+(test_settings_effects.SettingsEffectsTests.test_phone_enforced_in_loan_backend_and_saved_for_existing_reader) ... ok
+test_phone_required_only_when_enabled_and_preserved_when_hidden
+(test_settings_effects.SettingsEffectsTests.test_phone_required_only_when_enabled_and_preserved_when_hidden) ... ok
+
+----------------------------------------------------------------------
+Ran 116 tests in 177.127s
+
+OK

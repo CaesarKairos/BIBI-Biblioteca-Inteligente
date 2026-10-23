@@ -1,0 +1,15 @@
+{
+  "resultado": "aprovado",
+  "capturas": 13,
+  "catalogo": "76 obras da instalação local; contas e circulação sintéticas",
+  "resolucoes": [
+    "1920x1080",
+    "390x844"
+  ],
+  "temas": [
+    "claro",
+    "escuro"
+  ],
+  "ia": "Interface real, desativada; nenhuma resposta simulada ou serviço externo",
+  "erros_js": []
+}

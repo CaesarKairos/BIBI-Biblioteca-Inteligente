@@ -1,0 +1,41 @@
+.\.venv\Scripts\python.exe : Task queue depth is 1
+No linha:2 caractere:1
++ .\.venv\Scripts\python.exe -u tests/browser_ia.py > docs/validacao/di ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Task queue depth is 1:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+Task queue depth is 1
+Task queue depth is 2
+Task queue depth is 3
+Task queue depth is 2
+Task queue depth is 3
+Task queue depth is 3
+Task queue depth is 3
+Task queue depth is 3
+Task queue depth is 3
+Task queue depth is 3
+Task queue depth is 3
+Task queue depth is 2
+Task queue depth is 3
+Task queue depth is 2
+Task queue depth is 2
+Task queue depth is 2
+Task queue depth is 2
+Task queue depth is 2
+Task queue depth is 1
+Task queue depth is 1
+Task queue depth is 1
+Task queue depth is 1
+Task queue depth is 2
+Task queue depth is 3
+Task queue depth is 3
+Task queue depth is 2
+Task queue depth is 2
+Task queue depth is 3
+Task queue depth is 3
+Task queue depth is 3
+PASS: one service, contextual password, no model selection, activation, real catalog recommendations and isolated streaming chat.
+PASS: all 13 settings sections, three widths, both themes, screenshots and no horizontal overflow.
+PASS: replacement verified before promotion, removal, and continued operation with one authorized service.
+PASS: global disabling hides AI while preserving the selected book and normal catalog.

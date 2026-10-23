@@ -1,0 +1,30 @@
+.\.venv\Scripts\python.exe : [pywebview] WebView2 initialization failed with exception:
+No linha:2 caractere:1
++ .\.venv\Scripts\python.exe -u tests/desktop_tray_check.py > docs/vali ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([pywebview] Web...with exception::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+  (0x80004004): Operação anulada (Exceção de HRESULT: 0x80004004 (E_ABORT))
+
+   em System.Runtime.InteropServices.Marshal.ThrowExceptionForHRInternal(Int32 errorCode, IntPtr errorInfo)
+
+   em Microsoft.Web.WebView2.Core.CoreWebView2Environment.<CreateCoreWebView2ControllerAsync>d__21.MoveNext()
+
+--- Fim do rastreamento de pilha do local anterior onde a exceção foi gerada ---
+
+   em System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+   em System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+
+   em Microsoft.Web.WebView2.WinForms.WebView2.<InitCoreWebView2Async>d__25.MoveNext()
+[pywebview] Failed to delete user data folder: 'NoneType' object has no attribute 'BrowserProcessId'
+Traceback (most recent call last):
+  File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\tests\desktop_tray_check.py", line 75, in
+<module>
+    if __name__=='__main__': main()
+                             ^^^^^^
+  File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\tests\desktop_tray_check.py", line 70, in main
+    if errors: raise AssertionError(errors)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ["AssertionError('Página não carregou no WebView2')"]

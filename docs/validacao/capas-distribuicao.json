@@ -1,0 +1,212 @@
+{
+  "total": 76,
+  "validas_antes": 54,
+  "resultados": [
+    {
+      "id": 44,
+      "titulo": "The Age of Alexander (Penguin Classics)",
+      "isbn": "9780140449358",
+      "motivo": "Imagem vazia ou placeholder remoto",
+      "anterior": "https://covers.openlibrary.org/b/isbn/9780140449358-L.jpg",
+      "estado": "pendente",
+      "titulo_fonte": "The Age of Alexander (Penguin Classics)",
+      "fonte": "https://openlibrary.org/isbn/9780140449358",
+      "edicao": "/books/OL7355490M",
+      "similaridade": 1.0
+    },
+    {
+      "id": 53,
+      "titulo": "The Dhammapada",
+      "isbn": "9780140449419",
+      "motivo": "Imagem vazia ou placeholder remoto",
+      "anterior": "https://covers.openlibrary.org/b/isbn/9780140449419-L.jpg",
+      "estado": "pendente",
+      "titulo_fonte": "The Dhammapada",
+      "fonte": "https://openlibrary.org/isbn/9780140449419",
+      "edicao": "/books/OL10097379M",
+      "similaridade": 1.0
+    },
+    {
+      "id": 57,
+      "titulo": "Watchmen",
+      "isbn": "9781401208449",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "pendente",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401208449.json"
+    },
+    {
+      "id": 58,
+      "titulo": "V de Vinganca",
+      "isbn": "9781401207657",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "pendente",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401207657.json"
+    },
+    {
+      "id": 59,
+      "titulo": "Batman: Ano Um",
+      "isbn": "9781401237586",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "pendente",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401237586.json"
+    },
+    {
+      "id": 60,
+      "titulo": "Sandman Vol. 1",
+      "isbn": "9781401233465",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "pendente",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401233465.json"
+    },
+    {
+      "id": 61,
+      "titulo": "Maus",
+      "isbn": "9781401223025",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "pendente",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401223025.json"
+    },
+    {
+      "id": 62,
+      "titulo": "Sandman Vol. 2",
+      "isbn": "9781401264537",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "pendente",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401264537.json"
+    },
+    {
+      "id": 63,
+      "titulo": "Batman: Cavaleiro das Trevas",
+      "isbn": "9781401235155",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "pendente",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401235155.json"
+    },
+    {
+      "id": 64,
+      "titulo": "Maus Volume 2",
+      "isbn": "9781401223032",
+      "motivo": "Sem capa",
+      "anterior": "",
+      "estado": "pendente",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401223032.json"
+    },
+    {
+      "id": 65,
+      "titulo": "A Hora da Estrela",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    },
+    {
+      "id": 66,
+      "titulo": "O Alienista",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    },
+    {
+      "id": 67,
+      "titulo": "Capitães da Areia",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    },
+    {
+      "id": 68,
+      "titulo": "Vidas Secas",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    },
+    {
+      "id": 69,
+      "titulo": "A Ilha do Tesouro",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    },
+    {
+      "id": 70,
+      "titulo": "A Volta ao Mundo em Oitenta Dias",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    },
+    {
+      "id": 71,
+      "titulo": "Quarto de Despejo",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    },
+    {
+      "id": 72,
+      "titulo": "Uma Breve História do Tempo",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    },
+    {
+      "id": 73,
+      "titulo": "O Mundo Assombrado pelos Demônios",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    },
+    {
+      "id": 74,
+      "titulo": "Marília de Dirceu",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    },
+    {
+      "id": 75,
+      "titulo": "Eu",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    },
+    {
+      "id": 76,
+      "titulo": "Laços",
+      "isbn": null,
+      "motivo": "Sem capa",
+      "anterior": null,
+      "estado": "pendente",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+    }
+  ],
+  "politica": "URLs Open Library; nenhum arquivo de capa baixado é persistido ou redistribuído.",
+  "termos": "https://openlibrary.org/dev/docs/api/covers"
+}

@@ -143,7 +143,8 @@ def backup():
             for file in (root/directory).rglob('*'):
                 if file.is_file() and not file.is_symlink():
                     files[file.relative_to(root).as_posix()]=file
-        manifest={'formato':1,'versao':'2.0-dev','arquivos':{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in files.items()}}
+        from version import VERSION
+        manifest={'formato':1,'versao':VERSION,'arquivos':{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in files.items()}}
         with zipfile.ZipFile(target,'w',compression=zipfile.ZIP_DEFLATED) as archive:
             for name,file in files.items():
                 archive.write(file,name)

@@ -1,0 +1,28 @@
+Captura acervo
+DOM pronto acervo
+Conteúdo pronto acervo
+Salva acervo
+Captura dashboard
+DOM pronto dashboard
+Conteúdo pronto dashboard
+Salva dashboard
+Captura detalhes-livro
+DOM pronto detalhes-livro
+Conteúdo pronto detalhes-livro
+Salva detalhes-livro
+Captura emprestimos
+DOM pronto emprestimos
+Conteúdo pronto emprestimos
+Salva emprestimos
+Captura agenda
+DOM pronto agenda
+Conteúdo pronto agenda
+Salva agenda
+Captura perfil-leitor
+DOM pronto perfil-leitor
+Conteúdo pronto perfil-leitor
+Salva perfil-leitor
+Captura avaliacoes
+DOM pronto avaliacoes
+Conteúdo pronto avaliacoes
+Salva avaliacoes

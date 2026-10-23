@@ -372,5 +372,13 @@ function tornarAcionavel(element) {
 
 function coverBackground(element, value) {
     const url = String(value || '/static/images/placeholder.png');
-    element.style.backgroundImage = 'url(' + JSON.stringify(url) + ')';
+    const fallback='/static/images/placeholder.png';
+    element.dataset.coverUrl=url;
+    element.style.backgroundImage = 'url(' + JSON.stringify(fallback) + ')';
+    const image=new Image();
+    image.onload=()=>{
+        if(element.dataset.coverUrl===url && image.naturalWidth>=40 && image.naturalHeight>=40)
+            element.style.backgroundImage='url('+JSON.stringify(url)+')';
+    };
+    image.src=url;
 }

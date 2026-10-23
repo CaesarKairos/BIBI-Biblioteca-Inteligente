@@ -52,7 +52,8 @@ def settings_page():
     if request.args.get('fragmento') != '1':
         return redirect('/app?config=minha-conta')
     from database.database import db_manager
-    sobre={'versao':'2.0-dev'}
+    from version import VERSION
+    sobre={'versao':VERSION}
     if is_admin():
         with db_manager.connection() as conn:
             values=dict(conn.execute('SELECT chave,valor FROM Configuracoes'))

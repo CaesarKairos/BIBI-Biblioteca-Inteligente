@@ -1,119 +1,108 @@
+<img src="static/images/icon.png" width="88" alt="Logotipo da BIBI">
+
 # BIBI — Biblioteca Inteligente
 
-BIBI administra bibliotecas **físicas**, com Python, Flask, SQLite, HTML/CSS/JavaScript e janela PyWebView no Windows. O computador da biblioteca mantém o banco e atende os navegadores dos leitores pelo servidor HTTPS local integrado. Não existem bancos independentes nos celulares.
+Uma plataforma para **gestão de bibliotecas escolares e incentivo à leitura**, com um espaço próprio para quem administra a biblioteca e para cada leitor.
 
-Esta evolução preserva o acervo, circulação, agenda, Dashboard, capas uniformes, temas e painéis redimensionáveis. Inclui contas individuais, convites, perfil, reservas, avaliações, notificações, CSV e backup. A BIBI integra chat literário com streaming, insights administrativos e recomendações personalizadas com prioridade verificável a autoras brasileiras. A IA começa desativada: chat, quinta prateleira e insights de IA só aparecem após configuração, teste de conexão e ativação. As quatro prateleiras tradicionais e os detalhes dos livros funcionam normalmente sem IA.
+A BIBI reúne o acervo, os empréstimos e a rotina da biblioteca em uma interface acessível pelo computador, tablet ou celular. Foi pensada para escolas, bibliotecários e professores que querem organizar a circulação dos livros e aproximar os estudantes da leitura.
 
-A escola cadastra um ou mais **serviços de IA**; a BIBI seleciona automaticamente modelos compatíveis e autorizados por solicitação. Não é necessário definir um provedor ou modelo principal. Chaves anteriores são preservadas e modelos pagos exigem autorização da escola.
+[Versões e downloads](https://github.com/CaesarKairos/BIBI-Biblioteca-Inteligente/releases) · [Guia de operação](docs/GUIA_OPERACAO.md) · [Licença de uso](LICENSE)
 
-Validação do roteamento: **105 testes na suíte geral e 15 no módulo final**, mais Chromium com as 13 seções de Configurações em três larguras e nos temas claro/escuro. Resultados, escopo das execuções e capturas estão no [relatório atual](docs/ROTEAMENTO_IA.md).
+## Conheça a BIBI
 
-Consulte a [configuração e arquitetura de IA](docs/INTEGRACAO_IA.md), o [roteamento automático e a validação atual](docs/ROTEAMENTO_IA.md), o [refinamento visual anterior](docs/REFINO_IA.md), a [auditoria das configurações e da agenda](docs/AUDITORIA_CONFIGURACOES.md) e o [roteiro de demonstração](docs/ROTEIRO_DEMONSTRACAO.md). Os testes usam provedores simulados: conectividade real exige configuração e verificação opcional autorizada.
+O computador da biblioteca guarda os dados e executa o aplicativo Windows. Nele, a equipe cadastra livros e leitores, acompanha os empréstimos e organiza os horários de uso do espaço. Os estudantes acessam suas contas pelo navegador, consultam o acervo e acompanham sua trajetória de leitura.
 
-## Executar no Windows
+![Acervo da BIBI com pesquisa, categorias e capas](docs/readme/acervo.png)
 
-Use Python 3.11 de 64 bits (ambiente utilizado na validação), com WebView2 disponível para a janela desktop:
+As capturas desta página mostram a aplicação em funcionamento com o **acervo da instalação local**. Contas e movimentações usadas na demonstração são fictícias, em uma instalação temporária separada. Nenhum banco, cadastro pessoal ou arquivo de capa do acervo acompanha o programa.
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python app.py
-```
+| Administração da biblioteca | Experiência do estudante |
+| --- | --- |
+| ![Dashboard administrativo](docs/readme/dashboard.png) | ![Perfil individual do leitor](docs/readme/perfil-leitor.png) |
+| Indicadores de acervo e circulação em um só lugar. | Favoritos, empréstimos e registros pessoais de leitura. |
+| ![Detalhes da obra e ações de circulação](docs/readme/detalhes-livro.png) | ![Acervo no tema escuro](docs/readme/acervo-escuro.png) |
+| Informações da obra, disponibilidade e avaliações. | Tema escuro para consultar e explorar o acervo. |
 
-Não copie nem configure `.env`: a aplicação não o utiliza. `app.py` cria a aplicação explicitamente; importar o módulo não abre janela, banco ou worker. `desktop.py` inicia Waitress em loopback, o worker periódico e a janela PyWebView. Não execute duas instâncias para a mesma biblioteca.
+<details>
+<summary>Veja também o perfil no celular</summary>
 
-Na janela desktop, **F11** alterna entre tela cheia e o tamanho anterior, em qualquer tela. O menu superior fica oculto para liberar espaço; **Alt** mostra ou oculta as opções Conta e Exibir. No navegador, use o F11 nativo do próprio navegador.
+<img src="docs/readme/perfil-mobile-escuro.png" width="230" alt="Perfil do estudante no celular, em tema escuro">
 
-Na primeira abertura, informe biblioteca/escola, nome, e-mail e senha do primeiro bibliotecário. Leia os Termos de Uso e o Aviso de Privacidade na própria tela e registre o aceite. A sessão começa e abre a personalização local do avatar; salve ou use o avatar sugerido para entrar. SMTP é opcional. Não há código manual novo para guardar, senha padrão ou promoção automática de leitores legados.
+</details>
 
-**Instalação antiga:** mantenha `%LOCALAPPDATA%\BIBI` intacto e execute sob o mesmo usuário Windows. A migração preserva acervo e histórico, cria backup SQLite antes das alterações e exige o assistente somente se ainda não houver contas. Contas antigas com avatar já estão concluídas; as demais personalizam o avatar uma vez no próximo acesso. Referências órfãs interrompem a migração: devem ser corrigidas explicitamente, sem apagar registros. Não substitua o banco antigo por um vazio.
+[Veja as demais telas e as condições da demonstração](docs/readme/README.md).
 
-Consulte o [guia de operação e entrega](docs/GUIA_OPERACAO.md) para convites, recuperação, e-mail, permissões, circulação, rede e restauração.
+## O que você pode fazer
 
-## Recursos e permissões
+- **Organizar e pesquisar o acervo:** cadastre livros, autores, ISBN, temas, categorias, capas e localização nas prateleiras. Pesquise e consulte a disponibilidade dos exemplares.
+- **Cuidar da circulação:** cadastre estudantes e professores, registre empréstimos, devoluções e renovações. Acompanhe reservas, pedidos de renovação e ocorrências como perda e reparo.
+- **Oferecer contas individuais:** a biblioteca emite convites vinculados aos leitores cadastrados. Cada pessoa pode personalizar seu perfil e avatar, acompanhar empréstimos e receber notificações.
+- **Acompanhar a leitura:** organize favoritos e a lista Quero ler, consulte o histórico de empréstimos e marque os livros lidos. Marcar uma leitura não registra uma devolução nem altera o estoque.
+- **Compartilhar opiniões:** leitores podem avaliar e comentar obras. Comentários públicos não exibem nome ou contato do leitor; a equipe dispõe de ferramentas de moderação.
+- **Administrar a rotina:** consulte o dashboard, organize a agenda da biblioteca e ajuste as regras de circulação. Configure o remetente de e-mail da escola quando desejar utilizar os envios.
+- **Preservar os dados:** importe e exporte cadastros, crie backups e restaure a biblioteca pelas ferramentas do aplicativo. Guarde os backups em local protegido.
+- **Ampliar a mediação de leitura:** ative a inteligência artificial opcional para conversas literárias, recomendações e apoio administrativo. As recomendações valorizam autoras brasileiras quando há metadados de autoria e fontes confirmadas no catálogo.
 
-- **Bibliotecários autenticados:** Dashboard, leitores, circulação, agenda, configuração, convites, moderação, auditoria e operações de dados. Estar em localhost ou no PyWebView não concede privilégios.
-- **Leitores autenticados:** acervo, perfil/avatar, próprios empréstimos e histórico, até quatro favoritos ordenados, pedidos de renovação, Quero ler, reservas, notificações e avaliações. Professor é uma categoria de leitor, não um administrador.
-- **Sem conta:** uma pessoa ainda pode ser cadastrada e receber empréstimos físicos. Não existe cadastro público livre; acesso pessoal exige convite vinculado a um leitor.
-- **Acervo:** pesquisa combinada por título, autor, ISBN, temas e localização, categoria/disponibilidade e carregamento progressivo. Capas têm tamanho fixo; páginas continuam sendo informação bibliográfica opcional.
-- **Circulação:** vínculo por ID do leitor, devolução idempotente, renovação manual, reservas com exemplares separados, perdas/reparos e arquivamento com histórico preservado.
-- **Dados:** CSV com modelo, mapeamento, prévia e confirmação; relatórios agregados ou detalhados; backup consistente de SQLite ativo, assets e manifesto, com restauração local controlada.
+## Como instalar no Windows
 
-Atalhos administrativos: Ctrl+1 Dashboard, Ctrl+2 Acervo, Ctrl+3 Empréstimos, Ctrl+4 Agenda e Ctrl+5 Leitores. Para leitores: Ctrl+1 Acervo e Ctrl+2 Perfil.
+A distribuição para usuários será disponibilizada na área [Releases / Versões do GitHub](https://github.com/CaesarKairos/BIBI-Biblioteca-Inteligente/releases). A preparação da versão 1.1.0 permanece em rascunho até a publicação pelos responsáveis; rascunhos não ficam disponíveis para download público.
 
-## Navegação e recuperação
+1. Abra a área de versões e escolha uma versão publicada. Baixe o instalador Windows, quando disponível, ou o pacote portátil em ZIP. Os arquivos **Source code** são destinados ao desenvolvimento.
+2. Execute o instalador e abra **BIBI** pelo Menu Iniciar. No pacote portátil, extraia o ZIP inteiro para uma pasta e abra `BIBI.exe`, mantendo a pasta `_internal` ao lado dele.
+3. Na primeira abertura, cadastre a instituição e crie a primeira conta administrativa. Leia os termos e o aviso de privacidade apresentados e escolha seu avatar.
+4. Cadastre o acervo e os leitores, ajuste as regras da biblioteca e emita convites para quem terá uma conta individual.
 
-Bibliotecários navegam por Dashboard, Acervo, Empréstimos, Agenda, Leitores e Perfil. Leitores recebem Acervo e Perfil. No rodapé do menu, os ícones alternam tema, abrem Configurações e encerram a sessão. Configurações abre em um modal compartilhado, preservando a página, os filtros e o livro selecionado.
+O pacote é destinado ao **Windows 10 ou 11 de 64 bits** e utiliza Microsoft Edge WebView2 para a janela do aplicativo. A homologação em uma instalação limpa do Windows ainda está pendente. O uso comum não exige instalar Python, Flask ou Node.js, nem executar comandos no terminal.
 
-Configurações reúne Minha conta, Aparência, Biblioteca, Acervo e agenda, Circulação, Contas e acesso, Inteligência Artificial, E-mail, Dados, Moderação, Sistema e segurança e Sobre. Importações, convites, recuperação assistida, reservas administrativas, renovações e ocorrências funcionam dentro do modal. Leitores acessam somente sua conta, aparência, textos institucionais e Sobre. O PIN legado foi descontinuado; operações sensíveis confirmam a senha real da conta.
+Os dados ficam em `%LOCALAPPDATA%\BIBI`, separados dos arquivos do programa. Antes de atualizar ou trocar de computador, faça um backup em **Configurações → Dados**. A versão distribuída começa sem livros, leitores ou contas predefinidas.
 
-Para recuperar uma conta bibliotecária no servidor, pressione **Alt** e use **Conta → Recuperar conta bibliotecária neste computador** no menu nativo da janela BIBI. Informe o e-mail e defina/confirme a nova senha. A autorização combina loopback, sessão aberta pelo desktop e token aleatório de uso único em memória, válido por três minutos. Um navegador local ou remoto não pode iniciar esse fluxo por HTTP.
+## Como outras pessoas acessam
 
-A pessoa com acesso à sessão Windows usada pela instalação já possui acesso operacional ao servidor e seus arquivos. DPAPI vincula o segredo a esse usuário Windows; esse modelo não protege contra alguém que controla essa sessão. Códigos antigos já existentes continuam aceitos uma única vez na transição e não são substituídos por novos códigos.
+O computador onde a BIBI está aberta funciona como **servidor da biblioteca** e precisa permanecer ligado. Nos demais dispositivos autorizados, basta abrir no navegador o endereço **HTTPS da rede local** exibido em **Configurações → Biblioteca**. Não é necessário instalar a BIBI em cada celular ou computador.
 
-## Arquitetura
+A conexão segura pode exigir a configuração do certificado da instalação nos dispositivos autorizados e a liberação do firewall da rede privada. A equipe de informática da escola pode seguir o [guia de rede local](docs/REDE_LOCAL.md). A instalação não torna o sistema automaticamente acessível pela internet.
 
-| Caminho | Responsabilidade |
-|---|---|
-| `app.py`, `desktop.py`, `config.py` | Fábrica Flask, início explícito do desktop/worker, caminhos |
-| `database/schema.sql`, `database/migrations/` | Schema legado e migrações versionadas aditivas |
-| `utils/auth.py`, `utils/secrets_store.py` | Autorização, sessões/CSRF/origem e DPAPI Windows |
-| `routes/contas.py`, `services/contas_service.py` | Primeiro acesso, login, convites, recuperação e papéis |
-| `routes/perfil.py`, `services/avatar_service.py` | Recursos pessoais e avatar local DiceBear |
-| `services/circulacao_service.py` | Regras e transições de estoque, reservas e empréstimos |
-| `services/mensagens_service.py`, `services/email_service.py` | Notificações persistentes, SMTP TLS e worker |
-| `routes/gestao.py`, `services/dados_service.py` | Políticas, moderação, CSV, backup, auditoria e saúde |
-| `routes/ia.py`, `services/ai/` | Provedores em nuvem, política pedagógica, recomendações, conversas efêmeras e insights |
-| `templates/`, `static/` | Interface existente e páginas de acesso e Perfil, com modal compartilhado de Configurações |
-| `tests/` | Testes sintéticos de serviços, segurança e navegador |
-| `legacy/`, `docs/REFATORACAO.md` | Referência histórica, sem execução ou autenticação de produção |
+## Inteligência artificial opcional
 
-Dependências testadas estão fixadas em `requirements.txt`. Chart.js e Flatpickr são servidos localmente em `static/vendor`, com licenças. ISBN/SMTP dependem de rede; fontes web têm fallback local. Avatar Adventurer Neutral é gerado localmente pelo DiceBear, sem enviar e-mail, nome ou seed para serviço externo.
+A BIBI funciona sem IA. O bibliotecário pode configurar serviços externos nas Configurações, testar a conexão e ativar os recursos quando forem adequados à instituição. Entre os serviços cadastrados, a BIBI seleciona automaticamente os modelos compatíveis e autorizados; o uso de modelos pagos depende da autorização da escola.
 
-## Dados e segredos
+A IA auxilia a mediação da leitura, as recomendações literárias e a análise administrativa. As sugestões levam em conta o acervo e os interesses disponíveis, com valorização de autoras brasileiras documentadas, sem deduzir gênero ou nacionalidade pelo nome.
 
-Para recuperar um catálogo legado com suas capas, use `python tools/importar_acervo.py --zip "C:\caminho\acervo.zip"` para examinar e acrescente `--aplicar` para importar, com a BIBI fechada. O processo adiciona livros, ajusta as URLs das capas para o armazenamento persistente e cria backup; não importa leitores ou empréstimos nem substitui contas ou credenciais. O catálogo não acompanha a distribuição. Consulte o [relatório e roteiro de apresentação](docs/FINAL_PRE_APRESENTACAO.md).
+Esses recursos podem depender de internet, chave de API, limites, custos e condições do provedor. A escola deve avaliar quais informações serão enviadas aos serviços configurados. [Entenda a configuração e os limites da IA](docs/INTEGRACAO_IA.md).
 
-O perfil distingue empréstimos atuais, histórico, favoritos, Quero ler, livros marcados voluntariamente como lidos e avaliações. Marcar uma leitura não altera o estoque nem registra uma devolução. Comentários publicados aparecem sem nome ou contato do leitor; conteúdos sinalizados continuam sujeitos à moderação da biblioteca.
+## Tecnologias utilizadas
 
-Dados permanecem em `%LOCALAPPDATA%\BIBI`: `Biblioteca.db`, capas e `backups`. Não copie apenas o `.db` enquanto o sistema está aberto: use **Configurações → Backup e restauração** para incluir WAL de maneira consistente.
+| Tecnologia | Papel na BIBI |
+| --- | --- |
+| Python e Flask | Servidor da aplicação e regras da biblioteca. |
+| SQLite | Armazenamento local dos cadastros, contas e histórico. |
+| HTML, CSS e JavaScript | Interface e interações no computador e no navegador. |
+| PyWebView | Janela do aplicativo desktop no Windows. |
+| Waitress e Cheroot | Servidores da arquitetura local e do acesso pela rede. |
+| HTTPS | Proteção das conexões na rede local. |
+| PyInstaller | Empacotamento do programa e das dependências no executável Windows. |
+| Playwright | Testes automatizados da interface em navegador. |
+| Provedores de IA | Integrações opcionais em nuvem para os recursos de inteligência artificial. |
 
-Senha SMTP, chaves de API de IA e chave da sessão ficam em `segredos.dpapi`, protegidas pelo usuário Windows. Não são exportadas no backup portátil. Senhas de contas usam hash adaptativo; códigos temporários ficam somente como hash. O backup contém dados pessoais e hashes e precisa ser guardado com acesso restrito. Ao restaurar, sessões/códigos são invalidados, o vínculo local de recuperação é renovado, a IA é desativada e as credenciais SMTP e IA devem ser reconfiguradas.
+## Sobre o projeto
 
-## Build Windows
+A BIBI tem origem no contexto escolar e integra a iniciativa **Philocode**, voltada ao uso da tecnologia na educação. Seu objetivo é facilitar a organização das bibliotecas e incentivar a leitura, incluindo a valorização da produção intelectual feminina e da literatura de autoras brasileiras.
 
-```powershell
-python -m PyInstaller --noconfirm packaging/BIBI.spec
-```
+A autoria e as contribuições registradas no histórico do repositório incluem **Cesar Augusto (CaesarKairos)** e **Nicolly França**. Os créditos da Philocode e dos componentes de terceiros são preservados na aplicação. Os avatares Adventurer Neutral são de Lisa Wischofsky, via DiceBear, sob [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
-O spec versionado inclui templates, schema, migrações, assets, bibliotecas nativas e dados do DiceBear; não inclui `.env`, bancos nem segredos. Distribua **a pasta inteira** `dist/BIBI`, incluindo `_internal`, não apenas o executável. `setup.iss.example` é o modelo Inno Setup atualizado. O build desta etapa foi gerado em Windows e passou por um teste de inicialização com dados temporários, primeiro cadastro, 32 livros e 32 capas. Instalação/desinstalação, comportamento da bandeja e janela nativa em computador limpo ainda exigem homologação. Veja o [relatório da preparação](docs/FINAL_PRE_APRESENTACAO.md); o build não equivale a essa homologação.
+## Licença
 
-## Verificação
+A BIBI é um **software proprietário**, com todos os direitos reservados. A instalação e o uso da versão disponibilizada são gratuitos nas condições da [licença de uso](LICENSE), inclusive para atender a biblioteca pela rede local.
 
-```powershell
-python -m unittest discover -s tests -v
-python -m pip install -r requirements-dev.txt
-python -m playwright install chromium
-python tests/browser_check.py
-python tests/browser_ia.py
-python tests/browser_loan_search.py
-# Opcional, com um ZIP legado local; não usa a instalação real
-python tests/browser_pre_apresentacao.py --zip "C:\caminho\acervo.zip"
-```
+A disponibilidade do código para consulta não concede autorização geral para modificá-lo, criar versões derivadas ou redistribuí-lo. Essas ações exigem autorização prévia e expressa dos titulares. Configurar o aplicativo e cadastrar, importar ou exportar os próprios dados pelas ferramentas existentes são usos permitidos. Componentes de terceiros conservam suas próprias licenças.
 
-Testes usam bancos temporários, dados sintéticos e provedores de IA simulados; não enviam e-mails reais nem consomem créditos. O navegador bloqueia serviços externos. O refinamento da IA aprovou 83 testes, os dois fluxos Chromium e a verificação `python tests/browser_ia.py --loading-only`, que retém a resposta de disponibilidade para comprovar ausência de flash. A auditoria posterior das configurações aprovou **92 testes** e os três cenários de `tests/browser_settings.py` (principal, `--institution-only` e `--cache-only`). Veja resultados, capturas e limitações no [relatório do refinamento](docs/REFINO_IA.md) e na [auditoria das configurações](docs/AUDITORIA_CONFIGURACOES.md). [EVOLUCAO_PRODUTO.md](docs/EVOLUCAO_PRODUTO.md) registra uma etapa anterior. Conectividade real em nuvem exige configuração e execução opcional autorizada.
+## Documentação técnica
 
-## Limites relevantes
+Para a equipe de informática e quem participa do desenvolvimento:
 
-A preparação do acervo aprovou **116 testes de serviços**, o fluxo completo de navegador com catálogo importado e contas sintéticas e o teste isolado do executável. Foram registradas 60 capturas em quatro resoluções, nos temas claro/escuro. Comandos, resultados, correções e limites estão em [FINAL_PRE_APRESENTACAO.md](docs/FINAL_PRE_APRESENTACAO.md). O executável desta entrega está em `dist/BIBI-pre-apresentacao/BIBI.exe`; mantenha toda a pasta `_internal` junto dele.
-
-O servidor HTTPS local exibe automaticamente o IP em Configurações → Biblioteca. Cada dispositivo precisa confiar no certificado desta instalação; o firewall pode exigir liberação na rede privada. Veja [Rede local](docs/REDE_LOCAL.md). O servidor precisa permanecer ligado para acesso e envio. Reservas exigem que a biblioteca defina seu prazo de retirada; regras anteriores são mantidas até a configuração explícita. O filtro de comentários é apoio determinístico à moderação humana. Termos e aviso de privacidade precisam ser revisados pela instituição; não representam certificação jurídica.
-
-## Licença de uso
-
-A BIBI é software proprietário, com **todos os direitos reservados**. Você pode instalar e usar gratuitamente a versão disponibilizada, inclusive na rede local da biblioteca. Modificar o código, criar versões derivadas ou redistribuir o programa exige autorização prévia e expressa dos titulares. Os termos completos estão em [LICENSE](LICENSE).
-
-Configurar o aplicativo e cadastrar, importar ou exportar seus dados pelas ferramentas existentes são usos permitidos.
-
-As dependências e os recursos de terceiros mantêm suas próprias licenças. O estilo de avatar Adventurer Neutral, de Lisa Wischofsky, utiliza [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), com atribuição no editor.
+- [Instalação avançada, build e validação da distribuição](docs/DISTRIBUICAO.md)
+- [Operação, contas, circulação e backup](docs/GUIA_OPERACAO.md)
+- [Rede local, HTTPS e certificados](docs/REDE_LOCAL.md)
+- [Arquitetura e desenvolvimento](docs/REFATORACAO.md)
+- [Integrações e arquitetura da IA](docs/INTEGRACAO_IA.md)
+- [Seleção automática de modelos](docs/ROTEAMENTO_IA.md)

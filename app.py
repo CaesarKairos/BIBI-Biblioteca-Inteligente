@@ -1,5 +1,6 @@
 """Fabrica Flask sem efeitos de importacao."""
 from datetime import timedelta
+import os
 from pathlib import Path
 import json
 from flask import Flask
@@ -22,12 +23,21 @@ def create_app(test_config=None):
         SESSION_COOKIE_HTTPONLY=True,SESSION_COOKIE_SAMESITE='Lax',
         PERMANENT_SESSION_LIFETIME=timedelta(hours=8),
         ALLOWED_HOSTS=['127.0.0.1','::1','localhost'],SESSION_COOKIE_SECURE=False,
-        LAN_ENABLED=True,LAN_PORT=5443,DESKTOP_TRAY=True)
+        LAN_ENABLED=True,LAN_PORT=int(os.getenv('BIBI_LAN_PORT','5443')),
+        DESKTOP_PORT=int(os.getenv('BIBI_DESKTOP_PORT','5000')),DESKTOP_TRAY=True)
     if test_config:
         app.config.update(test_config)
     app.session_interface=InstallationSessionInterface()
     directory = Path(app.config['DATA_DIR'])
     directory.mkdir(parents=True,exist_ok=True)
+    if not app.testing:
+        from logging.handlers import RotatingFileHandler
+        import logging
+        log_path=directory/'BIBI.log'
+        if not any(getattr(handler,'baseFilename',None)==str(log_path.resolve()) for handler in app.logger.handlers):
+            handler=RotatingFileHandler(log_path,maxBytes=1024*1024,backupCount=2,encoding='utf-8')
+            handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
+            app.logger.addHandler(handler)
     for name in ('uploadedcovers','externalcovers','avatars','backups'):
         (directory/name).mkdir(exist_ok=True)
     app.config.setdefault('DATABASE',str(directory/'Biblioteca.db'))

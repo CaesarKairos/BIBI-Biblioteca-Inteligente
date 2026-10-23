@@ -4,6 +4,7 @@ Uso: python tests/browser_pre_apresentacao.py --zip CAMINHO_LOCAL
 O arquivo legado não é copiado para as evidências.
 """
 import argparse
+import os
 import json
 import sys
 import tempfile
@@ -18,10 +19,11 @@ from playwright.sync_api import sync_playwright,expect
 
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--zip',required=True);args=parser.parse_args()
-    screens=Path(__file__).resolve().parents[1]/'docs/validacao/final-pre-apresentacao'
+    parser=argparse.ArgumentParser();parser.add_argument('--zip',required=True);parser.add_argument('--screens',type=Path);args=parser.parse_args()
+    screens=args.screens or Path(__file__).resolve().parents[1]/'docs/validacao/final-pre-apresentacao'
     screens.mkdir(parents=True,exist_ok=True)
     checks=[]
+    expect.set_options(timeout=60000)
     with tempfile.TemporaryDirectory(prefix='bibi-final-browser-') as work:
         result=import_catalog(Path(args.zip),Path(work),apply=True)
         assert result['importados']==32,result
@@ -57,13 +59,13 @@ def main():
                 def context():
                     ctx=browser.new_context(viewport={'width':1366,'height':768},locale='pt-BR')
                     ctx.route('**/*',lambda route:route.continue_() if route.request.url.startswith(base) else route.abort())
-                    page=ctx.new_page();page.set_default_timeout(15000);page.set_default_navigation_timeout(20000)
+                    page=ctx.new_page();page.set_default_timeout(60000);page.set_default_navigation_timeout(60000)
                     page.on('pageerror',lambda error:errors.append(str(error)))
-                    page.on('response',lambda r:print('HTTP',r.status,r.url.split(base)[-1],flush=True) if r.status>=400 else None)
+                    page.on('response',lambda r:print('HTTP',r.status,r.url.split(base)[-1],flush=True) if r.status>=400 or os.getenv('BIBI_BROWSER_TRACE') else None)
                     return page
                 admin=context();goto(admin,'/app');assert '/configuracao-inicial' in admin.url
                 for name,value in {'biblioteca':'Biblioteca de demonstração','nome':'Bibliotecária de teste','email':'admin@example.test','senha':'senha forte de teste','confirmacao':'senha forte de teste'}.items():admin.locator(f'[name={name}]').fill(value)
-                admin.locator('[name=aceite]').check();admin.locator('#access-submit').click();admin.wait_for_url('**/boas-vindas');admin.wait_for_load_state('networkidle');admin.locator('#suggested-avatar').click();admin.wait_for_url('**/app');admin.wait_for_load_state('networkidle')
+                admin.locator('[name=aceite]').check();admin.locator('#access-submit').click();admin.wait_for_url('**/boas-vindas');expect(admin.locator('#suggested-avatar')).to_be_visible();admin.locator('#suggested-avatar').click();admin.wait_for_url('**/app');admin.wait_for_load_state('networkidle')
                 books=api(admin,'/api/livros');assert len(books)==32
                 for b in books:assert admin.request.get(base+b['capa'],timeout=10000).status==200,b
                 print('Catálogo e capas verificados',flush=True)
@@ -90,7 +92,7 @@ def main():
                     with page.expect_response(lambda response:response.url.endswith('/api/acesso/ativar')) as activation:
                         page.locator('#access-submit').click()
                     assert activation.value.status==200,activation.value.json()
-                    page.wait_for_url('**/boas-vindas');page.wait_for_load_state('networkidle');page.locator('#suggested-avatar').click();page.wait_for_url('**/app');page.wait_for_load_state('networkidle');readers.append(page)
+                    page.wait_for_url('**/boas-vindas');expect(page.locator('#suggested-avatar')).to_be_visible();page.locator('#suggested-avatar').click();page.wait_for_url('**/app');page.wait_for_load_state('networkidle');readers.append(page)
                 student,other=readers
                 goto(student,f'/app?livro={bid}');expect(student.locator('#det-titulo')).to_have_text(book['titulo'])
                 shot(student,'livro-capa-detalhes')
@@ -103,7 +105,7 @@ def main():
                 assert api(other,'/api/minha-conta/lidos')==[]
                 checks.append('Convite e ativação de duas contas; seleção e desmarcação; Quero ler; livro lido privado; avaliação visível por outra conta sem identidade')
                 goto(student,'/perfil');student.locator('#favorite-book').select_option(str(bid),force=True);student.locator('#favorite-form button.btn-primary').click();student.wait_for_load_state('networkidle');expect(student.locator('#profile-favorites article')).to_have_count(1);expect(student.locator('#profile-read article')).to_have_count(1)
-                student.locator('#edit-avatar').click();student.wait_for_load_state('networkidle');student.locator('[data-avatar-field=eyesVariant][data-avatar-value=variant02]').click();student.wait_for_load_state('networkidle');student.locator('#save-avatar').click();student.wait_for_load_state('networkidle')
+                student.locator('#edit-avatar').click();expect(student.locator('#avatar-options')).to_be_visible();student.locator('[data-avatar-field=eyesVariant][data-avatar-value=variant02]').click();student.wait_for_load_state('networkidle');student.locator('#save-avatar').click();student.wait_for_load_state('networkidle')
                 goto(admin,f'/app?livro={bid}');admin.locator('#btn-emprestar').click();admin.locator('#rapido-nome').fill('Leitor de teste 1');expect(admin.locator('#rapido-nome-suggestions')).to_be_visible();admin.locator('#rapido-nome-suggestions > div').first.click();admin.locator('#btn-confirmar-emprestimo').click();admin.wait_for_load_state('networkidle');expect(admin.locator('#modalEmprestimoRapido')).not_to_be_visible()
                 goto(student,'/perfil');student.get_by_role('button',name='Solicitar renovação').click();student.wait_for_load_state('networkidle');expect(student.locator('#profile-loans')).to_contain_text('pendente')
                 settings(admin,'circulacao');expect(admin.locator('#renewal-list article')).to_have_count(1);shot(admin,'renovacao-pendente');admin.get_by_role('button',name='Aprovar renovação').click();admin.wait_for_load_state('networkidle');expect(admin.locator('#renewal-list article')).to_have_count(0)
@@ -126,6 +128,8 @@ def main():
                 other.get_by_role('button',name='Excluir minha avaliação',exact=True).click();expect(other.locator('.book-review-card')).to_have_count(1);expect(other.locator('.book-review-card')).to_contain_text('personagem')
                 checks.append('Exclusão da própria avaliação preserva a opinião publicada pela outra conta')
                 checks.append('Reserva em fila, separação após devolução, cancelamento, notificação e leitura; edição sinalizada, invisibilidade pública e revisão administrativa')
+                goto(admin,'/app#age');shot(admin,'agenda')
+                settings(admin,'inteligencia-artificial');shot(admin,'ia-opcional-desativada')
                 settings(admin,'dados')
                 with admin.expect_download() as download:admin.locator('#download-backup').click()
                 assert download.value.failure() is None

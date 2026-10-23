@@ -42,10 +42,11 @@ def run_desktop(app):
     import webview
     from services.email_service import iniciar_verificacao_notificacoes
     # Somente o proxy local da escola pode informar origem HTTPS/IP de cliente.
-    server = create_server(app,host='127.0.0.1',port=5000,threads=8,
+    server = create_server(app,host='127.0.0.1',port=app.config.get('DESKTOP_PORT',5000),threads=8,
         trusted_proxy='127.0.0.1',trusted_proxy_headers={'x-forwarded-for','x-forwarded-host','x-forwarded-proto'},
         clear_untrusted_proxy_headers=True,max_request_body_size=512*1024*1024)
     threading.Thread(target=server.run,daemon=True).start()
+    local_url=f'http://127.0.0.1:{server.effective_port}'
     from services.rede_service import NetworkRuntime
     network=NetworkRuntime(app)
     app.extensions['network_runtime']=network
@@ -57,7 +58,7 @@ def run_desktop(app):
         from webview.menu import Menu, MenuAction
         recovery = RecuperacaoDesktop(app.extensions['secrets'])
         app.extensions['desktop_recovery'] = recovery
-        window = webview.create_window('BIBI — Biblioteca Inteligente','http://127.0.0.1:5000',width=1366,height=768,resizable=True)
+        window = webview.create_window('BIBI — Biblioteca Inteligente',local_url,width=1366,height=768,resizable=True)
         from services.bandeja_service import DesktopTray
         tray=DesktopTray(app,window)
         window.events.before_show += tray.install
@@ -87,7 +88,7 @@ def run_desktop(app):
         window.events.loaded += bind_shortcuts
         def recover():
             token = recovery.abrir()
-            window.load_url('http://127.0.0.1:5000/recuperacao-local#' + token)
+            window.load_url(local_url+'/recuperacao-local#' + token)
         webview.start(menu=[
             Menu('Conta', [MenuAction('Recuperar conta bibliotecária neste computador', recover)]),
             Menu('Exibir', [MenuAction('Tela cheia (F11)', alternar_tela_cheia),
