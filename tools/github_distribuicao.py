@@ -7,6 +7,9 @@ import json
 from pathlib import Path
 import subprocess
 import requests
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from version import VERSION
 
 
 REPO='CaesarKairos/BIBI-Biblioteca-Inteligente'
@@ -14,7 +17,8 @@ REPO='CaesarKairos/BIBI-Biblioteca-Inteligente'
 
 def main():
     parser=argparse.ArgumentParser()
-    parser.add_argument('--version',default='1.1.0')
+    parser.add_argument('--version',default=VERSION)
+    parser.add_argument('--draft-id',type=int,help='Atualiza um rascunho existente, preservando a release e as tags anteriores.')
     parser.add_argument('--notes',type=Path)
     parser.add_argument('--asset',type=Path,action='append',default=[])
     parser.add_argument('--inspect',action='store_true')
@@ -40,10 +44,20 @@ def main():
     main=api('GET','/git/ref/heads/main')['object']['sha']
     if commit!=main:raise RuntimeError('A tag precisa apontar diretamente para o commit final da main.')
     existing=[r for r in releases if r['tag_name']==tag]
+    if args.draft_id:
+        source=api('GET',f'/releases/{args.draft_id}')
+        if not source['draft']:raise RuntimeError('A release indicada já foi publicada; não será alterada.')
+        if existing and existing[0]['id']!=source['id']:raise RuntimeError('Já existe outro rascunho para essa versão.')
+        existing=[source]
     if len(existing)>1:raise RuntimeError('Há mais de uma release para a tag; revisão necessária.')
     if existing and not existing[0]['draft']:raise RuntimeError('A versão já foi publicada; não será alterada.')
     payload={'tag_name':tag,'target_commitish':main,'name':'BIBI — Biblioteca Inteligente '+args.version,'body':args.notes.read_text(encoding='utf-8-sig'),'draft':True,'prerelease':False}
     release=api('PATCH',f"/releases/{existing[0]['id']}",json=payload) if existing else api('POST','/releases',json=payload)
+    if args.draft_id:
+        incoming={path.name for path in args.asset}
+        for asset in release.get('assets',[]):
+            if asset['name'].startswith('BIBI-') and asset['name'] not in incoming:
+                api('DELETE',f"/releases/assets/{asset['id']}")
     for path in args.asset:
         if not path.is_file():raise RuntimeError('Artefato ausente: '+str(path))
         # Só troca um asset no rascunho autorizado da mesma versão.

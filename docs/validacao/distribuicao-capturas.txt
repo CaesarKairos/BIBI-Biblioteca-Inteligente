@@ -1,3 +1,4 @@
+Verificação real OpenRouter: {'mensagem': 'Conexão e geração verificadas. A disponibilidade futura depende do serviço.', 'modelo': 'cohere/north-mini-code:free'}
 Captura acervo
 DOM pronto acervo
 Conteúdo pronto acervo
@@ -26,3 +27,6 @@ Captura avaliacoes
 DOM pronto avaliacoes
 Conteúdo pronto avaliacoes
 Salva avaliacoes
+Conversa real capturada:
+
+Que tal mergulhar em "A Hora da Estrela", de Clarice Lispector? É uma história curta e intensa sobre Macabéa, uma jovem que busca seu lugar no mundo. A prosa única da autora convida a uma reflexão profunda sobre identidade e sonhos.

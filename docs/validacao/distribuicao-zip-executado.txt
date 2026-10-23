@@ -1,4 +1,3 @@
 Chromium no executável: acervo, detalhes, perfil, configurações e HTTPS com CA da instalação aprovados.
 Reinício, login, persistência, imagens decodificadas e integridade/migrações aprovados.
 Executável: servidor local, primeiro cadastro, catálogo de 32 livros e 32 capas aprovados em LOCALAPPDATA temporário.
-ZIP entregue: CRC válido, extração completa e smoke do pacote extraído aprovados.

@@ -1,4 +1,4 @@
-# BIBI — Biblioteca Inteligente 1.1.0
+# BIBI — Biblioteca Inteligente 1.1.1
 
 Esta versão reúne gestão da biblioteca escolar, circulação de livros e experiência individual de leitura. A release deve permanecer **em rascunho** até a revisão final pelos responsáveis pelo projeto.
 
@@ -13,7 +13,7 @@ Esta versão reúne gestão da biblioteca escolar, circulação de livros e expe
 
 ## Instalação
 
-Baixe `BIBI-1.1.0-Windows-x64-Portatil.zip`, extraia a pasta completa e abra `BIBI.exe`. Mantenha `_internal` ao lado do executável. Os arquivos Source code não são a distribuição para uso comum.
+Baixe `BIBI-1.1.1-Windows-x64-Portatil.zip`, extraia a pasta completa e abra `BIBI.exe`. Mantenha `_internal` ao lado do executável. Os arquivos Source code não são a distribuição para uso comum.
 
 Requisitos: Windows 10/11 de 64 bits e Microsoft Edge WebView2. Python e ferramentas de desenvolvimento não são necessários. Na primeira abertura, cadastre a instituição e crie a conta administrativa. Os dados ficam em `%LOCALAPPDATA%\BIBI`, separados dos arquivos do programa. Antes de atualizar uma instalação, use o backup da BIBI.
 
@@ -29,13 +29,13 @@ O bibliotecário configura os serviços externos, verifica a conexão e autoriza
 
 ## Validação e limites conhecidos
 
-O pacote foi compilado no Windows com PyInstaller. Foram testados primeiro cadastro, avatar, acervo, detalhes, perfil, configurações, HTTPS com a CA da instalação, integridade/migrações, reinício, login e persistência em dados descartáveis. A interface foi exercitada com Chromium; serviços de IA foram simulados nos testes, sem consumo externo. Consulte [o relatório de distribuição](https://github.com/CaesarKairos/BIBI-Biblioteca-Inteligente/blob/v1.1.0/docs/DISTRIBUICAO.md) no repositório.
+O pacote foi compilado no Windows com PyInstaller. Foram testados primeiro cadastro, avatar, acervo, detalhes, perfil, configurações, HTTPS com a CA da instalação, integridade/migrações, reinício, login e persistência em dados descartáveis. A interface foi exercitada com Chromium; os testes automatizados usam provedores simulados, complementados por verificação e conversa reais com OpenRouter gratuito para as capturas. Consulte [o relatório de distribuição](https://github.com/CaesarKairos/BIBI-Biblioteca-Inteligente/blob/v1.1.1/docs/DISTRIBUICAO.md) no repositório.
 
 - Não houve homologação em computador Windows limpo nem validação de instalação/desinstalação do instalador.
 - A janela nativa do executável e sua tela inicial foram confirmadas por Windows UI Automation. O roteiro separado de bandeja com janela oculta retornou E_ABORT; os controles de ocultar, reabrir e encerrar pela bandeja ainda precisam de homologação.
-- Capas externas dependem de internet e das fontes. Há sete capas pendentes no catálogo local auditado; esse catálogo não acompanha o programa.
+- Capas externas dependem de internet e das fontes. As 76 capas do catálogo local foram verificadas; esse catálogo não acompanha o programa.
 - Edição física de algumas capas corrigidas ainda precisa de conferência pela biblioteca. As fontes e os motivos estão no relatório de capas.
-- SMTP real, conectividade com provedores de IA reais e acesso em outro dispositivo da rede não foram homologados nesta entrega.
+- SMTP real e acesso em outro dispositivo da rede não foram homologados nesta entrega.
 - Os executáveis não receberam assinatura digital.
 
 ## Integridade, créditos e licença

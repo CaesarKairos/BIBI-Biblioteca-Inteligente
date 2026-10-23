@@ -12,6 +12,15 @@ def models(*args):
 
 
 class RoutingTests(AppTest):
+    def test_verified_service_stays_active_after_restart_without_legacy_proofs(self):
+        from app import create_app
+        self.connect();self.activate()
+        self.assertFalse(self.sql("SELECT 1 FROM Configuracoes WHERE chave='ia_validacoes'"))
+        restarted=create_app({'TESTING':True,'DATA_DIR':str(self.directory)})
+        with restarted.app_context():
+            self.assertTrue(rt.config()['ativa'])
+            self.assertTrue(rt.availability()['disponivel'])
+
     def test_insights_cache_survives_health_and_latency_updates(self):
         self.connect();self.activate()
         with patch.object(Provider,'stream',side_effect=lambda *args:(text for text in ['Ação baseada nos agregados'])) as stream:

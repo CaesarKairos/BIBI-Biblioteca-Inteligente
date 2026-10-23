@@ -57,7 +57,8 @@ def create_app(test_config=None):
         # e ativação explícitos. Nenhuma chave salva é tratada como prova de conexão.
         legacy_ai=conn.execute("SELECT valor FROM Configuracoes WHERE chave='ia'").fetchone()
         proofs=conn.execute("SELECT 1 FROM Configuracoes WHERE chave='ia_validacoes'").fetchone()
-        if legacy_ai and not proofs:
+        service_registry=conn.execute("SELECT 1 FROM Configuracoes WHERE chave='ia_servicos_v1'").fetchone()
+        if legacy_ai and not proofs and not service_registry:
             settings=json.loads(legacy_ai[0])
             if settings.get('ativa'):
                 settings['ativa']=False

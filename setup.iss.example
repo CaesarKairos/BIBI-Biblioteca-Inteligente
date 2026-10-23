@@ -1,6 +1,6 @@
 ﻿; Compilar na raiz: ISCC.exe setup.iss.example
 #define MyAppName "BIBI - Biblioteca Inteligente"
-#define MyAppVersion "1.1.0"
+#define MyAppVersion "1.1.1"
 #define MyAppPublisher "Philocode"
 #define MyAppURL "https://github.com/CaesarKairos/BIBI-Biblioteca-Inteligente"
 [Setup]
@@ -19,7 +19,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
 OutputDir=dist\release
-OutputBaseFilename=BIBI-1.1.0-Windows-x64-Setup
+OutputBaseFilename=BIBI-1.1.1-Windows-x64-Setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
@@ -30,7 +30,7 @@ UninstallDisplayName={#MyAppName}
 [Languages]
 Name: "portuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
 [Files]
-Source: "dist\Windows-1.1.0\BIBI\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "dist\Windows-1.1.1\BIBI\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 [Icons]
 Name: "{group}\BIBI"; Filename: "{app}\BIBI.exe"
 Name: "{autodesktop}\BIBI"; Filename: "{app}\BIBI.exe"; Tasks: desktopicon

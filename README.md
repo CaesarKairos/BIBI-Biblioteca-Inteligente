@@ -45,7 +45,7 @@ As capturas desta página mostram a aplicação em funcionamento com o **acervo 
 
 ## Como instalar no Windows
 
-A distribuição para usuários será disponibilizada na área [Releases / Versões do GitHub](https://github.com/CaesarKairos/BIBI-Biblioteca-Inteligente/releases). A preparação da versão 1.1.0 permanece em rascunho até a publicação pelos responsáveis; rascunhos não ficam disponíveis para download público.
+A distribuição para usuários será disponibilizada na área [Releases / Versões do GitHub](https://github.com/CaesarKairos/BIBI-Biblioteca-Inteligente/releases). A preparação da versão 1.1.1 permanece em rascunho até a publicação pelos responsáveis; rascunhos não ficam disponíveis para download público.
 
 1. Abra a área de versões e escolha uma versão publicada. Baixe o instalador Windows, quando disponível, ou o pacote portátil em ZIP. Os arquivos **Source code** são destinados ao desenvolvimento.
 2. Execute o instalador e abra **BIBI** pelo Menu Iniciar. No pacote portátil, extraia o ZIP inteiro para uma pasta e abra `BIBI.exe`, mantendo a pasta `_internal` ao lado dele.
@@ -69,6 +69,10 @@ A BIBI funciona sem IA. O bibliotecário pode configurar serviços externos nas 
 A IA auxilia a mediação da leitura, as recomendações literárias e a análise administrativa. As sugestões levam em conta o acervo e os interesses disponíveis, com valorização de autoras brasileiras documentadas, sem deduzir gênero ou nacionalidade pelo nome.
 
 Esses recursos podem depender de internet, chave de API, limites, custos e condições do provedor. A escola deve avaliar quais informações serão enviadas aos serviços configurados. [Entenda a configuração e os limites da IA](docs/INTEGRACAO_IA.md).
+
+![Conversa literária com a BIBI usando integração real com OpenRouter](docs/readme/ia-conversa.png)
+
+Conversa demonstrativa com resposta real de um modelo gratuito via OpenRouter. A seleção de livros por critérios do catálogo também funciona sem geração de texto por IA. As respostas dependem do serviço e devem ser avaliadas por quem realiza a mediação da leitura.
 
 ## Tecnologias utilizadas
 

@@ -63,9 +63,9 @@ def main():
                 for bid in (rows[0][0],44,53):
                     page.goto(base+f'/app?livro={bid}')
                     page.locator('#det-titulo').wait_for()
-                    page.wait_for_function("getComputedStyle(document.querySelector('#det-capa')).backgroundImage!=='none'")
+                    page.wait_for_function("!getComputedStyle(document.querySelector('#det-capa')).backgroundImage.includes('placeholder')&&getComputedStyle(document.querySelector('#det-capa')).backgroundImage!=='none'")
                 browser.close()
-            report={'banco':'temporário; somente campos bibliográficos e arquivos de capas; conta sintética', 'total':len(rows),'renderizadas':sum(r['estado']=='renderizada' for r in results),'pendencias':[r for r in results if r['estado']!='renderizada'],'detalhes':'Primeira obra, ID 44 e ID 53: fundo de capa/placeholder presente.'}
+            report={'banco':'temporário; somente campos bibliográficos e arquivos de capas; conta sintética', 'total':len(rows),'renderizadas':sum(r['estado']=='renderizada' for r in results),'pendencias':[r for r in results if r['estado']!='renderizada'],'detalhes':'Primeira obra, ID 44 e ID 53: capas renderizadas sem placeholder.'}
             Path('docs/validacao/capas-navegador.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
             print(json.dumps(report,ensure_ascii=False),flush=True)
         finally:

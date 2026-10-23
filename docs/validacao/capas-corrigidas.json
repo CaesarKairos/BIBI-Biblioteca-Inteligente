@@ -182,20 +182,19 @@
       "nova": "https://covers.openlibrary.org/b/id/7246712-L.jpg?default=false",
       "fonte": "https://openlibrary.org/books/OL16737554M",
       "edicao": "Obra e autoria conferidas em português; registro local sem ISBN. Edição física a confirmar."
-    }
-  ],
-  "pendentes": [
+    },
     {
       "id": 44,
       "titulo": "The Age of Alexander (Penguin Classics)",
       "isbn": "9780140449358",
       "motivo": "Imagem vazia ou placeholder remoto",
       "anterior": "https://covers.openlibrary.org/b/isbn/9780140449358-L.jpg",
-      "estado": "pendente",
+      "estado": "corrigida",
       "titulo_fonte": "The Age of Alexander (Penguin Classics)",
-      "fonte": "https://openlibrary.org/isbn/9780140449358",
-      "edicao": "/books/OL7355490M",
-      "similaridade": 1.0
+      "fonte": "https://www.penguin.com.au/books/the-age-of-alexander-9780140449358",
+      "edicao": "ISBN exato; serviço oficial de imagens da Penguin Random House; exibição remota.",
+      "similaridade": 1.0,
+      "nova": "https://images.penguinrandomhouse.com/cover/9780140449358"
     },
     {
       "id": 53,
@@ -203,11 +202,12 @@
       "isbn": "9780140449419",
       "motivo": "Imagem vazia ou placeholder remoto",
       "anterior": "https://covers.openlibrary.org/b/isbn/9780140449419-L.jpg",
-      "estado": "pendente",
+      "estado": "corrigida",
       "titulo_fonte": "The Dhammapada",
-      "fonte": "https://openlibrary.org/isbn/9780140449419",
-      "edicao": "/books/OL10097379M",
-      "similaridade": 1.0
+      "fonte": "https://www.penguinrandomhouse.com/books/673323/the-dhammapada-by-anonymous-translated-with-an-introduction-and-notes-by-valerie-roebuck/",
+      "edicao": "ISBN exato e tradução Valerie Roebuck; serviço oficial de imagens da Penguin Random House; exibição remota.",
+      "similaridade": 1.0,
+      "nova": "https://images.penguinrandomhouse.com/cover/9780140449419"
     },
     {
       "id": 61,
@@ -215,8 +215,11 @@
       "isbn": "9781401223025",
       "motivo": "Sem capa",
       "anterior": "",
-      "estado": "pendente",
-      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401223025.json"
+      "estado": "corrigida",
+      "busca": "404 Client Error: Not Found for url: https://openlibrary.org/isbn/9781401223025.json",
+      "nova": "https://covers.openlibrary.org/b/id/9248756-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/books/OL9158739M",
+      "edicao": "Mesma obra e autoria; capa da história completa em português. Há outro registro deste título no catálogo. O ISBN cadastrado não foi localizado; edição física a confirmar, sem alterar ISBN ou mesclar registros."
     },
     {
       "id": 72,
@@ -224,8 +227,11 @@
       "isbn": null,
       "motivo": "Sem capa",
       "anterior": null,
-      "estado": "pendente",
-      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+      "estado": "corrigida",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária.",
+      "nova": "https://covers.openlibrary.org/b/id/15131920-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/books/OL60470590M",
+      "edicao": "Título e autoria conferidos pela edição Intrínseca ISBN 9788580576467; registro local sem ISBN, edição física a confirmar."
     },
     {
       "id": 73,
@@ -233,8 +239,11 @@
       "isbn": null,
       "motivo": "Sem capa",
       "anterior": null,
-      "estado": "pendente",
-      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+      "estado": "corrigida",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária.",
+      "nova": "https://covers.openlibrary.org/b/id/10492588-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/books/OL30698416M",
+      "edicao": "Título e autoria conferidos pela Companhia das Letras ISBN 9788535908343; registro local sem ISBN, edição física a confirmar."
     },
     {
       "id": 75,
@@ -242,8 +251,11 @@
       "isbn": null,
       "motivo": "Sem capa",
       "anterior": null,
-      "estado": "pendente",
-      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+      "estado": "corrigida",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária.",
+      "nova": "https://covers.openlibrary.org/b/id/13158150-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/works/OL34307295W",
+      "edicao": "Referência da edição Eu e outras poesias, de Augusto dos Anjos (L&PM). Obra também catalogada sob o título Eu, conforme Biblioteca Digital de Literaturas de Língua Portuguesa/UFSC. Registro sem ISBN: edição física a confirmar."
     },
     {
       "id": 76,
@@ -251,11 +263,23 @@
       "isbn": null,
       "motivo": "Sem capa",
       "anterior": null,
-      "estado": "pendente",
-      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária."
+      "estado": "corrigida",
+      "busca": "Edição/ISBN não informado; não associar capa de edição arbitrária.",
+      "nova": "https://covers.openlibrary.org/b/id/10836214-L.jpg?default=false",
+      "fonte": "https://openlibrary.org/books/OL32179904M",
+      "edicao": "Título, autoria Vitor/Lu Cafaggi e edição Panini ISBN 9788565484572 conferidos; registro local sem ISBN, edição física a confirmar."
     }
   ],
+  "pendentes": [],
   "backup_local": "antes-capas-distribuicao-1792706908950613400.db",
-  "armazenamento": "URLs persistidas no SQLite. Nenhuma capa de terceiro adicionada ao repositório ou instalador. Open Library orienta exibição direta pela URL.",
-  "termos": "https://openlibrary.org/dev/docs/api/covers"
+  "armazenamento": "URLs persistidas no SQLite; nenhuma imagem original incorporada ao repositório ou instalador. Open Library por URL e duas capas por ISBN no serviço oficial de imagens PRH.",
+  "termos": "https://openlibrary.org/dev/docs/api/covers",
+  "atualizacao": "2026-10-23",
+  "backup_complemento": "antes-capas-complemento-1792726131937443800.db",
+  "fontes_complementares": [
+    "https://developer.penguinrandomhouse.com/docs/read/enhanced_prh_api/concepts/Images",
+    "https://loja.intrinseca.com.br/uma-breve-historia-do-tempo/",
+    "https://www.companhiadasletras.com.br/livro/9788535908343/o-mundo-assombrado-pelos-demonios",
+    "https://literaturabrasileira.ufsc.br/documentos?id=136647&locale=en"
+  ]
 }

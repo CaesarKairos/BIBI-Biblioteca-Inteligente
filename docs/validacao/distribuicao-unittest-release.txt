@@ -1,7 +1,7 @@
-.\.venv\Scripts\python.exe : test_catalog_rejects_unknown_and_internal_routers_without_inventing_quality
+.venv\Scripts\python.exe : test_catalog_rejects_unknown_and_internal_routers_without_inventing_quality
 (test_ai_routing.RoutingTests.test_catalog_rejects_unknown_and_internal_routers_without_inventing_quality) ... ok
 No linha:2 caractere:1
-+ .\.venv\Scripts\python.exe -m unittest discover -s tests -v > docs/va ...
++ .venv\Scripts\python.exe -m unittest discover -s tests -v > docs/vali ...
 + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     + CategoryInfo          : NotSpecified: (test_catalog_re...quality) ... ok:String) [], RemoteException
     + FullyQualifiedErrorId : NativeCommandError
@@ -34,6 +34,8 @@ test_single_service_no_model_selection_and_global_disable
 (test_ai_routing.RoutingTests.test_single_service_no_model_selection_and_global_disable) ... ok
 test_task_specific_ranking_and_school_preference
 (test_ai_routing.RoutingTests.test_task_specific_ranking_and_school_preference) ... ok
+test_verified_service_stays_active_after_restart_without_legacy_proofs
+(test_ai_routing.RoutingTests.test_verified_service_stays_active_after_restart_without_legacy_proofs) ... ok
 test_atomic_setup (test_contas.ContaTests.test_atomic_setup) ... ok
 test_csrf_origin_logout_and_rate (test_contas.ContaTests.test_csrf_origin_logout_and_rate) ... ok
 test_initial_terms_required_available_and_recorded
@@ -93,7 +95,7 @@ test_cascade_precedence_and_fallback (test_improvements.ImprovementTests.test_ca
 test_concurrent_loans_and_idempotent_return
 (test_improvements.ImprovementTests.test_concurrent_loans_and_idempotent_return) ... ok
 test_http_errors_do_not_expose_details (test_improvements.ImprovementTests.test_http_errors_do_not_expose_details) ...
-[2026-10-22 19:25:29,640] ERROR in __init__: Falha em /api/livros
+[2026-10-23 00:39:35,256] ERROR in __init__: Falha em /api/livros
 Traceback (most recent call last):
   File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\.venv\Lib\site-packages\flask\app.py", line
 917, in full_dispatch_request
@@ -124,7 +126,7 @@ test_loss_is_not_a_return (test_improvements.ImprovementTests.test_loss_is_not_a
 test_reader_id_not_silent_identity_update
 (test_improvements.ImprovementTests.test_reader_id_not_silent_identity_update) ... ok
 test_transaction_rolls_back_all_books_and_reader
-(test_improvements.ImprovementTests.test_transaction_rolls_back_all_books_and_reader) ... [2026-10-22 19:25:33,967]
+(test_improvements.ImprovementTests.test_transaction_rolls_back_all_books_and_reader) ... [2026-10-23 00:39:40,645]
 WARNING in __init__: Conflito de integridade em /api/emprestimos
 Traceback (most recent call last):
   File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\.venv\Lib\site-packages\flask\app.py", line
@@ -175,7 +177,7 @@ test_network_host_https_cookie_and_public_text
 test_real_password_enforced_server_side
 (test_integracao_seguranca.IntegrationTests.test_real_password_enforced_server_side) ... ok
 test_restore_failure_rolls_back_database
-(test_integracao_seguranca.IntegrationTests.test_restore_failure_rolls_back_database) ... [2026-10-22 19:25:49,911]
+(test_integracao_seguranca.IntegrationTests.test_restore_failure_rolls_back_database) ... [2026-10-23 00:40:39,806]
 ERROR in __init__: Falha em /api/gestao/restaurar
 Traceback (most recent call last):
   File "C:\Users\cesar\OneDrive\Documentos\BIBI — Biblioteca Inteligente\.venv\Lib\site-packages\flask\app.py", line
@@ -260,7 +262,7 @@ test_bind_failure_preserves_local_app (test_rede.NetworkTests.test_bind_failure_
 test_ca_persistence_and_ip_change (test_rede.NetworkTests.test_ca_persistence_and_ip_change) ... ok
 test_network_authorization_and_forwarded_headers
 (test_rede.NetworkTests.test_network_authorization_and_forwarded_headers) ... ok
-test_real_tls_and_shutdown (test_rede.NetworkTests.test_real_tls_and_shutdown) ... Client ('127.0.0.1', 61505) lost —
+test_real_tls_and_shutdown (test_rede.NetworkTests.test_real_tls_and_shutdown) ... Client ('127.0.0.1', 60354) lost —
 peer dropped the TLS connection suddenly, during handshake: (1, '[SSL: TLSV1_ALERT_UNKNOWN_CA] tlsv1 alert unknown ca
 (_ssl.c:1006)')
 ok
@@ -296,6 +298,6 @@ test_phone_required_only_when_enabled_and_preserved_when_hidden
 (test_settings_effects.SettingsEffectsTests.test_phone_required_only_when_enabled_and_preserved_when_hidden) ... ok
 
 ----------------------------------------------------------------------
-Ran 116 tests in 177.127s
+Ran 117 tests in 454.978s
 
 OK

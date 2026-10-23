@@ -1,6 +1,6 @@
 {
   "resultado": "aprovado",
-  "capturas": 13,
+  "capturas": 14,
   "catalogo": "76 obras da instalação local; contas e circulação sintéticas",
   "resolucoes": [
     "1920x1080",
@@ -10,6 +10,6 @@
     "claro",
     "escuro"
   ],
-  "ia": "Interface real, desativada; nenhuma resposta simulada ou serviço externo",
+  "ia": "OpenRouter real; verificação e conversa geradas por modelo gratuito, sem simulação",
   "erros_js": []
 }

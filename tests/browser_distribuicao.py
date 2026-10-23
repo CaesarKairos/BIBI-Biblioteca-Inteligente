@@ -26,6 +26,7 @@ from playwright.sync_api import sync_playwright, expect
 
 
 def main():
+    expect.set_options(timeout=60000)
     if os.getenv('BIBI_BROWSER_TRACE'):
         import faulthandler
         faulthandler.dump_traceback_later(45,repeat=True)
@@ -61,6 +62,13 @@ def main():
         api(admin,'/api/acesso/csrf')
         api(admin,'/api/acesso/configurar','POST',dict(biblioteca='Biblioteca de demonstração',nome='Bibliotecária de demonstração',email='admin@example.test',senha='senha forte de teste',confirmacao='senha forte de teste',aceite=True,termos_versao=VERSAO))
         api(admin,'/api/minha-conta/avatar','PUT',default())
+        real_ai=bool(os.getenv('BIBI_SCREENSHOT_OPENROUTER_KEY'))
+        if real_ai:
+            api(admin,'/api/ia/servicos/openrouter','PUT',dict(chave=os.environ['BIBI_SCREENSHOT_OPENROUTER_KEY'],senha_atual='senha forte de teste',habilitado=True,custos_autorizados=False,privacidade_revisada=True,limite_diario=30))
+            api(admin,'/api/ia/servicos/openrouter/modelos','POST',{})
+            result=api(admin,'/api/ia/servicos/openrouter/testar','POST',{})
+            print('Verificação real OpenRouter:',result,flush=True)
+            api(admin,'/api/ia/servicos','PUT',dict(ativa=True,senha_atual='senha forte de teste',max_tokens=384,por_dia=30))
         books=api(admin,'/api/livros')
         readers=[]
         for i in range(8):
@@ -110,6 +118,8 @@ def main():
                     return page
                 a=page_for(admin);s=page_for(student)
                 def capture(page,path):
+                    page.wait_for_function("Array.from(document.querySelectorAll('.book,.capa-mini,#det-capa')).filter(element=>element.getClientRects().length).every(element=>!getComputedStyle(element).backgroundImage.includes('placeholder'))",timeout=90000)
+                    page.wait_for_function("Array.from(document.images).filter(image=>image.getClientRects().length).every(image=>image.complete&&image.naturalWidth>0)",timeout=90000)
                     # Captura nativa do Chromium via Playwright/CDP. Evita o
                     # bloqueio de screenshot causado por páginas com mídia ativa.
                     session=page.context.new_cdp_session(page)
@@ -127,7 +137,7 @@ def main():
                     if path.startswith('/app') and '#' not in path:
                         page.wait_for_timeout(6000 if args.catalogo_local else 2500)
                     if path.startswith('/app') and '#' not in path:
-                        page.wait_for_function("limit=>Array.from(document.querySelectorAll('.book')).filter(book=>getComputedStyle(book).backgroundImage.includes('placeholder')).length<=limit",arg=7 if args.catalogo_local else 0,timeout=90000)
+                        page.wait_for_function("Array.from(document.querySelectorAll('.book')).every(book=>!getComputedStyle(book).backgroundImage.includes('placeholder'))",timeout=90000)
                     page.wait_for_timeout(1200)
                     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),name
                     capture(page,screens/(name+'.png'))
@@ -148,11 +158,21 @@ def main():
                 s.locator('.book-review-form').scroll_into_view_if_needed();capture(s,screens/'avaliacoes.png')
                 a.goto(base+'/configuracoes');a.locator('[data-settings-section="gestao-config"]').click();a.wait_for_timeout(1000);capture(a,screens/'configuracoes.png')
                 a.locator('[data-settings-section="inteligencia-artificial"]').click();a.wait_for_timeout(500);capture(a,screens/'ia-opcional.png')
+                if real_ai:
+                    s.goto(base+'/app');expect(s.locator('#bibi-input')).to_be_visible()
+                    s.locator('#bibi-input').fill('Em até 40 palavras, recomende uma obra de autora brasileira deste acervo para começar a ler. Responda em português brasileiro, sem formatação.')
+                    s.locator('#bibi-send').click()
+                    expect(s.locator('.bibi-answer').last).not_to_be_empty(timeout=180000)
+                    s.wait_for_function("!document.querySelector('#bibi-send').disabled",timeout=180000)
+                    expect(s.locator('#bibi-status')).to_have_text('Resposta concluída. Confira os dados do acervo.')
+                    s.locator('#bibi-messages').evaluate('(element)=>element.scrollTop=0')
+                    s.wait_for_timeout(1000);capture(s,screens/'ia-conversa.png')
+                    print('Conversa real capturada:',s.locator('.bibi-answer').last.inner_text(),flush=True)
                 s.goto(base+'/perfil');expect(s.locator('#profile-favorites article').first).to_be_visible();s.locator('#theme-toggle-btn').click();s.set_viewport_size({'width':390,'height':844});s.wait_for_timeout(700);capture(s,screens/'perfil-mobile-escuro.png')
                 a.goto(base+'/app');expect(a.locator('.book').first).to_be_visible();a.locator('#theme-toggle-btn').click();a.wait_for_timeout(6000);capture(a,screens/'acervo-escuro.png')
                 assert not errors,errors
                 browser.close()
-            Path('docs/validacao/distribuicao-interface.json').write_text(json.dumps({'resultado':'aprovado','capturas':13,'catalogo':f'{len(books)} obras da instalação local; contas e circulação sintéticas' if args.catalogo_local else '32 obras fictícias; capas tipográficas próprias','resolucoes':['1920x1080','390x844'],'temas':['claro','escuro'],'ia':'Interface real, desativada; nenhuma resposta simulada ou serviço externo','erros_js':errors},ensure_ascii=False,indent=2),encoding='utf-8')
+            Path('docs/validacao/distribuicao-interface.json').write_text(json.dumps({'resultado':'aprovado','capturas':14 if real_ai else 13,'catalogo':f'{len(books)} obras da instalação local; contas e circulação sintéticas' if args.catalogo_local else '32 obras fictícias; capas tipográficas próprias','resolucoes':['1920x1080','390x844'],'temas':['claro','escuro'],'ia':'OpenRouter real; verificação e conversa geradas por modelo gratuito, sem simulação' if real_ai else 'Interface real, desativada; nenhuma resposta simulada ou serviço externo','erros_js':errors},ensure_ascii=False,indent=2),encoding='utf-8')
         finally:
             stop_process_tree(server)
 
